@@ -106,7 +106,7 @@
     }
     // Code
     set par(leading: 0.35em)
-    set block(below: -1pt)
+    set block(spacing: 5pt, below: -8pt)
     show text: set text(font: "Courier New") // All text is Courier New
     if it.lang == none { // Styled text
       block(it.text)

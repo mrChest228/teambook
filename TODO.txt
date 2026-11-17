@@ -196,3 +196,5 @@ sqrtl вместо sqrt(ld())
 Алгоритм Хопкрофта-Карпа для макс. парсоча за O(m*sqrt(n)) (за столько же, сколько сведение к макс. потоку Диница)
 Методы _Find_first/_Find_next битсета
 Посмотреть этот teambook: https://github.com/scanof/Competitive-Programming-Notebook/blob/master/notebook.pdf
+Builtin data structures в 1.1
+C++20 аналоги __builtins бесполезны, убрать

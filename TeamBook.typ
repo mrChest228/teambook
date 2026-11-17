@@ -126,11 +126,6 @@ osyncstream(std::cout) << "ans: " << ans;
 `#code("__builtin_ctz(x)")` `/` `#code("__builtin_ctzll(x)")` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
 `#code("__builtin_parity(x)")` `/` `#code("__builtin_parityll(x)")` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#code("__builtin_popcount(x) & 1").` `При` `$x = 0$` `-` `UB.`
 `#code("__builtin_mul_overflow(a, b, &res)")` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.#br
-=== _C++20_#br
-#code("popcount(x)")` `—` `аналог` `#code("__builtin_popcount(x)")` `(работает` `только` `с` `unsigned)`
-`#code("countl_zero(x)")` `—` `аналог` `#code("__builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
-`#code("countr_zero(x)")` `—` `аналог` `#code("__builtin_ctz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
-`#code("bit_width(x)")` `—` `аналог` `#code(" 32 - __builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)#br
 == *1.5.` `Runtime` `Errors*#br
 *0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
 `*0xC00000FD*` `-` `Stack` `Overflow.` `Причины:` `бесконечная/очень` `глубокая` `рекурсия,` `слишком` `большой` `массив` `в` `стеке.`
@@ -287,7 +282,7 @@ void add(int k, int x) {
 }
 int lowerBound(int s) {
     int k = 0;
-    for (int l = logn; l >= 0; --l) {
+    for (int l = LOGN; l >= 0; --l) {
         if (k + (1 << l) <= n && t[k + (1<<l)] < s) {
             k += (1 << l);
             s -= t[k];
