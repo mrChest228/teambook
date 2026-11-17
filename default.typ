@@ -6,6 +6,15 @@
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
 
+// Inline code: does not change the line height
+#let code(str) = box(
+  radius: 3pt,
+  inset: (x: 3pt),
+  outset: (y: 3pt),
+  fill: rgb("#EEEEEE"),
+  text(font: "Courier New", size: 7pt, str)
+)
+
 #let setup(body) = {
   set page(
     paper: "a4",
@@ -97,18 +106,7 @@
     }
     show text: set text(size: 7pt)
     show text.where(fill: rgb("#666666")): set text(font: "Times New Roman") // Comments
-    if it.text.split("\n").len() == 1 { // Inline code
-      box(
-        radius: 3pt,
-        inset: 3pt,
-        baseline: 2.5pt,
-        fill: rgb("#EEEEEE"),
-        it.text
-      )
-    }
-    else {
-      it
-    }
+    it
   }
 
   body

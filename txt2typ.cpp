@@ -42,7 +42,7 @@ void normalize(string &str) {
 vector <array <string, 4>> tokens = {
     {"$", "$", "$", "$"},                                  // Math
     {"```", "```", "```", "```"},                          // Code
-    {"``", "``", "~~#box(```", "```, baseline: 2.5pt)~~"}, // Inline code
+    {"``", "``", "#code(\"", "\")"},                         // Inline code
     {"~~", "~~", "", ""},                                  // Typst functions
     {"_", "_", "#underline[", "]"},                        // Underline
     {"`", "`", "_", "_"},                                  // Italic
@@ -52,7 +52,19 @@ vector <array <string, 4>> tokens = {
     {"= ", "\n", "#text(size: sizes.at(0))[", "]`\n`"}
 };
 
+const int inlineCode = 2;   // Index of the inline code in tokens
 const int firstHeading = 7; // Index of the first heading in tokens
+
+// Escapes text for a Typst string literal
+string escape(const string &str) {
+    string ans;
+    for (char c : str) {
+        if (c == '\\' || c == '"')
+            ans.pb('\\');
+        ans.pb(c);
+    }
+    return ans;
+}
 
 string normalSpaces(const string str) {
     string ans;
@@ -87,6 +99,8 @@ string solve(const string &text, int l, int r) {
                     inner = solve(text, i + tokens[j][0].size(), k);
                 else
                     inner = text.substr(i + tokens[j][0].size(), k - (i + tokens[j][0].size()));
+                if (j == inlineCode)
+                    inner = escape(inner);
                 return pref +
                        tokens[j][2] + inner + tokens[j][3] +
                        solve(text, k + tokens[j][1].size(), r);

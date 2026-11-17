@@ -121,16 +121,16 @@ if (f != NULL) {
 osyncstream(std::cout) << "ans: " << ans;
 ````
 `#text(size: sizes.at(1))[*1.4.` `Builtins*]`
-`~~#box(```cpp __builtin_clz(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp __builtin_clzll(x)```, baseline: 2.5pt)~~` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
-`$floor(log_2(x))$:` `~~#box(```cpp 31 - __builtin_clz(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp 63 - __builtin_clzll(x)```, baseline: 2.5pt)~~`
-`~~#box(```cpp __builtin_ctz(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp __builtin_ctzll(x)```, baseline: 2.5pt)~~` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
-`~~#box(```cpp __builtin_parity(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp __builtin_parityll(x)```, baseline: 2.5pt)~~` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#box(```cpp __builtin_popcount(x) & 1```, baseline: 2.5pt).` `При` `$x = 0$` `-` `UB.`
-`~~#box(```cpp __builtin_mul_overflow(a, b, &res)```, baseline: 2.5pt)~~` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.`
+`#code("__builtin_clz(x)")` `/` `#code("__builtin_clzll(x)")` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
+`$floor(log_2(x))$:` `#code("31 - __builtin_clz(x)")` `/` `#code("63 - __builtin_clzll(x)")`
+`#code("__builtin_ctz(x)")` `/` `#code("__builtin_ctzll(x)")` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
+`#code("__builtin_parity(x)")` `/` `#code("__builtin_parityll(x)")` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#code("__builtin_popcount(x) & 1").` `При` `$x = 0$` `-` `UB.`
+`#code("__builtin_mul_overflow(a, b, &res)")` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.`
 `#text(size: sizes.at(2))[_C++20_]`
-`~~#box(```cpp popcount(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp __builtin_popcount(x)```, baseline: 2.5pt)~~` `(работает` `только` `с` `unsigned)`
-`~~#box(```cpp countl_zero(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp __builtin_clz(x)```, baseline: 2.5pt)~~` `без` `UB` `(работает` `только` `с` `unsigned)`
-`~~#box(```cpp countr_zero(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp __builtin_ctz(x)```, baseline: 2.5pt)~~` `без` `UB` `(работает` `только` `с` `unsigned)`
-`~~#box(```cpp bit_width(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp  32 - __builtin_clz(x)```, baseline: 2.5pt)~~` `без` `UB` `(работает` `только` `с` `unsigned)`
+`#code("popcount(x)")` `—` `аналог` `#code("__builtin_popcount(x)")` `(работает` `только` `с` `unsigned)`
+`#code("countl_zero(x)")` `—` `аналог` `#code("__builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
+`#code("countr_zero(x)")` `—` `аналог` `#code("__builtin_ctz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
+`#code("bit_width(x)")` `—` `аналог` `#code(" 32 - __builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
 `#text(size: sizes.at(1))[*1.5.` `Runtime` `Errors*]`
 `*0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
 `*0xC00000FD*` `-` `Stack` `Overflow.` `Причины:` `бесконечная/очень` `глубокая` `рекурсия,` `слишком` `большой` `массив` `в` `стеке.`
