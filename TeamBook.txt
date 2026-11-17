@@ -1,4 +1,4 @@
-= *1. _Code_*
+~~#heading[~~*1. _Code_*~~]~~
 ```cpp
 // Pragmas (before libraries includes to get the highest speed up)
 #ifndef DEBUG

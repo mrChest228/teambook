@@ -1,5 +1,5 @@
-#import "default.typ": *;#show: setup;#heading(depth: 1)[*1.` `#underline[Code]*]#br
-```cpp
+#import "default.typ": *;#show: setup;#heading[*1.` `#underline[Code]*]`
+````cpp
 // Pragmas (before libraries includes to get the highest speed up)
 #ifndef DEBUG
     #pragma GCC optimize("O3,unroll-loops")

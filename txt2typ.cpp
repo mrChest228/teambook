@@ -42,7 +42,7 @@ void normalize(string &str) {
 vector <array <string, 4>> tokens = {
     {"$", "$", "$", "$"},                                  // Math
     {"```", "```", "```", "```"},                          // Code
-    {"``", "``", "#code(\"", "\")"},                         // Inline code
+    {"``", "``", "#code(\"", "\")"},                       // Inline code
     {"~~", "~~", "", ""},                                  // Typst functions
     {"_", "_", "#underline[", "]"},                        // Underline
     {"`", "`", "_", "_"},                                  // Italic
@@ -84,22 +84,16 @@ string solve(const string &text, int l, int r) {
     for (int i = l; i < r; ++i)
         for (int j = 0; j < tokens.size(); ++j)
             if (i + tokens[j][0].size() <= r && text.substr(i, tokens[j][0].size()) == tokens[j][0] &&
-                (j < firstHeading || i == 0 || text[i - 1] == '\n')) { // Headings start a line
+                (j < firstHeading || (i > 0 && text[i - 1] == '\n'))) { // Headings start a line, but not the first one
                 int k = i + tokens[j][0].size();
                 while (k + tokens[j][1].size() <= r && text.substr(k, tokens[j][1].size()) != tokens[j][1])
                     ++k;
                 if (k + tokens[j][1].size() > r)
                     throw "Line " + to_string(count(text.begin(), text.begin() + i, '\n') + 1) +
                           ": bad count of token \"" + tokens[j][0] + "..." + tokens[j][1] + "\"";
-                string pref, open = tokens[j][2], close = tokens[j][3];
-                if (j >= firstHeading) {
-                    if (i == 0) { // Typst sees no "=" after the prefix in the first line
-                        open = "#heading(depth: " + to_string(tokens[j][0].size() - 1) + ")[";
-                        close = "]#br\n";
-                    }
-                    elif (i > l) // The "=" has to start a line in TeamBook.typ too
-                        pref = normalSpaces(text.substr(l, i - 1 - l)) + "#br\n";
-                }
+                string pref;
+                if (j >= firstHeading && i > l) // The "=" has to start a line in TeamBook.typ too
+                    pref = normalSpaces(text.substr(l, i - 1 - l)) + "#br\n";
                 elif (i > l)
                     pref = normalSpaces(text.substr(l, i - l));
                 string inner;
@@ -110,7 +104,7 @@ string solve(const string &text, int l, int r) {
                 if (j == inlineCode)
                     inner = escape(inner);
                 return pref +
-                       open + inner + close +
+                       tokens[j][2] + inner + tokens[j][3] +
                        solve(text, k + tokens[j][1].size(), r);
             }
     return normalSpaces(text.substr(l, r - l));
