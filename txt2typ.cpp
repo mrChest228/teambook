@@ -77,7 +77,8 @@ string solve(const string &text, int l, int r) {
                 while (k + tokens[j][1].size() <= r && text.substr(k, tokens[j][1].size()) != tokens[j][1])
                     ++k;
                 if (k + tokens[j][1].size() > r)
-                    throw string("Bad count of token \"" + tokens[j][0] + "..." + tokens[j][1] + "\"");
+                    throw "Line " + to_string(count(text.begin(), text.begin() + i, '\n') + 1) +
+                          ": bad count of token \"" + tokens[j][0] + "..." + tokens[j][1] + "\"";
                 string pref;
                 if (i > l)
                     pref = normalSpaces(text.substr(l, i - l));
