@@ -95,7 +95,7 @@ string solve(const string &text, int l, int r) {
                 if (j >= firstHeading) {
                     if (i == 0) { // Typst sees no "=" after the prefix in the first line
                         open = "#heading(depth: " + to_string(tokens[j][0].size() - 1) + ")[";
-                        close = "]`\n`";
+                        close = "]#br\n";
                     }
                     elif (i > l) // The "=" has to start a line in TeamBook.typ too
                         pref = normalSpaces(text.substr(l, i - 1 - l)) + "#br\n";
@@ -136,7 +136,11 @@ void convert() {
         cerr << "[convert] " << err << nl;
         return;
     }
-    res.erase(----res.end());
+    // Drop the line break made by the final newline
+    if (res.ends_with("#br\n"))
+        res.erase(res.size() - 4);
+    else
+        res.erase(----res.end());
 
     // Writing
     ofstream out(dest, ios::binary);
