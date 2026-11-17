@@ -1,5 +1,7 @@
 #let margin = 5mm
-#let gutter = 5mm
+// Top and bottom margins are bigger: page numbers are there
+#let margin-y = 8mm
+#let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels, main text, code
 #let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 9pt, code: 7pt)
@@ -25,7 +27,7 @@
   set page(
     paper: "a4",
     flipped: true, // Альбомная ориентация
-    margin: margin, // Узкие поля для экономии места
+    margin: (x: margin, y: margin-y), // Узкие поля для экономии места
     columns: cols-cnt,
   
     background: align(top,
@@ -35,8 +37,8 @@
         // Ширина одной колонки
         let col-width = (width - (cols-cnt - 1) * gutter) / cols-cnt
       
-        // Настройки линии: черная, пунктирная (dashed) или точечная (dotted)
-        let line-style = (paint: black, thickness: 1pt, dash: (15pt, 7pt))
+        // Настройки линии: серая, пунктирная (dashed) или точечная (dotted)
+        let line-style = (paint: rgb("#888888"), thickness: 0.5pt, dash: (15pt, 7pt))
       
         // Координаты Y (от верхнего поля до нижнего)
         let y-start = 0pt
@@ -52,19 +54,18 @@
     ),
 
   
-    footer: context[
-      #set align(right)
-      #set text(
-        font: "Times New Roman",
-        size: font-sizes.h3
-      )
-      #move(dy: -4mm, block(
-        fill: white,
-        inset: (x: 3pt, y: 2pt),
-        radius: 4pt,
-        counter(page).display("1", both: false)
-      ))
-    ]
+    // Page number in all 4 corners, so it is seen when most of the page is covered
+    foreground: context {
+      set text(font: "Times New Roman", size: font-sizes.h3)
+      for corner in (top + left, top + right, bottom + left, bottom + right) {
+        place(corner, block(
+          width: 100%,
+          height: margin-y,
+          inset: (x: margin),
+          align(corner.x + horizon, counter(page).display())
+        ))
+      }
+    }
   )
   set columns(gutter: gutter) // Устанавливаем gutter между колонками
   set text(
@@ -113,7 +114,7 @@
       return
     }
     show text: set text(size: font-sizes.code)
-    show text.where(fill: rgb("#666666")): set text(font: "Times New Roman") // Comments
+    show text.where(fill: rgb("#333333")): set text(font: "Times New Roman") // Comments
     it
   }
 
