@@ -47,9 +47,9 @@ vector <array <string, 4>> tokens = {
     {"_", "_", "#underline[", "]"},                        // Underline
     {"`", "`", "_", "_"},                                  // Italic
     {"*", "*", "*", "*"},                                  // Bold
-    {"=== ", "\n", "#heading(depth: 3)[", "]`\n`"},
-    {"== ", "\n", "#heading(depth: 2)[", "]`\n`"},
-    {"= ", "\n", "#heading(depth: 1)[", "]`\n`"}
+    {"=== ", "\n", "=== ", "#br\n"},
+    {"== ", "\n", "== ", "#br\n"},
+    {"= ", "\n", "= ", "#br\n"}
 };
 
 const int inlineCode = 2;   // Index of the inline code in tokens
@@ -91,8 +91,16 @@ string solve(const string &text, int l, int r) {
                 if (k + tokens[j][1].size() > r)
                     throw "Line " + to_string(count(text.begin(), text.begin() + i, '\n') + 1) +
                           ": bad count of token \"" + tokens[j][0] + "..." + tokens[j][1] + "\"";
-                string pref;
-                if (i > l)
+                string pref, open = tokens[j][2], close = tokens[j][3];
+                if (j >= firstHeading) {
+                    if (i == 0) { // Typst sees no "=" after the prefix in the first line
+                        open = "#heading(depth: " + to_string(tokens[j][0].size() - 1) + ")[";
+                        close = "]`\n`";
+                    }
+                    elif (i > l) // The "=" has to start a line in TeamBook.typ too
+                        pref = normalSpaces(text.substr(l, i - 1 - l)) + "#br\n";
+                }
+                elif (i > l)
                     pref = normalSpaces(text.substr(l, i - l));
                 string inner;
                 if (j > 3)
@@ -102,7 +110,7 @@ string solve(const string &text, int l, int r) {
                 if (j == inlineCode)
                     inner = escape(inner);
                 return pref +
-                       tokens[j][2] + inner + tokens[j][3] +
+                       open + inner + close +
                        solve(text, k + tokens[j][1].size(), r);
             }
     return normalSpaces(text.substr(l, r - l));

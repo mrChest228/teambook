@@ -6,6 +6,9 @@
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
 
+// Line break that leaves the real newline outside, so the next line can start with "="
+#let br = raw("\n")
+
 // Inline code: does not change the line height
 #let code(str) = box(
   radius: 3pt,
