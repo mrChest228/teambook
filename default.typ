@@ -1,8 +1,8 @@
 #let margin = 5mm
-#let gutter = 5mm
+#let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels, main text, code
-#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 9pt, code: 7pt)
+#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 7pt, code: 7pt)
 // Background of the inline code and of every second line of the code block
 #let code-fill = rgb("#EEEEEE")
 
@@ -21,6 +21,20 @@
   text(font: "Courier New", size: font-sizes.code, str)
 )
 
+// Long table cut into `parts` tables standing in a row, each one repeats the header
+#let split-table(parts, header, ..cells) = {
+  let rows = cells.pos().chunks(header.len())
+  align(center, grid(
+    columns: parts,
+    column-gutter: 1.5pt,
+    ..rows.chunks(calc.ceil(rows.len() / parts)).map(part => table(
+      columns: header.len(),
+      ..header.map(strong),
+      ..part.flatten()
+    ))
+  ))
+}
+
 #let setup(body) = {
   set page(
     paper: "a4",
@@ -35,8 +49,8 @@
         // Ширина одной колонки
         let col-width = (width - (cols-cnt - 1) * gutter) / cols-cnt
       
-        // Настройки линии: черная, пунктирная (dashed) или точечная (dotted)
-        let line-style = (paint: black, thickness: 1pt, dash: (15pt, 7pt))
+        // Настройки линии: серая, пунктирная (dashed) или точечная (dotted)
+        let line-style = (paint: rgb("#888888"), thickness: 0.5pt, dash: (15pt, 7pt))
       
         // Координаты Y (от верхнего поля до нижнего)
         let y-start = 0pt
@@ -52,19 +66,23 @@
     ),
 
   
-    footer: context[
-      #set align(right)
-      #set text(
-        font: "Times New Roman",
-        size: font-sizes.h3
-      )
-      #move(dy: -4mm, block(
-        fill: white,
-        inset: (x: 3pt, y: 2pt),
-        radius: 4pt,
-        counter(page).display("1", both: false)
-      ))
-    ]
+    // Page number in all 4 corners, so it is seen when most of the page is covered.
+    // It may overlap the text, so it has a white outline
+    foreground: context {
+      set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
+      let num = counter(page).display()
+      for corner in (top + left, top + right, bottom + left, bottom + right) {
+        place(
+          corner,
+          dx: if corner.x == left { margin } else { -margin },
+          dy: if corner.y == top { 1.2mm } else { -1.2mm },
+          {
+            place(text(stroke: 3pt + white, num))
+            num
+          }
+        )
+      }
+    }
   )
   set columns(gutter: gutter) // Устанавливаем gutter между колонками
   set text(
@@ -78,6 +96,7 @@
     above: 8pt,
     below: -5pt
   )
+  set table(inset: 3pt, stroke: 0.5pt)
   show table: set block(
     above: 8pt,
     below: -5pt
@@ -92,7 +111,13 @@
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
     lang-outset: (x: 1pt, y: 0pt),
-    inset: 1.2pt
+    inset: 1.2pt,
+    // Line numbers have the fill of the neighbour line and a line on the right
+    number-format: n => grid.cell(
+      fill: if calc.odd(n) { rgb("#FFFFFF") } else { code-fill },
+      stroke: (right: 0.5pt + rgb("#888888")),
+      str(n)
+    )
   )
   set raw(theme: "BW.tmTheme", tab-size: 4)
   show raw: it => {
@@ -113,7 +138,7 @@
       return
     }
     show text: set text(size: font-sizes.code)
-    show text.where(fill: rgb("#666666")): set text(font: "Times New Roman") // Comments
+    show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
     it
   }
 
