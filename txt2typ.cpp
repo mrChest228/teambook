@@ -47,9 +47,9 @@ vector <array <string, 4>> tokens = {
     {"_", "_", "#underline[", "]"},                        // Underline
     {"`", "`", "_", "_"},                                  // Italic
     {"*", "*", "*", "*"},                                  // Bold
-    {"=== ", "\n", "#text(size: sizes.at(2))[", "]`\n`"},
-    {"== ", "\n", "#text(size: sizes.at(1))[", "]`\n`"},
-    {"= ", "\n", "#text(size: sizes.at(0))[", "]`\n`"}
+    {"=== ", "\n", "#heading(depth: 3)[", "]`\n`"},
+    {"== ", "\n", "#heading(depth: 2)[", "]`\n`"},
+    {"= ", "\n", "#heading(depth: 1)[", "]`\n`"}
 };
 
 const int inlineCode = 2;   // Index of the inline code in tokens

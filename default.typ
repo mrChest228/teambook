@@ -65,6 +65,8 @@
     font: "Georgia",
     size: sizes.at(3)
   )
+  // Headings stay in the line, the line break after them comes from TeamBook.typ
+  show heading: it => text(size: sizes.at(it.depth - 1), weight: "regular", it.body)
   // Math
   show math.equation.where(block: true): set block(
     above: 8pt,

@@ -1,4 +1,4 @@
-#import "default.typ": *;#show: setup;#text(size: sizes.at(0))[*1.` `#underline[Code]*]`
+#import "default.typ": *;#show: setup;#heading(depth: 1)[*1.` `#underline[Code]*]`
 ````cpp
 // Pragmas (before libraries includes to get the highest speed up)
 #ifndef DEBUG
@@ -33,7 +33,7 @@ mt19937_64 rnd(chrono::steady_clock::now(). time_since_epoch().count());
     cin.tie(0); ios::sync_with_stdio(0);
 #endif
 ````
-`#text(size: sizes.at(1))[*1.1.` `Data` `structures*]`
+`#heading(depth: 2)[*1.1.` `Data` `structures*]`
 ````cpp
 // GNU_pbds
 #include <ext/pb_ds/assoc_container.hpp>
@@ -61,7 +61,7 @@ gp_hash_table <int, string> mp; //Примерно 3x быстрее unordered_m
 
 template <class T> using priQue = priority_queue <T, vector <T>, greater <T>>;
 ````
-`#text(size: sizes.at(1))[*1.2.` `Потоки*]`
+`#heading(depth: 2)[*1.2.` `Потоки*]`
 ````cpp
 #include <thread>
 #include <atomic>
@@ -99,7 +99,7 @@ main() {
     cout << "Ans: " << ans;
 }
 ````
-`#text(size: sizes.at(1))[*1.3.` `Вывод` `в` `файл*]`
+`#heading(depth: 2)[*1.3.` `Вывод` `в` `файл*]`
 ````cpp
 fout.open("answers.txt", ios::app); // ios::app - дописывание в конец файла
 fout << "Ans: " << ans; // Строку может разорвать, если другой поток запустится во время копирования
@@ -120,26 +120,26 @@ if (f != NULL) {
 
 osyncstream(std::cout) << "ans: " << ans;
 ````
-`#text(size: sizes.at(1))[*1.4.` `Builtins*]`
+`#heading(depth: 2)[*1.4.` `Builtins*]`
 `#code("__builtin_clz(x)")` `/` `#code("__builtin_clzll(x)")` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
 `$floor(log_2(x))$:` `#code("31 - __builtin_clz(x)")` `/` `#code("63 - __builtin_clzll(x)")`
 `#code("__builtin_ctz(x)")` `/` `#code("__builtin_ctzll(x)")` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
 `#code("__builtin_parity(x)")` `/` `#code("__builtin_parityll(x)")` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#code("__builtin_popcount(x) & 1").` `При` `$x = 0$` `-` `UB.`
 `#code("__builtin_mul_overflow(a, b, &res)")` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.`
-`#text(size: sizes.at(2))[_C++20_]`
+`#heading(depth: 3)[_C++20_]`
 `#code("popcount(x)")` `—` `аналог` `#code("__builtin_popcount(x)")` `(работает` `только` `с` `unsigned)`
 `#code("countl_zero(x)")` `—` `аналог` `#code("__builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
 `#code("countr_zero(x)")` `—` `аналог` `#code("__builtin_ctz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
 `#code("bit_width(x)")` `—` `аналог` `#code(" 32 - __builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
-`#text(size: sizes.at(1))[*1.5.` `Runtime` `Errors*]`
+`#heading(depth: 2)[*1.5.` `Runtime` `Errors*]`
 `*0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
 `*0xC00000FD*` `-` `Stack` `Overflow.` `Причины:` `бесконечная/очень` `глубокая` `рекурсия,` `слишком` `большой` `массив` `в` `стеке.`
 `*0xC0000374*` `-` `Heap` `Corruption.` `Повреждение` `кучи` `(динамической` `памяти),` `программа` `часто` `падает` `не` `в` `момент` `ошибки,` `а` `позже` `(когда` `пытается` `удалить` `или` `выделить` `память).` `Причины:` `запись` `за` `границы` `массива,` `вызвал` `#box(```cpp delete```, baseline: 2.5pt)` `второй` `раз` `(или` `просто` `к` `мусору).`
 `*0xC0000094*` `-` `Integer` `Divide` `by` `Zero.`
 `*0xC000001D*` `-` `Illegal` `Instruction.` `Причины:` `выход` `из` `не-void` `функции` `без` `return.` `(_-Werror=return-type_` `в` `Other` `compiler` `options)`
 `*0xC0000417*` `-` `Invalid` `C` `Runtime` `Parameter.` `Причины:` `assert` `failed` `или` `непойманное` `исключение.`
-`#text(size: sizes.at(0))[*2.` `#underline[Algorithms]*` `]`
-`#text(size: sizes.at(1))[*2.0.` `Курево` `по` `неявному` `ключу*]`
+`#heading(depth: 1)[*2.` `#underline[Algorithms]*` `]`
+`#heading(depth: 2)[*2.0.` `Курево` `по` `неявному` `ключу*]`
 ````cpp
 struct Node {
     int sz, y, val;
@@ -195,7 +195,7 @@ void insert(Node *v, int k) { // 0 <= k <= n
     root = merge(q.f, merge(v, q.s));
 }
 ````
-`#text(size: sizes.at(1))[*2.1.` `$2$-SAT*]`
+`#heading(depth: 2)[*2.1.` `$2$-SAT*]`
 ````cpp
 bool b[N + N];
 int comp[N + N];
@@ -237,7 +237,7 @@ for (int i = 0; i < n + n; ++i)
 for (int i = 0; i < n; ++i)
     cout << (comp[i + i] < comp[i + i + 1] ? "!" : "") << i << nl;
 ````
-`#text(size: sizes.at(1))[*2.2.` `Z-функция*]`
+`#heading(depth: 2)[*2.2.` `Z-функция*]`
 ````cpp
 vector <int> zFun(string s) {
     int n = s.size(), l = 0;
@@ -253,7 +253,7 @@ vector <int> zFun(string s) {
     return z;
 }
 ````
-`#text(size: sizes.at(1))[*2.3.` `Префикс-функция*]`
+`#heading(depth: 2)[*2.3.` `Префикс-функция*]`
 ````cpp
 vector <int> prefFun(string s) {
     int n = s.size();
@@ -268,7 +268,7 @@ vector <int> prefFun(string s) {
     return p;
 }
 ````
-`#text(size: sizes.at(1))[*2.4.` `Дерево-Фенвика*]`
+`#heading(depth: 2)[*2.4.` `Дерево-Фенвика*]`
 ````cpp
 int f[N];
 
@@ -296,7 +296,7 @@ int lowerBound(int s) {
     return k;
 }
 ````
-`#text(size: sizes.at(1))[*2.5.` `Хеширование` `дерева*]`
+`#heading(depth: 2)[*2.5.` `Хеширование` `дерева*]`
 `Корневой` `дерево` `можно` `захешировать` `такой` `функцией:`
 `$ h_v = 42+sum_(u) log(h_u) $`
 `Перед` `взятием` `суммированием` `следует` `отсортировать` `детей` `по` `$log(h_u)$,` `чтобы` `не` `было` `коллизий.`
@@ -306,7 +306,7 @@ int lowerBound(int s) {
 `Но` `это` `не` `проверено` `на` `практике,` `также` `стоит` `поиграться` `с` `начальным` `значением` `и` `возведением` `в` `квадрат` `всей` `суммы.`
 
 `Для` `не` `корневого` `дерева` `стоит` `сначала` `однозначно` `найти` `его` `корень,` `одинаковый` `при` `запуске` `из` `любой` `вершины` `дерева.` `Это` `центроид.` `Если` `размер` `дерева` `нечётный,` `он` `единственный.` `Если` `чётный,` `их` `максимум` `2.` `Ищем` `хеши` `из` `обоих` `и` `либо` `берём` `минимум,` `либо` `из` `сумма,` `либо` `что-то` `ещё.`
-`#text(size: sizes.at(1))[*2.6.0.` `Макс.` `поток` `(Диница)*]`
+`#heading(depth: 2)[*2.6.0.` `Макс.` `поток` `(Диница)*]`
 `С` `2-ичными` `подъёмами` `потока:` `$O(n m log("maxCap"))$`
 `Без` `2-ичных` `подъёмов:` `$O(n m^2)$`
 ````cpp
@@ -376,7 +376,7 @@ int maxFlow(int s, int t) {
 add(x, y, cap, flow);
 cout << maxFlow(s, t);
 ````
-`#text(size: sizes.at(1))[*2.6.1.` `Макс.` `поток` `Мин.` `Стоимости*]`
+`#heading(depth: 2)[*2.6.1.` `Макс.` `поток` `Мин.` `Стоимости*]`
 `С` `2-ичными` `подъёмами` `потока:` `$O(m^2 log(n) log("maxCap"))$`
 `Без` `2-ичных` `подъёмов:` `$O(m "maxFlow" log(n))$`
 ````cpp
@@ -461,7 +461,7 @@ pair <int, int> maxFlowMinCost(int s, int t) {
 addEdge(x, y, cap, flow, cost);
 auto [flow, cost] = maxFlowMinCost(s, f);
 ````
-`#text(size: sizes.at(1))[*2.7.` `Макс.` `клика*]`
+`#heading(depth: 2)[*2.7.` `Макс.` `клика*]`
 `Асимптотика:` `$O(3^(n div 3))$`
 ````cpp
 const int N = 50;
@@ -493,7 +493,7 @@ void dfs(long clck, long cndt, long bad) {
 // Main
 dfs(0, (1ll << n) - 1, 0);
 ````
-`#text(size: sizes.at(1))[*2.8.` `Макс.` `парсоч.` `(Кун)*]`
+`#heading(depth: 2)[*2.8.` `Макс.` `парсоч.` `(Кун)*]`
 `Асимптотика:` `$O(n m)$`
 ````cpp
 int mt[N];
@@ -519,7 +519,7 @@ for (int i = 0; i < n; ++i) {
     cnt += dfs(i);
 }
 ````
-`#text(size: sizes.at(1))[*2.9.` `Segment` `Tree` `Beats*]`
+`#heading(depth: 2)[*2.9.` `Segment` `Tree` `Beats*]`
 ````cpp
 struct STB {
     long sum,
@@ -678,7 +678,7 @@ build(1, 0, n - 1);
 updAdd/updMax/updMin (1, 0, n - 1, l, r, x);
 get(1, 0, n - 1, l, r);
 ````
-`#text(size: sizes.at(1))[*2.10.` `ДО` `Снизу*]`
+`#heading(depth: 2)[*2.10.` `ДО` `Снизу*]`
 ````cpp
 int n, h, sz[N + N];
 long sum[N + N], mn[N + N], mx[N + N], lzMul[N + N], lzAdd[N + N];
@@ -747,12 +747,12 @@ long get(int l, int r) {
     return res;
 }
 ````
-`#text(size: sizes.at(0))[*3.` `#underline[Algebra]*]`
-`#text(size: sizes.at(1))[*3.0.` `Cуммы` `от` `1` `до` `n*]`
+`#heading(depth: 1)[*3.` `#underline[Algebra]*]`
+`#heading(depth: 2)[*3.0.` `Cуммы` `от` `1` `до` `n*]`
 `$ 1^2+2^2+3^2+...+n^2 = (n(2n + 1)(n + 1))/6 $`
 `$ 1^3+2^3+3^3+...+n^3 = (n^2(n + 1)^2)/4 $`
 `$ 1^4+2^4+3^4+...+n^4 = (n(n + 1)(n + 2)(2n + 1)(3n^2 + 3n - 1))/30 $`
-`#text(size: sizes.at(1))[*3.1.` `Числа` `Фибоначчи` `и` `их` `свойства*]`
+`#heading(depth: 2)[*3.1.` `Числа` `Фибоначчи` `и` `их` `свойства*]`
 `*Соотношение` `Кассини*`
 `$ F_(n + 1) F_(n - 1) - F_n^2 = (-1)^n $`
 `Правило` `"сложения"`
@@ -767,11 +767,11 @@ long get(int l, int r) {
 `$ F_n = (Phi^n-Psi^n) / sqrt(5) $`
 `$ Phi = (1 + sqrt(5)) / 2, Psi = (1 - sqrt(5)) / 2 $`
 `$Psi$` `экспоненциально` `убывает,` `поэтому` `для` `больших` `чисел` `и` `примерного` `значения` `им` `можно` `принебречь`
-`#text(size: sizes.at(1))[*3.2.` `Матрицы*]`
+`#heading(depth: 2)[*3.2.` `Матрицы*]`
 `$ c_(i,j) = sum_k a_(i,k) b_(k,j) $`
 `$ mat(1, 1; 1, 0)^n = mat(F_(n + 1), F_n; F_n, F_(n - 1)) $`
 `Допустим` `нужно` `$q$` `раз` `возводить` `одну` `и` `ту` `же` `матрицу` `в` `степень` `и` `домножать` `на` `вектор.` `Наивное` `решение:` `$O(q n^3 log(n))$,` `однако` `если` `мы` `предпросчитаем` `двоичные` `степени` `матрицы,` `а` `затем` `$log(n)$` `раз` `домножим` `на` `них` `вектор,` `то` `получим` `асимптотику` `$O(n^3 log(n) + q n^2 log(n))$.`
-`#text(size: sizes.at(1))[*3.3.` `Расширенный` `алгоритм` `Евклида*]`
+`#heading(depth: 2)[*3.3.` `Расширенный` `алгоритм` `Евклида*]`
 `Решает` `задачу` `поиска` `$a x + b y = gcd(x, y)$` `с` `мин.` `$a >= 0$.`
 ````cpp
 long gcdex(long a, long &x, long b, long &y) {
@@ -795,7 +795,7 @@ long gcdex(long a, long &x, long b, long &y) {
     return a;
 }
 ````
-`#text(size: sizes.at(1))[*3.4.` `КТО*]`
+`#heading(depth: 2)[*3.4.` `КТО*]`
 `$ cases("ans" eq.triple a (mod n), "ans" eq.triple b (mod b)) $`
 `$x, y, g = "gcdex"(n, m)$`
 `$x n + y m = g$,` `$x n / g + y m / g = 1,$` `$x n / g = 1 (mod m / g)$`
@@ -817,7 +817,7 @@ pair <long, long> crt(long a, long n, long b, long m) {
     return {x + (x < 0) * n * m, n * m};
 }
 ````
-`#text(size: sizes.at(1))[*3.5.` `Ро-алгоритм` `Полларда*]`
+`#heading(depth: 2)[*3.5.` `Ро-алгоритм` `Полларда*]`
 `Рандомизированный` `алгоритм` `факторизации` `целых` `чисел,` `работающий` `за` `время` `$O(n^(1/4))$.`
 ````cpp
 inline long f(long x, long n) { 
@@ -854,9 +854,9 @@ long pollard(long n, int iter = 100000) {
     return g;
 }
 ````
-`#text(size: sizes.at(1))[*3.6.` `Код` `Грея*]`
+`#heading(depth: 2)[*3.6.` `Код` `Грея*]`
 `$ G_i = i xor floor(i / 2) $`
-`#text(size: sizes.at(1))[*3.7.` `Модули,` `простые` `числа*]`
+`#heading(depth: 2)[*3.7.` `Модули,` `простые` `числа*]`
 `Первообразный` `корень` `($g$)` `модуля` `$m$` `(только` `для` `$m = 2, 4, p^a, 2p^a$)` `-` `число,` `степени` `которого` `оббегают` `все` `числа` `от` `$1$` `до` `$m - 1$.` `Пусть` `$m = c * 2^k + 1$,` `тогда` `в` `FFT` `максимальная` `длина` `полинома` `$n = 2^k$.`
 `#align(center)[#table(
   columns: 4,
@@ -867,7 +867,7 @@ long pollard(long n, int iter = 100000) {
   [$469762049$], [$7$], [$26$], [$3$],
   [$167772161$], [$5$], [$25$], [$3$],
 )]`
-`#text(size: sizes.at(2))[*Простые` `и` `праймориалы*]`
+`#heading(depth: 3)[*Простые` `и` `праймориалы*]`
 `#align(center)[#table(
   columns: 8,
   [$2$], [$3$], [$5$], [$7$], [$11$], [$13$], [$17$], [$19$],
@@ -884,7 +884,7 @@ long pollard(long n, int iter = 100000) {
   [$1.3*10^16$], [$6.1*10^17$]
 )]
 `
-`#text(size: sizes.at(2))[*Кол-во` `простых` `чисел` `до` `$10^x$*]`
+`#heading(depth: 3)[*Кол-во` `простых` `чисел` `до` `$10^x$*]`
 `$ pi(n) approx n / ln(n) $`
 `#align(center)[#table(
   columns: 8,
@@ -911,8 +911,8 @@ long pollard(long n, int iter = 100000) {
   [$18$],
   [$24'739'954'287'740'860$]
 )]`
-`#text(size: sizes.at(1))[*3.8.` `Ряды` `и` `полиномы*]`
-`#text(size: sizes.at(2))[*3.8.0.` `Ряды*]`
+`#heading(depth: 2)[*3.8.` `Ряды` `и` `полиномы*]`
+`#heading(depth: 3)[*3.8.0.` `Ряды*]`
 `$ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
 `$ 1 / (1 + x) = sum_(n = 0)^infinity (-1)^n x^n = 1 - x + x^2 - x^3 + x^4 - ... $`
 `$ 1 / (1 - x) = sum_(n = 0)^infinity x^n = 1 + x + x^2 + x^3 + ..., |x| < 1 $`
@@ -932,7 +932,7 @@ long pollard(long n, int iter = 100000) {
 `$ cos(x) = sum_(n=0)^infinity (-1)^n x^(2n) / (2n)! = 1 - x^2 / 2! + x^4 / 4! - ... $`
 `$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = 1 - x^3 / 3 + x^5 / 5 - ... $`
 `$ arcsin(x) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $`
-`#text(size: sizes.at(2))[*3.8.1.` `Полиномы*]`
+`#heading(depth: 3)[*3.8.1.` `Полиномы*]`
 `$ A'_i = A_(i + 1) * (i + 1) $`
 `$ (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $`
 `$ ln(A) = integral (A') / A, A_0 = 1 $`
@@ -942,7 +942,7 @@ long pollard(long n, int iter = 100000) {
 `Нельзя` `просто` `сделать` `преобразование` `Фурье,` `возвести` `$A_i$` `в` `степень` `$k$` `по` `модулю` `и` `применить` `обратное` `-` `результат` `будет` `неверным.` `Варианты:`
 `$0$.` `Поддерживаем` `тек.` `двоичную` `степень` `(обрезанную` `до` `n` `членов)` `и` `домножаем` `на` `неё` `ответ` `$O(n log(n) log(k))$`
 `$1$.` `$exp(k ln(A))$.` `Нужно,` `чтобы` `$A_0$` `было` `равно` `1,` `однако` `NTT::pow()` `решает` `и` `эту` `проблему`
-`#text(size: sizes.at(1))[*3.8.2.` `БПФ/FFT*]`
+`#heading(depth: 2)[*3.8.2.` `БПФ/FFT*]`
 ````cpp
 const int N = 1 << 20;
 
@@ -1118,8 +1118,8 @@ Pole <469762049, 3>  P469;  // n <= 2^26 <= 67'108'864
 // Main
 vec <int> c = P998.mult(a, b);
 ````
-`#text(size: sizes.at(0))[*4.` `#underline[Geometry]*]`
-`#text(size: sizes.at(1))[*4.0.` `Сортировка` `векторов` `по` `углу*]`
+`#heading(depth: 1)[*4.` `#underline[Geometry]*]`
+`#heading(depth: 2)[*4.0.` `Сортировка` `векторов` `по` `углу*]`
 ````cpp
 bool comp(pair <int, int> a, pair <int, int> b) {
     if (a.f < 0 && b.f < 0)
@@ -1136,7 +1136,7 @@ bool comp(pair <int, int> a, pair <int, int> b) {
     return a.s * b.f > b.s * a.f;
 }
 ````
-`#text(size: sizes.at(1))[*4.1.` `CHT*]`
+`#heading(depth: 2)[*4.1.` `CHT*]`
 ````cpp
 struct line {
     ld k, b;
@@ -1196,7 +1196,7 @@ ld get(ld x) {
 inline ld _floor(ld x) { return floor(x + 1e-9l); }
 inline ld _ceil (ld x) { return ceil (x - 1e-9l); }
 ````
-`#text(size: sizes.at(1))[*4.2.` `Дерево` `Ли` `Чао*]`
+`#heading(depth: 2)[*4.2.` `Дерево` `Ли` `Чао*]`
 ````cpp
 const ld oo = 1e18, eps = 1e-9;
 
@@ -1260,7 +1260,7 @@ LiChao tr(0, n);
 tr.add(l, r, {k, b});
 tr.get(x);
 ````
-`#text(size: sizes.at(1))[*4.3.` `Сумма` `Минковского*]`
+`#heading(depth: 2)[*4.3.` `Сумма` `Минковского*]`
 `Находит` `расстояние` `между` `выпуклыми` `многоугольниками` `(с` `обходом` `по` `часовой` `стрелке,` `предварительно` `умножив` `один` `из` `их` `на` `-1` `и` `развернув)` `и` `проверяет` `на` `пересечение` `(точка` `$(0, 0)$` `лежит` `в` `сумме` `Минковского).`
 ````cpp
 struct point {
