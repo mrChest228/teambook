@@ -52,6 +52,8 @@ vector <array <string, 4>> tokens = {
     {"= ", "\n", "#text(size: sizes.at(0))[", "]`\n`"}
 };
 
+const int firstHeading = 7; // Index of the first heading in tokens
+
 string normalSpaces(const string str) {
     string ans;
     for (char c : str) {
@@ -69,7 +71,8 @@ string solve(const string &text, int l, int r) {
         return "";
     for (int i = l; i < r; ++i)
         for (int j = 0; j < tokens.size(); ++j)
-            if (i + tokens[j][0].size() <= r && text.substr(i, tokens[j][0].size()) == tokens[j][0]) {
+            if (i + tokens[j][0].size() <= r && text.substr(i, tokens[j][0].size()) == tokens[j][0] &&
+                (j < firstHeading || i == 0 || text[i - 1] == '\n')) { // Headings start a line
                 int k = i + tokens[j][0].size();
                 while (k + tokens[j][1].size() <= r && text.substr(k, tokens[j][1].size()) != tokens[j][1])
                     ++k;
@@ -78,9 +81,11 @@ string solve(const string &text, int l, int r) {
                 string pref;
                 if (i > l)
                     pref = normalSpaces(text.substr(l, i - l));
-                string inner = text.substr(i + tokens[j][0].size(), k - (i + tokens[j][0].size()));
+                string inner;
                 if (j > 3)
-                    inner = solve(inner, 0, inner.size());
+                    inner = solve(text, i + tokens[j][0].size(), k);
+                else
+                    inner = text.substr(i + tokens[j][0].size(), k - (i + tokens[j][0].size()));
                 return pref +
                        tokens[j][2] + inner + tokens[j][3] +
                        solve(text, k + tokens[j][1].size(), r);
