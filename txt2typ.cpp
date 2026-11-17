@@ -24,7 +24,7 @@ void signalHandler(int signum) {
 //         << "Run with arguments \"watch <path>\" to convert file on every change.";
 //}
 
-const fs::path src = "TeamBook.txt", def = "default.typ", dest = "TeamBook.typ";
+const fs::path src = "TeamBook.txt", dest = "TeamBook.typ";
 
 void normalize(string &str) {
     // Remove the UTF-8 BOM, if it exists (0xEF 0xBB 0xBF)
@@ -40,15 +40,29 @@ void normalize(string &str) {
 vector <array <string, 4>> tokens = {
     {"$", "$", "$", "$"},                                  // Math
     {"```", "```", "```", "```"},                          // Code
-    {"``", "``", "~~#box(```", "```, baseline: 2.5pt)~~"}, // Inline code
+    {"``", "``", "#code(\"", "\")"},                       // Inline code
     {"~~", "~~", "", ""},                                  // Typst functions
     {"_", "_", "#underline[", "]"},                        // Underline
     {"`", "`", "_", "_"},                                  // Italic
     {"*", "*", "*", "*"},                                  // Bold
-    {"=== ", "\n", "#text(size: sizes.at(2))[", "]`\n`"},
-    {"== ", "\n", "#text(size: sizes.at(1))[", "]`\n`"},
-    {"= ", "\n", "#text(size: sizes.at(0))[", "]`\n`"}
+    {"=== ", "\n", "=== ", "#br\n"},
+    {"== ", "\n", "== ", "#br\n"},
+    {"= ", "\n", "= ", "#br\n"}
 };
+
+const int inlineCode = 2;   // Index of the inline code in tokens
+const int firstHeading = 7; // Index of the first heading in tokens
+
+// Escapes text for a Typst string literal
+string escape(const string &str) {
+    string ans;
+    for (char c : str) {
+        if (c == '\\' || c == '"')
+            ans.pb('\\');
+        ans.pb(c);
+    }
+    return ans;
+}
 
 string normalSpaces(const string str) {
     string ans;
@@ -67,18 +81,26 @@ string solve(const string &text, int l, int r) {
         return "";
     for (int i = l; i < r; ++i)
         for (int j = 0; j < tokens.size(); ++j)
-            if (i + tokens[j][0].size() <= r && text.substr(i, tokens[j][0].size()) == tokens[j][0]) {
+            if (i + tokens[j][0].size() <= r && text.substr(i, tokens[j][0].size()) == tokens[j][0] &&
+                (j < firstHeading || i == 0 || text[i - 1] == '\n')) { // Headings start a line
                 int k = i + tokens[j][0].size();
                 while (k + tokens[j][1].size() <= r && text.substr(k, tokens[j][1].size()) != tokens[j][1])
                     ++k;
                 if (k + tokens[j][1].size() > r)
-                    throw string("Bad count of token \"" + tokens[j][0] + "..." + tokens[j][1] + "\"");
+                    throw "Line " + to_string(count(text.begin(), text.begin() + i, '\n') + 1) +
+                          ": bad count of token \"" + tokens[j][0] + "..." + tokens[j][1] + "\"";
                 string pref;
-                if (i > l)
+                if (j >= firstHeading && i > l) // The "=" has to start a line in TeamBook.typ too
+                    pref = normalSpaces(text.substr(l, i - 1 - l)) + "#br\n";
+                elif (i > l)
                     pref = normalSpaces(text.substr(l, i - l));
-                string inner = text.substr(i + tokens[j][0].size(), k - (i + tokens[j][0].size()));
+                string inner;
                 if (j > 3)
-                    inner = solve(inner, 0, inner.size());
+                    inner = solve(text, i + tokens[j][0].size(), k);
+                else
+                    inner = text.substr(i + tokens[j][0].size(), k - (i + tokens[j][0].size()));
+                if (j == inlineCode)
+                    inner = escape(inner);
                 return pref +
                        tokens[j][2] + inner + tokens[j][3] +
                        solve(text, k + tokens[j][1].size(), r);
@@ -97,14 +119,7 @@ void convert() {
     in.close();
     normalize(text);
 
-    in.open(def, ios::binary);
-    if (!in) {
-        cerr << "[convert] cannot open source for reading: " << src << "\n";
-        return;
-    }
-    string res((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
-    in.close();
-    normalize(res);
+    string res;
 
     try {
         res += solve(text, 0, text.size());
@@ -113,7 +128,11 @@ void convert() {
         cerr << "[convert] " << err << nl;
         return;
     }
-    res.erase(----res.end());
+    // Drop the line break made by the final newline
+    if (res.ends_with("#br\n"))
+        res.erase(res.size() - 4);
+    else
+        res.erase(----res.end());
 
     // Writing
     ofstream out(dest, ios::binary);

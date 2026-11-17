@@ -1,115 +1,4 @@
-#let margin = 5mm
-#let gutter = 5mm
-#let cols-cnt = 3
-#let sizes = (17pt, 13pt, 11pt, 9pt)
-
-#set page(
-  paper: "a4",
-  flipped: true, // Альбомная ориентация
-  margin: margin, // Узкие поля для экономии места
-  columns: cols-cnt,
-  
-  background: align(top,
-    layout(size => {
-      // Вычисляем полезную ширину текста
-      let width = size.width - 2 * margin
-      // Ширина одной колонки
-      let col-width = (width - (cols-cnt - 1) * gutter) / cols-cnt
-      
-      // Настройки линии: черная, пунктирная (dashed) или точечная (dotted)
-      let line-style = (paint: black, thickness: 1pt, dash: (15pt, 7pt))
-      
-      // Координаты Y (от верхнего поля до нижнего)
-      let y-start = 0pt
-      let y-end = size.height
-      
-      // Рисуем первую линию
-      let x1 = margin + col-width + gutter / 2
-      place(top + left, line(start: (x1, y-start), end: (x1, y-end), stroke: line-style))
-      // Рисуем вторую линию
-      let x2 = x1 + col-width + gutter
-      place(top + left, line(start: (x2, y-start), end: (x2, y-end), stroke: line-style))
-    }),
-  ),
-
-  
-  footer: context[
-    #set align(right)
-    #set text(
-      font: "Times New Roman",
-      size: sizes.at(2)
-    )
-    #move(dy: -4mm, block(
-      fill: white,
-      inset: (x: 3pt, y: 2pt),
-      radius: 4pt,
-      counter(page).display("1", both: false)
-    ))
-  ]
-)
-#set columns(gutter: gutter) // Устанавливаем gutter между колонками
-#set text(
-  font: "Georgia",
-  size: sizes.at(3)
-)
-// Math
-#show math.equation.where(block: true): set block(
-  above: 8pt,
-  below: -5pt
-)
-#show table: set block(
-  above: 8pt,
-  below: -5pt
-)
-
-// Code
-#import "@preview/codly:1.3.0": *
-#import "@preview/codly-languages:0.1.1": *
-#show: codly-init.with()
-#codly(
-  radius: 3pt,
-  zebra-fill: rgb("#EEEEEE"),
-  default-color: rgb("#FFFFFF"),
-  lang-stroke: 0.5pt + rgb("#AAAAAA"),
-  lang-inset: 1.3pt,
-  lang-outset: (x: 1pt, y: 0pt),
-  inset: 1.2pt
-)
-#set raw(theme: "bw-bold.tmTheme", tab-size: 4)
-#show raw: it => {
-  if it.text.trim() == "" { // Spaces and enters
-    text(
-      font: "Times New Roman",
-      size: sizes.at(3),
-      it
-    )
-    return
-  }
-  // Code
-  set par(leading: 0.35em)
-  set block(below: -1pt)
-  show text: set text(font: "Courier New") // All text is Courier New
-  if it.lang == none { // Styled text
-    block(it.text)
-    return
-  }
-  show text: set text(size: 7pt)
-  show text.where(fill: rgb("#666666")): set text(font: "Times New Roman") // Comments
-  if it.text.split("\n").len() == 1 { // Inline code
-    box(
-      radius: 3pt,
-      inset: 3pt,
-      baseline: 2.5pt,
-      fill: rgb("#EEEEEE"),
-      it.text
-    )
-  }
-  else {
-    it
-  }
-}
-
-#text(size: sizes.at(0))[*1.` `#underline[Code]*]`
+#import "default.typ": *;#show: setup;#heading[*1.` `#underline[Code]*]`
 ````cpp
 // Pragmas (before libraries includes to get the highest speed up)
 #ifndef DEBUG
@@ -143,9 +32,9 @@ mt19937_64 rnd(chrono::steady_clock::now(). time_since_epoch().count());
 #else
     cin.tie(0); ios::sync_with_stdio(0);
 #endif
-````
-`#text(size: sizes.at(1))[*1.1.` `Data` `structures*]`
-````cpp
+```#br
+== *1.1.` `Data` `structures*#br
+```cpp
 // GNU_pbds
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
@@ -171,9 +60,9 @@ unordered_map <int, string> mp;
 gp_hash_table <int, string> mp; //Примерно 3x быстрее unordered_map, использует 1.5x памяти, нет mp.count(), но есть mp.find() != mp.end()
 
 template <class T> using priQue = priority_queue <T, vector <T>, greater <T>>;
-````
-`#text(size: sizes.at(1))[*1.2.` `Потоки*]`
-````cpp
+```#br
+== *1.2.` `Потоки*#br
+```cpp
 #include <thread>
 #include <atomic>
 
@@ -209,9 +98,9 @@ main() {
         }
     cout << "Ans: " << ans;
 }
-````
-`#text(size: sizes.at(1))[*1.3.` `Вывод` `в` `файл*]`
-````cpp
+```#br
+== *1.3.` `Вывод` `в` `файл*#br
+```cpp
 fout.open("answers.txt", ios::app); // ios::app - дописывание в конец файла
 fout << "Ans: " << ans; // Строку может разорвать, если другой поток запустится во время копирования
 
@@ -230,28 +119,28 @@ if (f != NULL) {
 #include <syncstream>
 
 osyncstream(std::cout) << "ans: " << ans;
-````
-`#text(size: sizes.at(1))[*1.4.` `Builtins*]`
-`~~#box(```cpp __builtin_clz(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp __builtin_clzll(x)```, baseline: 2.5pt)~~` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
-`$floor(log_2(x))$:` `~~#box(```cpp 31 - __builtin_clz(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp 63 - __builtin_clzll(x)```, baseline: 2.5pt)~~`
-`~~#box(```cpp __builtin_ctz(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp __builtin_ctzll(x)```, baseline: 2.5pt)~~` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
-`~~#box(```cpp __builtin_parity(x)```, baseline: 2.5pt)~~` `/` `~~#box(```cpp __builtin_parityll(x)```, baseline: 2.5pt)~~` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#box(```cpp __builtin_popcount(x) & 1```, baseline: 2.5pt).` `При` `$x = 0$` `-` `UB.`
-`~~#box(```cpp __builtin_mul_overflow(a, b, &res)```, baseline: 2.5pt)~~` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.`
-`#text(size: sizes.at(2))[_C++20_]`
-`~~#box(```cpp popcount(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp __builtin_popcount(x)```, baseline: 2.5pt)~~` `(работает` `только` `с` `unsigned)`
-`~~#box(```cpp countl_zero(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp __builtin_clz(x)```, baseline: 2.5pt)~~` `без` `UB` `(работает` `только` `с` `unsigned)`
-`~~#box(```cpp countr_zero(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp __builtin_ctz(x)```, baseline: 2.5pt)~~` `без` `UB` `(работает` `только` `с` `unsigned)`
-`~~#box(```cpp bit_width(x)```, baseline: 2.5pt)~~` `—` `аналог` `~~#box(```cpp  32 - __builtin_clz(x)```, baseline: 2.5pt)~~` `без` `UB` `(работает` `только` `с` `unsigned)`
-`#text(size: sizes.at(1))[*1.5.` `Runtime` `Errors*]`
-`*0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
+```#br
+== *1.4.` `Builtins*#br
+#code("__builtin_clz(x)")` `/` `#code("__builtin_clzll(x)")` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
+`$floor(log_2(x))$:` `#code("31 - __builtin_clz(x)")` `/` `#code("63 - __builtin_clzll(x)")`
+`#code("__builtin_ctz(x)")` `/` `#code("__builtin_ctzll(x)")` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
+`#code("__builtin_parity(x)")` `/` `#code("__builtin_parityll(x)")` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#code("__builtin_popcount(x) & 1").` `При` `$x = 0$` `-` `UB.`
+`#code("__builtin_mul_overflow(a, b, &res)")` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.#br
+=== _C++20_#br
+#code("popcount(x)")` `—` `аналог` `#code("__builtin_popcount(x)")` `(работает` `только` `с` `unsigned)`
+`#code("countl_zero(x)")` `—` `аналог` `#code("__builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
+`#code("countr_zero(x)")` `—` `аналог` `#code("__builtin_ctz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)`
+`#code("bit_width(x)")` `—` `аналог` `#code(" 32 - __builtin_clz(x)")` `без` `UB` `(работает` `только` `с` `unsigned)#br
+== *1.5.` `Runtime` `Errors*#br
+*0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
 `*0xC00000FD*` `-` `Stack` `Overflow.` `Причины:` `бесконечная/очень` `глубокая` `рекурсия,` `слишком` `большой` `массив` `в` `стеке.`
 `*0xC0000374*` `-` `Heap` `Corruption.` `Повреждение` `кучи` `(динамической` `памяти),` `программа` `часто` `падает` `не` `в` `момент` `ошибки,` `а` `позже` `(когда` `пытается` `удалить` `или` `выделить` `память).` `Причины:` `запись` `за` `границы` `массива,` `вызвал` `#box(```cpp delete```, baseline: 2.5pt)` `второй` `раз` `(или` `просто` `к` `мусору).`
 `*0xC0000094*` `-` `Integer` `Divide` `by` `Zero.`
 `*0xC000001D*` `-` `Illegal` `Instruction.` `Причины:` `выход` `из` `не-void` `функции` `без` `return.` `(_-Werror=return-type_` `в` `Other` `compiler` `options)`
-`*0xC0000417*` `-` `Invalid` `C` `Runtime` `Parameter.` `Причины:` `assert` `failed` `или` `непойманное` `исключение.`
-`#text(size: sizes.at(0))[*2.` `#underline[Algorithms]*` `]`
-`#text(size: sizes.at(1))[*2.0.` `Курево` `по` `неявному` `ключу*]`
-````cpp
+`*0xC0000417*` `-` `Invalid` `C` `Runtime` `Parameter.` `Причины:` `assert` `failed` `или` `непойманное` `исключение.#br
+= *2.` `#underline[Algorithms]*` `#br
+== *2.0.` `Курево` `по` `неявному` `ключу*#br
+```cpp
 struct Node {
     int sz, y, val;
     Node *L = 0,
@@ -305,9 +194,9 @@ void insert(Node *v, int k) { // 0 <= k <= n
     auto q = split(root, k);
     root = merge(q.f, merge(v, q.s));
 }
-````
-`#text(size: sizes.at(1))[*2.1.` `$2$-SAT*]`
-````cpp
+```#br
+== *2.1.` `$2$-SAT*#br
+```cpp
 bool b[N + N];
 int comp[N + N];
 vector <int> v[N + N], w[N + N], order;
@@ -347,9 +236,9 @@ for (int i = 0; i < n + n; ++i)
         //No solution
 for (int i = 0; i < n; ++i)
     cout << (comp[i + i] < comp[i + i + 1] ? "!" : "") << i << nl;
-````
-`#text(size: sizes.at(1))[*2.2.` `Z-функция*]`
-````cpp
+```#br
+== *2.2.` `Z-функция*#br
+```cpp
 vector <int> zFun(string s) {
     int n = s.size(), l = 0;
     vector <int> z(n);
@@ -363,9 +252,9 @@ vector <int> zFun(string s) {
     }
     return z;
 }
-````
-`#text(size: sizes.at(1))[*2.3.` `Префикс-функция*]`
-````cpp
+```#br
+== *2.3.` `Префикс-функция*#br
+```cpp
 vector <int> prefFun(string s) {
     int n = s.size();
     vector <int> p(n);
@@ -378,9 +267,9 @@ vector <int> prefFun(string s) {
     }
     return p;
 }
-````
-`#text(size: sizes.at(1))[*2.4.` `Дерево-Фенвика*]`
-````cpp
+```#br
+== *2.4.` `Дерево-Фенвика*#br
+```cpp
 int f[N];
 
 int sum(int r) {
@@ -406,9 +295,9 @@ int lowerBound(int s) {
     }
     return k;
 }
-````
-`#text(size: sizes.at(1))[*2.5.` `Хеширование` `дерева*]`
-`Корневой` `дерево` `можно` `захешировать` `такой` `функцией:`
+```#br
+== *2.5.` `Хеширование` `дерева*#br
+Корневой` `дерево` `можно` `захешировать` `такой` `функцией:`
 `$ h_v = 42+sum_(u) log(h_u) $`
 `Перед` `взятием` `суммированием` `следует` `отсортировать` `детей` `по` `$log(h_u)$,` `чтобы` `не` `было` `коллизий.`
 `Либо` `можно` `после` `сортировки` `использовать` `обычный` `полиномиальный` `хеш.`
@@ -416,9 +305,9 @@ int lowerBound(int s) {
 `$ h_v = 42+sum_(u) h_u^2 (mod m) $`
 `Но` `это` `не` `проверено` `на` `практике,` `также` `стоит` `поиграться` `с` `начальным` `значением` `и` `возведением` `в` `квадрат` `всей` `суммы.`
 
-`Для` `не` `корневого` `дерева` `стоит` `сначала` `однозначно` `найти` `его` `корень,` `одинаковый` `при` `запуске` `из` `любой` `вершины` `дерева.` `Это` `центроид.` `Если` `размер` `дерева` `нечётный,` `он` `единственный.` `Если` `чётный,` `их` `максимум` `2.` `Ищем` `хеши` `из` `обоих` `и` `либо` `берём` `минимум,` `либо` `из` `сумма,` `либо` `что-то` `ещё.`
-`#text(size: sizes.at(1))[*2.6.0.` `Макс.` `поток` `(Диница)*]`
-`С` `2-ичными` `подъёмами` `потока:` `$O(n m log("maxCap"))$`
+`Для` `не` `корневого` `дерева` `стоит` `сначала` `однозначно` `найти` `его` `корень,` `одинаковый` `при` `запуске` `из` `любой` `вершины` `дерева.` `Это` `центроид.` `Если` `размер` `дерева` `нечётный,` `он` `единственный.` `Если` `чётный,` `их` `максимум` `2.` `Ищем` `хеши` `из` `обоих` `и` `либо` `берём` `минимум,` `либо` `из` `сумма,` `либо` `что-то` `ещё.#br
+== *2.6.0.` `Макс.` `поток` `(Диница)*#br
+С` `2-ичными` `подъёмами` `потока:` `$O(n m log("maxCap"))$`
 `Без` `2-ичных` `подъёмов:` `$O(n m^2)$`
 ````cpp
 struct edge {
@@ -486,9 +375,9 @@ int maxFlow(int s, int t) {
 // Main
 add(x, y, cap, flow);
 cout << maxFlow(s, t);
-````
-`#text(size: sizes.at(1))[*2.6.1.` `Макс.` `поток` `Мин.` `Стоимости*]`
-`С` `2-ичными` `подъёмами` `потока:` `$O(m^2 log(n) log("maxCap"))$`
+```#br
+== *2.6.1.` `Макс.` `поток` `Мин.` `Стоимости*#br
+С` `2-ичными` `подъёмами` `потока:` `$O(m^2 log(n) log("maxCap"))$`
 `Без` `2-ичных` `подъёмов:` `$O(m "maxFlow" log(n))$`
 ````cpp
 struct edge {
@@ -571,16 +460,16 @@ pair <int, int> maxFlowMinCost(int s, int t) {
 
 addEdge(x, y, cap, flow, cost);
 auto [flow, cost] = maxFlowMinCost(s, f);
-````
-`#text(size: sizes.at(1))[*2.7.` `Макс.` `клика*]`
-`Асимптотика:` `$O(3^(n div 3))$`
+```#br
+== *2.7.` `Макс.` `клика*#br
+Асимптотика:` `$O(3^(n div 3))$`
 ````cpp
 const int N = 50;
 
 long a[N]; // Edges bitmask
 int n, m, k, mx;
 
-void dfs(int64 clck, int64 cndt, int64 bad) {
+void dfs(long clck, long cndt, long bad) {
     if (cndt == 0 && bad == 0) {
         int cnt = __builtin_popcount(clck);
         if (cnt > mx)
@@ -593,7 +482,7 @@ void dfs(int64 clck, int64 cndt, int64 bad) {
             return;
 
     for (int i = 0; i < n; ++i) {
-        int64 u = (1ll << i);
+        long u = (1ll << i);
         if ((u & cndt) == 0)
             continue;
         cndt -= u;
@@ -603,9 +492,9 @@ void dfs(int64 clck, int64 cndt, int64 bad) {
 }
 // Main
 dfs(0, (1ll << n) - 1, 0);
-````
-`#text(size: sizes.at(1))[*2.8.` `Макс.` `парсоч.` `(Кун)*]`
-`Асимптотика:` `$O(n m)$`
+```#br
+== *2.8.` `Макс.` `парсоч.` `(Кун)*#br
+Асимптотика:` `$O(n m)$`
 ````cpp
 int mt[N];
 bool b[N];
@@ -629,9 +518,9 @@ for (int i = 0; i < n; ++i) {
     fill(b, b + n, 0);
     cnt += dfs(i);
 }
-````
-`#text(size: sizes.at(1))[*2.9.` `Segment` `Tree` `Beats*]`
-````cpp
+```#br
+== *2.9.` `Segment` `Tree` `Beats*#br
+```cpp
 struct STB {
     long sum,
          mx, sx, mn, sn, lz;
@@ -788,9 +677,9 @@ long get(int v, int l, int r, int ql, int qr) {
 build(1, 0, n - 1);
 updAdd/updMax/updMin (1, 0, n - 1, l, r, x);
 get(1, 0, n - 1, l, r);
-````
-`#text(size: sizes.at(1))[*2.10.` `ДО` `Снизу*]`
-````cpp
+```#br
+== *2.10.` `ДО` `Снизу*#br
+```cpp
 int n, h, sz[N + N];
 long sum[N + N], mn[N + N], mx[N + N], lzMul[N + N], lzAdd[N + N];
 void apply(int v, long mul, long add) {
@@ -857,14 +746,14 @@ long get(int l, int r) {
     }
     return res;
 }
-````
-`#text(size: sizes.at(0))[*3.` `#underline[Algebra]*]`
-`#text(size: sizes.at(1))[*3.0.` `Cуммы` `от` `1` `до` `n*]`
-`$ 1^2+2^2+3^2+...+n^2 = (n(2n + 1)(n + 1))/6 $`
+```#br
+= *3.` `#underline[Algebra]*#br
+== *3.0.` `Cуммы` `от` `1` `до` `n*#br
+$ 1^2+2^2+3^2+...+n^2 = (n(2n + 1)(n + 1))/6 $`
 `$ 1^3+2^3+3^3+...+n^3 = (n^2(n + 1)^2)/4 $`
-`$ 1^4+2^4+3^4+...+n^4 = (n(n + 1)(n + 2)(2n + 1)(3n^2 + 3n - 1))/30 $`
-`#text(size: sizes.at(1))[*3.1.` `Числа` `Фибоначчи` `и` `их` `свойства*]`
-`*Соотношение` `Кассини*`
+`$ 1^4+2^4+3^4+...+n^4 = (n(n + 1)(n + 2)(2n + 1)(3n^2 + 3n - 1))/30 $#br
+== *3.1.` `Числа` `Фибоначчи` `и` `их` `свойства*#br
+*Соотношение` `Кассини*`
 `$ F_(n + 1) F_(n - 1) - F_n^2 = (-1)^n $`
 `Правило` `"сложения"`
 `$ F_(n + k) = F_k F_(n + 1) + F_(k - 1)F_n  $`
@@ -877,13 +766,13 @@ long get(int l, int r) {
 `Формула` `для` `n-го` `числа` `Фибоначчи`
 `$ F_n = (Phi^n-Psi^n) / sqrt(5) $`
 `$ Phi = (1 + sqrt(5)) / 2, Psi = (1 - sqrt(5)) / 2 $`
-`$Psi$` `экспоненциально` `убывает,` `поэтому` `для` `больших` `чисел` `и` `примерного` `значения` `им` `можно` `принебречь`
-`#text(size: sizes.at(1))[*3.2.` `Матрицы*]`
-`$ c_(i,j) = sum_k a_(i,k) b_(k,j) $`
+`$Psi$` `экспоненциально` `убывает,` `поэтому` `для` `больших` `чисел` `и` `примерного` `значения` `им` `можно` `принебречь#br
+== *3.2.` `Матрицы*#br
+$ c_(i,j) = sum_k a_(i,k) b_(k,j) $`
 `$ mat(1, 1; 1, 0)^n = mat(F_(n + 1), F_n; F_n, F_(n - 1)) $`
-`Допустим` `нужно` `$q$` `раз` `возводить` `одну` `и` `ту` `же` `матрицу` `в` `степень` `и` `домножать` `на` `вектор.` `Наивное` `решение:` `$O(q n^3 log(n))$,` `однако` `если` `мы` `предпросчитаем` `двоичные` `степени` `матрицы,` `а` `затем` `$log(n)$` `раз` `домножим` `на` `них` `вектор,` `то` `получим` `асимптотику` `$O(n^3 log(n) + q n^2 log(n))$.`
-`#text(size: sizes.at(1))[*3.3.` `Расширенный` `алгоритм` `Евклида*]`
-`Решает` `задачу` `поиска` `$a x + b y = gcd(x, y)$` `с` `мин.` `$a >= 0$.`
+`Допустим` `нужно` `$q$` `раз` `возводить` `одну` `и` `ту` `же` `матрицу` `в` `степень` `и` `домножать` `на` `вектор.` `Наивное` `решение:` `$O(q n^3 log(n))$,` `однако` `если` `мы` `предпросчитаем` `двоичные` `степени` `матрицы,` `а` `затем` `$log(n)$` `раз` `домножим` `на` `них` `вектор,` `то` `получим` `асимптотику` `$O(n^3 log(n) + q n^2 log(n))$.#br
+== *3.3.` `Расширенный` `алгоритм` `Евклида*#br
+Решает` `задачу` `поиска` `$a x + b y = gcd(x, y)$` `с` `мин.` `$a >= 0$.`
 ````cpp
 long gcdex(long a, long &x, long b, long &y) {
     long x1, y1;
@@ -905,9 +794,9 @@ long gcdex(long a, long &x, long b, long &y) {
     }
     return a;
 }
-````
-`#text(size: sizes.at(1))[*3.4.` `КТО*]`
-`$ cases("ans" eq.triple a (mod n), "ans" eq.triple b (mod b)) $`
+```#br
+== *3.4.` `КТО*#br
+$ cases("ans" eq.triple a (mod n), "ans" eq.triple b (mod b)) $`
 `$x, y, g = "gcdex"(n, m)$`
 `$x n + y m = g$,` `$x n / g + y m / g = 1,$` `$x n / g = 1 (mod m / g)$`
 `$("ans" = n k + a) mod m = b$`
@@ -927,9 +816,9 @@ pair <long, long> crt(long a, long n, long b, long m) {
     x = (b - a) / g % m * x % m * n + a;
     return {x + (x < 0) * n * m, n * m};
 }
-````
-`#text(size: sizes.at(1))[*3.5.` `Ро-алгоритм` `Полларда*]`
-`Рандомизированный` `алгоритм` `факторизации` `целых` `чисел,` `работающий` `за` `время` `$O(n^(1/4))$.`
+```#br
+== *3.5.` `Ро-алгоритм` `Полларда*#br
+Рандомизированный` `алгоритм` `факторизации` `целых` `чисел,` `работающий` `за` `время` `$O(n^(1/4))$.`
 ````cpp
 inline long f(long x, long n) { 
 	return (__int128_t) (x + 1) * (x + 1) % n; 
@@ -964,11 +853,11 @@ long pollard(long n, int iter = 100000) {
     }
     return g;
 }
-````
-`#text(size: sizes.at(1))[*3.6.` `Код` `Грея*]`
-`$ G_i = i xor floor(i / 2) $`
-`#text(size: sizes.at(1))[*3.7.` `Модули,` `простые` `числа*]`
-`Первообразный` `корень` `($g$)` `модуля` `$m$` `(только` `для` `$m = 2, 4, p^a, 2p^a$)` `-` `число,` `степени` `которого` `оббегают` `все` `числа` `от` `$1$` `до` `$m - 1$.` `Пусть` `$m = c * 2^k + 1$,` `тогда` `в` `FFT` `максимальная` `длина` `полинома` `$n = 2^k$.`
+```#br
+== *3.6.` `Код` `Грея*#br
+$ G_i = i xor floor(i / 2) $#br
+== *3.7.` `Модули,` `простые` `числа*#br
+Первообразный` `корень` `($g$)` `модуля` `$m$` `(только` `для` `$m = 2, 4, p^a, 2p^a$)` `-` `число,` `степени` `которого` `оббегают` `все` `числа` `от` `$1$` `до` `$m - 1$.` `Пусть` `$m = c * 2^k + 1$,` `тогда` `в` `FFT` `максимальная` `длина` `полинома` `$n = 2^k$.`
 `#align(center)[#table(
   columns: 4,
   [*$m$*], [*$c$*], [*$k$*], [*$g$*],
@@ -977,9 +866,9 @@ long pollard(long n, int iter = 100000) {
   [$1004535809$], [$479$], [$21$], [$3$],
   [$469762049$], [$7$], [$26$], [$3$],
   [$167772161$], [$5$], [$25$], [$3$],
-)]`
-`#text(size: sizes.at(2))[*Простые` `и` `праймориалы*]`
-`#align(center)[#table(
+)]#br
+=== *Простые` `и` `праймориалы*#br
+#align(center)[#table(
   columns: 8,
   [$2$], [$3$], [$5$], [$7$], [$11$], [$13$], [$17$], [$19$],
   [$2$], [$6$], [$30$], [$210$], [$2310$], [$3.0*10^4$], [$5.1*10^5$], [$9.7*10^6$]
@@ -994,9 +883,9 @@ long pollard(long n, int iter = 100000) {
   [$43$], [$47$],
   [$1.3*10^16$], [$6.1*10^17$]
 )]
-`
-`#text(size: sizes.at(2))[*Кол-во` `простых` `чисел` `до` `$10^x$*]`
-`$ pi(n) approx n / ln(n) $`
+#br
+=== *Кол-во` `простых` `чисел` `до` `$10^x$*#br
+$ pi(n) approx n / ln(n) $`
 `#align(center)[#table(
   columns: 8,
   [$1$], [$2$], [$3$], [$4$], [$5$], [$6$], [$7$], [$8$],
@@ -1021,10 +910,10 @@ long pollard(long n, int iter = 100000) {
   columns: 1,
   [$18$],
   [$24'739'954'287'740'860$]
-)]`
-`#text(size: sizes.at(1))[*3.8.` `Ряды` `и` `полиномы*]`
-`#text(size: sizes.at(2))[*3.8.0.` `Ряды*]`
-`$ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
+)]#br
+== *3.8.` `Ряды` `и` `полиномы*#br
+=== *3.8.0.` `Ряды*#br
+$ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
 `$ 1 / (1 + x) = sum_(n = 0)^infinity (-1)^n x^n = 1 - x + x^2 - x^3 + x^4 - ... $`
 `$ 1 / (1 - x) = sum_(n = 0)^infinity x^n = 1 + x + x^2 + x^3 + ..., |x| < 1 $`
 `1` `/` `(k` `+` `x)`
@@ -1042,9 +931,9 @@ long pollard(long n, int iter = 100000) {
 `$ sin(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1)! = x - x^3 / 3! + x^5 / 5! - ... $`
 `$ cos(x) = sum_(n=0)^infinity (-1)^n x^(2n) / (2n)! = 1 - x^2 / 2! + x^4 / 4! - ... $`
 `$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = 1 - x^3 / 3 + x^5 / 5 - ... $`
-`$ arcsin(x) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $`
-`#text(size: sizes.at(2))[*3.8.1.` `Полиномы*]`
-`$ A'_i = A_(i + 1) * (i + 1) $`
+`$ arcsin(x) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $#br
+=== *3.8.1.` `Полиномы*#br
+$ A'_i = A_(i + 1) * (i + 1) $`
 `$ (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $`
 `$ ln(A) = integral (A') / A, A_0 = 1 $`
 `*Деление*`
@@ -1052,9 +941,9 @@ long pollard(long n, int iter = 100000) {
 `*Возведение` `в` `степень*`
 `Нельзя` `просто` `сделать` `преобразование` `Фурье,` `возвести` `$A_i$` `в` `степень` `$k$` `по` `модулю` `и` `применить` `обратное` `-` `результат` `будет` `неверным.` `Варианты:`
 `$0$.` `Поддерживаем` `тек.` `двоичную` `степень` `(обрезанную` `до` `n` `членов)` `и` `домножаем` `на` `неё` `ответ` `$O(n log(n) log(k))$`
-`$1$.` `$exp(k ln(A))$.` `Нужно,` `чтобы` `$A_0$` `было` `равно` `1,` `однако` `NTT::pow()` `решает` `и` `эту` `проблему`
-`#text(size: sizes.at(1))[*3.8.2.` `БПФ/FFT*]`
-````cpp
+`$1$.` `$exp(k ln(A))$.` `Нужно,` `чтобы` `$A_0$` `было` `равно` `1,` `однако` `NTT::pow()` `решает` `и` `эту` `проблему#br
+== *3.8.2.` `БПФ/FFT*#br
+```cpp
 const int N = 1 << 20;
 
 template <int MOD, int G> // G - первообразный корень (обычно 3)
@@ -1228,10 +1117,10 @@ Pole <1004535809, 3> P1004; // n <= 2^21 <=  2'097'152
 Pole <469762049, 3>  P469;  // n <= 2^26 <= 67'108'864
 // Main
 vec <int> c = P998.mult(a, b);
-````
-`#text(size: sizes.at(0))[*4.` `#underline[Geometry]*]`
-`#text(size: sizes.at(1))[*4.0.` `Сортировка` `векторов` `по` `углу*]`
-````cpp
+```#br
+= *4.` `#underline[Geometry]*#br
+== *4.0.` `Сортировка` `векторов` `по` `углу*#br
+```cpp
 bool comp(pair <int, int> a, pair <int, int> b) {
     if (a.f < 0 && b.f < 0)
         return comp({-a.f, -a.s},
@@ -1246,9 +1135,9 @@ bool comp(pair <int, int> a, pair <int, int> b) {
         return b.s < 0;
     return a.s * b.f > b.s * a.f;
 }
-````
-`#text(size: sizes.at(1))[*4.1.` `CHT*]`
-````cpp
+```#br
+== *4.1.` `CHT*#br
+```cpp
 struct line {
     ld k, b;
     bool operator< (line x) {
@@ -1306,9 +1195,9 @@ ld get(ld x) {
 // 1e-9l = long double 1e-9
 inline ld _floor(ld x) { return floor(x + 1e-9l); }
 inline ld _ceil (ld x) { return ceil (x - 1e-9l); }
-````
-`#text(size: sizes.at(1))[*4.2.` `Дерево` `Ли` `Чао*]`
-````cpp
+```#br
+== *4.2.` `Дерево` `Ли` `Чао*#br
+```cpp
 const ld oo = 1e18, eps = 1e-9;
 
 struct line {
@@ -1370,9 +1259,9 @@ struct LiChao { // For max
 LiChao tr(0, n);
 tr.add(l, r, {k, b});
 tr.get(x);
-````
-`#text(size: sizes.at(1))[*4.3.` `Сумма` `Минковского*]`
-`Находит` `расстояние` `между` `выпуклыми` `многоугольниками` `(с` `обходом` `по` `часовой` `стрелке,` `предварительно` `умножив` `один` `из` `их` `на` `-1` `и` `развернув)` `и` `проверяет` `на` `пересечение` `(точка` `$(0, 0)$` `лежит` `в` `сумме` `Минковского).`
+```#br
+== *4.3.` `Сумма` `Минковского*#br
+Находит` `расстояние` `между` `выпуклыми` `многоугольниками` `(с` `обходом` `по` `часовой` `стрелке,` `предварительно` `умножив` `один` `из` `их` `на` `-1` `и` `развернув)` `и` `проверяет` `на` `пересечение` `(точка` `$(0, 0)$` `лежит` `в` `сумме` `Минковского).`
 ````cpp
 struct point {
     long x, y;
