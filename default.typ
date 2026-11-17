@@ -1,10 +1,10 @@
 #let margin = 5mm
 // Top and bottom margins are bigger: page numbers are there
-#let margin-y = 8mm
+#let margin-y = 6mm
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels, main text, code
-#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 9pt, code: 7pt)
+#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 7pt, code: 7pt)
 // Background of the inline code and of every second line of the code block
 #let code-fill = rgb("#EEEEEE")
 
@@ -22,6 +22,20 @@
   fill: code-fill,
   text(font: "Courier New", size: font-sizes.code, str)
 )
+
+// Long table cut into `parts` tables standing in a row, each one repeats the header
+#let split-table(parts, header, ..cells) = {
+  let rows = cells.pos().chunks(header.len())
+  align(center, grid(
+    columns: parts,
+    column-gutter: 1.5pt,
+    ..rows.chunks(calc.ceil(rows.len() / parts)).map(part => table(
+      columns: header.len(),
+      ..header.map(strong),
+      ..part.flatten()
+    ))
+  ))
+}
 
 #let setup(body) = {
   set page(
@@ -54,15 +68,20 @@
     ),
 
   
-    // Page number in all 4 corners, so it is seen when most of the page is covered
+    // Page number in all 4 corners, so it is seen when most of the page is covered.
+    // It may overlap the text, so it has a white outline
     foreground: context {
-      set text(font: "Times New Roman", size: font-sizes.h3)
+      set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
+      let num = counter(page).display()
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(corner, block(
           width: 100%,
           height: margin-y,
           inset: (x: margin),
-          align(corner.x + horizon, counter(page).display())
+          align(corner.x + corner.y.inv(), {
+            place(text(stroke: 3pt + white, num))
+            num
+          })
         ))
       }
     }
@@ -79,6 +98,7 @@
     above: 8pt,
     below: -5pt
   )
+  set table(inset: 3pt, stroke: 0.5pt)
   show table: set block(
     above: 8pt,
     below: -5pt
@@ -93,7 +113,13 @@
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
     lang-outset: (x: 1pt, y: 0pt),
-    inset: 1.2pt
+    inset: 1.2pt,
+    // Line numbers have the fill of the neighbour line and a line on the right
+    number-format: n => grid.cell(
+      fill: if calc.odd(n) { rgb("#FFFFFF") } else { code-fill },
+      stroke: (right: 0.5pt + rgb("#888888")),
+      str(n)
+    )
   )
   set raw(theme: "BW.tmTheme", tab-size: 4)
   show raw: it => {
@@ -114,7 +140,7 @@
       return
     }
     show text: set text(size: font-sizes.code)
-    show text.where(fill: rgb("#333333")): set text(font: "Times New Roman") // Comments
+    show text.where(fill: rgb("#555555")): set text(font: "Times New Roman", size: 8pt) // Comments
     it
   }
 
