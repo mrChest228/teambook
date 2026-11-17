@@ -25,8 +25,6 @@ void signalHandler(int signum) {
 //}
 
 const fs::path src = "TeamBook.txt", dest = "TeamBook.typ";
-// Goes before the first line, so line numbers in TeamBook.typ match TeamBook.txt
-const string prefix = "#import \"default.typ\": *;#show: setup;";
 
 void normalize(string &str) {
     // Remove the UTF-8 BOM, if it exists (0xEF 0xBB 0xBF)
@@ -84,7 +82,7 @@ string solve(const string &text, int l, int r) {
     for (int i = l; i < r; ++i)
         for (int j = 0; j < tokens.size(); ++j)
             if (i + tokens[j][0].size() <= r && text.substr(i, tokens[j][0].size()) == tokens[j][0] &&
-                (j < firstHeading || (i > 0 && text[i - 1] == '\n'))) { // Headings start a line, but not the first one
+                (j < firstHeading || i == 0 || text[i - 1] == '\n')) { // Headings start a line
                 int k = i + tokens[j][0].size();
                 while (k + tokens[j][1].size() <= r && text.substr(k, tokens[j][1].size()) != tokens[j][1])
                     ++k;
@@ -121,7 +119,7 @@ void convert() {
     in.close();
     normalize(text);
 
-    string res = prefix;
+    string res;
 
     try {
         res += solve(text, 0, text.size());
