@@ -1,4 +1,6 @@
 #let margin = 5mm
+// Top and bottom margins hold the page numbers, which must stay printable: not closer than 4mm to the edge
+#let margin-y = 6mm
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels, main text, code
@@ -15,8 +17,8 @@
 // Inline code: does not change the line height
 #let code(str) = box(
   radius: 3pt,
-  inset: (x: 3pt),
-  outset: (y: 3pt),
+  inset: (x: 2pt),
+  outset: (y: 1.8pt),
   fill: code-fill,
   text(font: "Courier New", size: font-sizes.code, str)
 )
@@ -39,7 +41,7 @@
   set page(
     paper: "a4",
     flipped: true, // Альбомная ориентация
-    margin: margin, // Узкие поля для экономии места
+    margin: (x: margin, y: margin-y), // Узкие поля для экономии места
     columns: cols-cnt,
   
     background: align(top,
@@ -67,17 +69,17 @@
 
   
     // Page number in all 4 corners, so it is seen when most of the page is covered.
-    // It may overlap the text, so it has a white outline
+    // It stands in the top and bottom margins and has a white outline in case it touches the text
     foreground: context {
-      set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
+      set text(font: "Times New Roman", size: 8pt, top-edge: "cap-height", bottom-edge: "baseline")
       let num = counter(page).display()
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(
           corner,
-          dx: if corner.x == left { margin } else { -margin },
-          dy: if corner.y == top { 1.2mm } else { -1.2mm },
+          dx: if corner.x == left { 6.1mm } else { -6.1mm },
+          dy: if corner.y == top { 4.1mm } else { -4.1mm },
           {
-            place(text(stroke: 3pt + white, num))
+            place(text(stroke: 2pt + white, num))
             num
           }
         )
