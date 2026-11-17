@@ -1,6 +1,4 @@
 #let margin = 5mm
-// Top and bottom margins are bigger: page numbers are there
-#let margin-y = 6mm
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels, main text, code
@@ -41,7 +39,7 @@
   set page(
     paper: "a4",
     flipped: true, // Альбомная ориентация
-    margin: (x: margin, y: margin-y), // Узкие поля для экономии места
+    margin: margin, // Узкие поля для экономии места
     columns: cols-cnt,
   
     background: align(top,
@@ -74,15 +72,15 @@
       set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
       let num = counter(page).display()
       for corner in (top + left, top + right, bottom + left, bottom + right) {
-        place(corner, block(
-          width: 100%,
-          height: margin-y,
-          inset: (x: margin),
-          align(corner.x + corner.y.inv(), {
+        place(
+          corner,
+          dx: if corner.x == left { margin } else { -margin },
+          dy: if corner.y == top { 1.2mm } else { -1.2mm },
+          {
             place(text(stroke: 3pt + white, num))
             num
-          })
-        ))
+          }
+        )
       }
     }
   )
@@ -140,7 +138,7 @@
       return
     }
     show text: set text(size: font-sizes.code)
-    show text.where(fill: rgb("#555555")): set text(font: "Times New Roman", size: 8pt) // Comments
+    show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
     it
   }
 
