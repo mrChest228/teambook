@@ -24,7 +24,9 @@ void signalHandler(int signum) {
 //         << "Run with arguments \"watch <path>\" to convert file on every change.";
 //}
 
-const fs::path src = "TeamBook.txt", def = "default.typ", dest = "TeamBook.typ";
+const fs::path src = "TeamBook.txt", dest = "TeamBook.typ";
+// Goes before the first line, so line numbers in TeamBook.typ match TeamBook.txt
+const string prefix = "#import \"default.typ\": *;#show: setup;";
 
 void normalize(string &str) {
     // Remove the UTF-8 BOM, if it exists (0xEF 0xBB 0xBF)
@@ -97,14 +99,7 @@ void convert() {
     in.close();
     normalize(text);
 
-    in.open(def, ios::binary);
-    if (!in) {
-        cerr << "[convert] cannot open source for reading: " << src << "\n";
-        return;
-    }
-    string res((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
-    in.close();
-    normalize(res);
+    string res = prefix;
 
     try {
         res += solve(text, 0, text.size());
