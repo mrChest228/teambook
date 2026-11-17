@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>Printer Friendly Bold</string>
+    <key>settings</key>
+    <array>
+        <!-- Общие настройки: черный текст на белом фоне -->
+        <dict>
+            <key>settings</key>
+            <dict>
+                <key>background</key>
+                <string>#FFFFFF</string>
+                <key>caret</key>
+                <string>#000000</string>
+                <key>foreground</key>
+                <string>#000000</string>
+                <key>lineHighlight</key>
+                <string>#EEEEEE</string>
+                <key>selection</key>
+                <string>#C0C0C0</string>
+            </dict>
+        </dict>
+        
+        <!-- Ключевые слова (if, else, return, for) -> ЖИРНЫЕ -->
+        <dict>
+            <key>name</key>
+            <string>Keyword</string>
+            <key>scope</key>
+            <string>keyword</string>
+            <key>settings</key>
+            <dict>
+                <key>fontStyle</key>
+                <string>bold</string>
+                <key>foreground</key>
+                <string>#000000</string>
+            </dict>
+        </dict>
+        
+        <!-- Типы данных (int, void, class, const) -> ЖИРНЫЕ -->
+        <dict>
+            <key>name</key>
+            <string>Storage</string>
+            <key>scope</key>
+            <string>storage</string>
+            <key>settings</key>
+            <dict>
+                <key>fontStyle</key>
+                <string>bold</string>
+                <key>foreground</key>
+                <string>#000000</string>
+            </dict>
+        </dict>
+
+        <!-- Имена функций (main, myFunc) -> ЖИРНЫЕ (опционально, можно убрать) -->
+        <dict>
+            <key>name</key>
+            <string>Function name</string>
+            <key>scope</key>
+            <string>entity.name.function</string>
+            <key>settings</key>
+            <dict>
+                <key>fontStyle</key>
+                <string>bold</string>
+                <key>foreground</key>
+                <string>#000000</string>
+            </dict>
+        </dict>
+
+        <!-- Комментарии -> КУРСИВ и темно-серый -->
+        <dict>
+            <key>name</key>
+            <string>Comment</string>
+            <key>scope</key>
+            <string>comment</string>
+            <key>settings</key>
+            <dict>
+                <key>fontStyle</key>
+                <string>italic bold</string>
+                <key>foreground</key>
+                <string>#666666</string>
+            </dict>
+        </dict>
+        
+        <!-- Строки -> Обычный черный (сбрасываем цвет, если вдруг он есть) -->
+        <dict>
+            <key>name</key>
+            <string>String</string>
+            <key>scope</key>
+            <string>string</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#000000</string>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>

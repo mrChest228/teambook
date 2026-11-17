@@ -1,0 +1,1322 @@
+= *1. _Code_*
+```cpp
+// Pragmas (before libraries includes to get the highest speed up)
+#ifndef DEBUG
+    #pragma GCC optimize("O3,unroll-loops")
+    #pragma GCC target("avx2,avx512f,avx512bw,avx512dbgi,sse4.2,bmi,bmi2,fma,popcnt,lzcnt,prefer-vector-width=512")
+#endif
+
+#include <bits/stdc++.h>
+
+// Defines & typedefes
+#define f first
+#define s second
+#define pb push_back
+#define pf push_front
+#define in insert
+#define elif else if
+#define gcd __gcd
+#define nl '\n'
+
+typedef long double ld;
+typedef __int128 int128; // Или __int128_t
+#define  long  int64_t
+#define ulong uint64_t
+
+using namespace std;
+mt19937_64 rnd(chrono::steady_clock::now(). time_since_epoch().count());
+
+// DEBUG or RELEASE input
+#ifdef DEBUG
+    cin.exceptions(cin.failbit); //Выкидывает исключение (RE) при ошибке ввода (например, если читаешь число 10^18 в int, получишь RE вместо WA), влияние на время неизвестно
+#else
+    cin.tie(0); ios::sync_with_stdio(0);
+#endif
+```
+== *1.1. Data structures*
+```cpp
+// GNU_pbds
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+
+// oset
+template <class T> using oset = tree <T, null_type, less <T>, rb_tree_tag, tree_order_statistics_node_update>; // less_equal <T> for omultiset
+
+//st.key_by_order(i);
+//st.order_of_key(x);
+
+template <class T>
+omultiset <T>::iterator find(const omultiset <T> &st, int x) {
+    int num = st.order_of_key(x);
+    if (num == st.size())
+        return st.end();
+    auto it = st.find_by_order(num);
+    return (*it == x ? it : st.end());
+}
+
+// Hash Maps
+unordered_map <int, string> mp;
+gp_hash_table <int, string> mp; //Примерно 3x быстрее unordered_map, использует 1.5x памяти, нет mp.count(), но есть mp.find() != mp.end()
+
+template <class T> using priQue = priority_queue <T, vector <T>, greater <T>>;
+```
+== *1.2. Потоки*
+```cpp
+#include <thread>
+#include <atomic>
+
+const int threadsCnt = 15, N = 1e8;
+
+int x;
+atomic <int> ans(1e18);
+thread *th[threadsCnt];
+
+void fnd(int l) {
+    int r = l + N;
+    for (int i = l; i < r; ++i)
+        if (check(i) && i < ans)
+            ans = i;
+}
+
+main() {
+    for (int i = 0, l = 0; ans == 1e18; i = (i + 1) % threadsCnt, l += N) {
+        if (th[i]) {
+            th[i] -> join(); // Ожидание завершения потока
+            delete th[i];
+            cout << "Checked up to " << l - N * threadsCnt << '\n';
+            th[i] = NULL;
+        }
+        th[i] = new thread(fnd, l);
+    }
+    // Ждём пока не завершатся остальные потоки, вдруг они улучшат ответ
+    for (int i = 0; i < threadsCnt; ++i)
+        if (th[i]) {
+            th[i] -> join();
+            delete th[i];
+            th[i] = NULL;
+        }
+    cout << "Ans: " << ans;
+}
+```
+== *1.3. Вывод в файл*
+```cpp
+fout.open("answers.txt", ios::app); // ios::app - дописывание в конец файла
+fout << "Ans: " << ans; // Строку может разорвать, если другой поток запустится во время копирования
+
+// Атомарная запись в файл (строку не разорвет)
+
+#include <cstdio>
+
+FILE* f = fopen("output.txt", "a"); // 'a' - дописывание в конец файла
+if (f != NULL) {
+    fprintf(f, "Ans: %d", ans);
+    fclose(f); // 3. Закрываем
+}
+
+// С С++20
+
+#include <syncstream>
+
+osyncstream(std::cout) << "ans: " << ans;
+```
+== *1.4. Builtins*
+``cpp __builtin_clz(x)`` / ``cpp __builtin_clzll(x)`` - кол-во $0$ после старшей $1$ в битовом представлении. При $x = 0$ - UB.
+$floor(log_2(x))$: ``cpp 31 - __builtin_clz(x)`` / ``cpp 63 - __builtin_clzll(x)``
+``cpp __builtin_ctz(x)`` / ``cpp __builtin_ctzll(x)`` - кол-во $0$ перед младшей $1$ в битовом представлении. При $x = 0$ - UB. Поиск делимости на $2^k$.
+``cpp __builtin_parity(x)`` / ``cpp __builtin_parityll(x)`` - чётность кол-ва $1$ в битовом представлении. Аналогично ~~#box(```cpp __builtin_popcount(x) & 1```, baseline: 2.5pt)~~. При $x = 0$ - UB.
+``cpp __builtin_mul_overflow(a, b, &res)`` - умножает a на b, сохраняет результат в res. Возвращает true, если произошло переполнение, и false, если всё ок.
+=== `C++20`
+``cpp popcount(x)`` — аналог ``cpp __builtin_popcount(x)`` (работает только с unsigned)
+``cpp countl_zero(x)`` — аналог ``cpp __builtin_clz(x)`` без UB (работает только с unsigned)
+``cpp countr_zero(x)`` — аналог ``cpp __builtin_ctz(x)`` без UB (работает только с unsigned)
+``cpp bit_width(x)`` — аналог ``cpp  32 - __builtin_clz(x)`` без UB (работает только с unsigned)
+== *1.5. Runtime Errors*
+*0xC0000005* - Access Violation. Причины: выход за границы массива, слишком большой массив в стеке, обращение к NULL-указателю.
+*0xC00000FD* - Stack Overflow. Причины: бесконечная/очень глубокая рекурсия, слишком большой массив в стеке.
+*0xC0000374* - Heap Corruption. Повреждение кучи (динамической памяти), программа часто падает не в момент ошибки, а позже (когда пытается удалить или выделить память). Причины: запись за границы массива, вызвал ~~#box(```cpp delete```, baseline: 2.5pt)~~ второй раз (или просто к мусору).
+*0xC0000094* - Integer Divide by Zero.
+*0xC000001D* - Illegal Instruction. Причины: выход из не-void функции без return. (`-Werror=return-type` в Other compiler options)
+*0xC0000417* - Invalid C Runtime Parameter. Причины: assert failed или непойманное исключение.
+= *2. _Algorithms_* 
+== *2.0. Курево по неявному ключу*
+```cpp
+struct Node {
+    int sz, y, val;
+    Node *L = 0,
+         *R = 0;
+    Node (int val): sz(1), y(rnd()), val(val) {}
+};
+
+Node *root;
+
+int size(Node *node) { return node ? node -> sz : 0; }
+int calc(Node *node) {
+    node -> sz = 1 + size(node -> L) + size(node -> R);
+    //...
+}
+Node* merge(Node *l, Node *r) {
+    if (!l) return r;
+    if (!r) return l;
+    if (l -> y > r -> y) {
+        l -> R = merge(l -> R, r);
+        calc(l);
+        return l;
+    }
+    else {
+        r -> L = merge(l, r -> L);
+        calc(r);
+        return r;
+    }
+}
+pair <Node*, Node*> split(Node *p, int k) { //Вырезать первые 0 <= k <= n элементов
+    if (!p) return {0, 0};
+    if (size(p -> L) + 1 <= k) {
+        auto q = split(p -> R, k - size(p -> L) - 1);
+        p -> R = q.f;
+        calc(p);
+        return {p, q.s};
+    }
+    else {
+        auto q = split(p -> L, k);
+        p -> L = q.s;
+        calc(p);
+        return {q.f, p};
+    }
+}
+Node* cut(int l, int r) { // 0 <= l <= r < n
+    auto q1 = split(root, r + 1);
+    auto q2 = split(q1.f, l);
+    root = merge(q2.f, q1.s);
+    return q2.s;
+}
+void insert(Node *v, int k) { // 0 <= k <= n
+    auto q = split(root, k);
+    root = merge(q.f, merge(v, q.s));
+}
+```
+== *2.1. $2$-SAT*
+```cpp
+bool b[N + N];
+int comp[N + N];
+vector <int> v[N + N], w[N + N], order;
+
+void add(int x, int y) { //Первый бит обозначает отрицание (0 - x, 1 - !x)
+    v[x ^ 1].pb(y); //!x >= y
+    v[y ^ 1].pb(x); //!y >= x
+    w[y].pb(x ^ 1);
+    w[x].pb(y ^ 1);
+}
+void topSort(int x) {
+    if (b[x])
+        return;
+    b[x] = 1;
+    for (int u : v[x])
+        topSort(u);
+    order.pb(x);
+}
+void dfs(int x, int c) {
+    if (comp[x] > -1)
+        return;
+    comp[x] = c;
+    for (int u : w[x])
+        dfs(u, c);
+}
+
+//... Добавление ребер ...
+for (int i = 0; i < n + n; ++i)
+    topSort(i);
+reverse(order);
+int cnt = 0;
+fill(comp, comp + n + n, -1);
+for (int u : order)
+    dfs(u, cnt++);
+for (int i = 0; i < n + n; ++i)
+    if (comp[i] == comp[i + 1])
+        //No solution
+for (int i = 0; i < n; ++i)
+    cout << (comp[i + i] < comp[i + i + 1] ? "!" : "") << i << nl;
+```
+== *2.2. Z-функция*
+```cpp
+vector <int> zFun(string s) {
+    int n = s.size(), l = 0;
+    vector <int> z(n);
+    for (int i = 1; i < n; ++i) {
+        if (i < l + z[l])
+            z[i] = min(l + z[l] - i, z[i - l]);
+        while (i + z[i] < n && s[z[i]] == s[i + z[i]])
+            ++z[i];
+        if (i + z[i] > l + z[l])
+            l = i;
+    }
+    return z;
+}
+```
+== *2.3. Префикс-функция*
+```cpp
+vector <int> prefFun(string s) {
+    int n = s.size();
+    vector <int> p(n);
+    for (int i = 1; i < n; i++) {
+        int cur = p[i - 1];
+        while (s[i] != s[cur] && cur > 0) // уменьшаем cur значение, пока новый символ не сматчится
+            cur = p[cur - 1];
+        if (s[i] == s[cur])
+            p[i] = cur + 1;
+    }
+    return p;
+}
+```
+== *2.4. Дерево-Фенвика*
+```cpp
+int f[N];
+
+int sum(int r) {
+    int res = 0;
+    for (; r > 0; r -= r & -r)
+        res += t[r];
+    return res;
+}
+int sum(int l, int r) {
+    return sum(r) - sum(l - 1);
+}
+void add(int k, int x) {
+    for (; k <= n; k += k & -k)
+        t[k] += x;
+}
+int lowerBound(int s) {
+    int k = 0;
+    for (int l = logn; l >= 0; --l) {
+        if (k + (1 << l) <= n && t[k + (1<<l)] < s) {
+            k += (1 << l);
+            s -= t[k];
+        }
+    }
+    return k;
+}
+```
+== *2.5. Хеширование дерева*
+Корневой дерево можно захешировать такой функцией:
+$ h_v = 42+sum_(u) log(h_u) $
+Перед взятием суммированием следует отсортировать детей по $log(h_u)$, чтобы не было коллизий.
+Либо можно после сортировки использовать обычный полиномиальный хеш.
+Для хеширования за линию можно:
+$ h_v = 42+sum_(u) h_u^2 (mod m) $
+Но это не проверено на практике, также стоит поиграться с начальным значением и возведением в квадрат всей суммы.
+
+Для не корневого дерева стоит сначала однозначно найти его корень, одинаковый при запуске из любой вершины дерева. Это центроид. Если размер дерева нечётный, он единственный. Если чётный, их максимум 2. Ищем хеши из обоих и либо берём минимум, либо из сумма, либо что-то ещё.
+== *2.6.0. Макс. поток (Диница)*
+С 2-ичными подъёмами потока: $O(n m log("maxCap"))$
+Без 2-ичных подъёмов: $O(n m^2)$
+```cpp
+struct edge {
+    int to, rev, cap, flow;
+};
+
+int n, ptr[N], lvl[N];
+vector <edge> v[N];
+
+void add(int x, int y, int cap, int flow) {
+    v[x].pb({y, v[y].size(), cap, flow});
+    v[y].pb({x, v[x].size() - 1, cap, cap - flow});
+}
+
+bool bfs(int s, int t, int delta) {
+    fill(lvl, lvl + n, oo);
+    list <int> q;
+    lvl[0] = 0;
+    q.pb(0);
+    while (q.size()) {
+        int p = q.front();
+        q.pop_front();
+        for (auto &u : v[p])
+            if (lvl[u.to] == oo && u.cap - u.flow >= delta) {
+                lvl[u.to] = lvl[p] + 1;
+                q.pb(u.to);
+            }
+    }
+    return lvl[t] < oo;
+}
+int dfs(int x, int flow, int t, int delta) {
+    if (x == t)
+        return flow;
+    int pushed = 0;
+    for (; ptr[x] < v[x].size() && pushed < flow; ++ptr[x]) {
+        auto &u = v[x][ptr[x]];
+        if (lvl[u.to] != lvl[x] + 1 || u.cap - u.flow < delta)
+            continue;
+        int push = dfs(u.to, min(flow - pushed, u.cap - u.flow), t, delta);
+        u.flow += push;
+        v[u.to][u.rev].flow -= push;
+        pushed += push;
+    }
+    return pushed;
+}
+int maxFlow(int s, int t) {
+    int maxCap = 0;
+    for (int i = 0; i < n; ++i)
+        for (auto &u : v[i])
+            maxCap = max(maxCap, u.cap);
+    int delta = maxCap;
+    while ((delta & (delta - 1)) > 0)
+        delta &= delta - 1;
+    int maxFlow = 0;
+    while (delta) {
+        while (bfs(s, t, delta)) { //We go on min-dist paths only (n * m times)
+            fill(ptr, ptr + n, 0);
+            while (int flow = dfs(s, oo, t, delta))
+                maxFlow += flow;
+        }
+        delta >>= 1;
+    }
+    return maxFlow;
+}
+// Main
+add(x, y, cap, flow);
+cout << maxFlow(s, t);
+```
+== *2.6.1. Макс. поток Мин. Стоимости*
+С 2-ичными подъёмами потока: $O(m^2 log(n) log("maxCap"))$
+Без 2-ичных подъёмов: $O(m "maxFlow" log(n))$
+```cpp
+struct edge {
+    int to, revNum, cap, cost, flow;
+};
+
+vector <edge> v[N];
+pair <int, int> par[N];
+int n, delta, potentials[N], dists[N];
+
+void addEdge(int x, int y, int cap, int flow, int cost) {
+    v[x].pb({y, v[y].size(), cap, cost, flow});
+    v[y].pb({x, v[x].size() - 1, cap, -cost, cap - flow});
+}
+
+void bellmanFord(int s) {
+    fill(potentials, potentials + n, oo);
+    potentials[s] = 0;
+    for (int step = 0; step < n - 1; ++step)
+        for (int i = 0; i < n; ++i)
+            if (potentials[i] < oo)
+                for (auto &u : v[i])
+                    potentials[u.to] = min(potentials[u.to], potentials[i] + u.cost);
+}
+bool dijkstraWithPotentials(int s, int t) {
+    fill(dists, dists + n, oo);
+    priQue <pair <int, int>> q;
+    dists[s] = 0;
+    q.push({s, 0});
+    while (q.size()) {
+        auto [d, u] = q.top();
+        q.pop();
+        if (dists[u] < d)
+            continue;
+        for (int i = 0; i < v[u].size(); ++i) {
+            auto &e = v[u][i];
+            if (e.cap - e.flow >= delta && dists[e.to] > d + e.cost + potentials[u] - potentials[e.to]) {
+                dists[e.to] = d + e.cost + potentials[u] - potentials[e.to];
+                par[e.to] = {u, i};
+                q.push({dists[e.to], e.to});
+            }
+        }
+    }
+    for (int i = 0; i < n; ++i) //Update potentials
+        if (dists[i] < oo)
+            potentials[i] += dists[i];
+    return dists[t] < oo;
+}
+pair <int, int> maxFlowMinCost(int s, int t) {
+    bellmanFord(s); //Make potentials for negative costs (reversed edges, for example)
+
+    int maxCap = 0;
+    for (int i = 0; i < n; ++i)
+        for (auto &u : v[i])
+            maxCap = max(maxCap, u.flow);
+    delta = maxCap;
+    while ((delta & (delta - 1)) > 0) //Make delta the power of 2
+        delta &= delta - 1;
+
+    int maxFlow = 0, minCost = 0;
+    while (delta) {
+        while (dijkstraWithPotentials(s, t)) {
+            int flow = maxCap;
+            for (int i = t; i != s; i = par[i].f) {
+                auto &e = v[par[i].f][par[i].s];
+                flow = min(flow, e.cap - e.flow);
+            }
+            maxFlow += flow;
+            for (int i = t; i != s; i = par[i].f) {
+                auto &e = v[par[i].f][par[i].s];
+                e.flow += flow;
+                v[e.to][e.revNum].flow -= flow;
+                minCost += flow * e.cost;
+            }
+        }
+        delta >>= 1;
+    }
+    return {maxFlow, minCost};
+}
+
+addEdge(x, y, cap, flow, cost);
+auto [flow, cost] = maxFlowMinCost(s, f);
+```
+== *2.7. Макс. клика*
+Асимптотика: $O(3^(n div 3))$
+```cpp
+const int N = 50;
+
+long a[N]; // Edges bitmask
+int n, m, k, mx;
+
+void dfs(long clck, long cndt, long bad) {
+    if (cndt == 0 && bad == 0) {
+        int cnt = __builtin_popcount(clck);
+        if (cnt > mx)
+            mx = cnt;
+        return;
+    }
+
+    for (int i = 0; i < n; ++i)
+        if (((1ll << i) & bad) && (a[i] & cndt) == cndt)
+            return;
+
+    for (int i = 0; i < n; ++i) {
+        long u = (1ll << i);
+        if ((u & cndt) == 0)
+            continue;
+        cndt -= u;
+        dfs(clck | u, cndt & a[i], bad & a[i]);
+        bad |= u;
+    }
+}
+// Main
+dfs(0, (1ll << n) - 1, 0);
+```
+== *2.8. Макс. парсоч. (Кун)*
+Асимптотика: $O(n m)$
+```cpp
+int mt[N];
+bool b[N];
+vector <int> g[N];
+
+bool dfs(int v) {
+    if (b[v])
+        return 0;
+    b[v] = true;
+    for (int u : g[v])
+        if (mt[u] == -1 || dfs(mt[u])) {
+            mt[u] = v;
+            return 1;
+        }
+    return 0;
+}
+// Main
+int cnt = 0;
+fill(mt, mt + n, -1);
+for (int i = 0; i < n; ++i) {
+    fill(b, b + n, 0);
+    cnt += dfs(i);
+}
+```
+== *2.9. Segment Tree Beats*
+```cpp
+struct STB {
+    long sum,
+         mx, sx, mn, sn, lz;
+    int cx, cn; // Количество максимумов и минимумов
+} t[4 * N];
+
+void merge(int v) {
+    int L = v << 1, R = L + 1;
+    t[v].sum = t[L].sum + t[R].sum;
+    if (t[L].mx == t[R].mx) {
+        t[v].mx = t[L].mx;
+        t[v].cx = t[L].cx + t[R].cx;
+        t[v].sx = max(t[L].sx, t[R].sx);
+    }
+    elif (t[L].mx > t[R].mx) {
+        t[v].mx = t[L].mx;
+        t[v].cx = t[L].cx;
+        t[v].sx = max(t[L].sx, t[R].mx);
+    }
+    else {
+        t[v].mx = t[R].mx;
+        t[v].cx = t[R].cx;
+        t[v].sx = max(t[L].mx, t[R].sx);
+    }
+    if (t[L].mn == t[R].mn) {
+        t[v].mn = t[L].mn;
+        t[v].cn = t[L].cn + t[R].cn;
+        t[v].sn = min(t[L].sn, t[R].sn);
+    }
+    elif (t[L].mn < t[R].mn) {
+        t[v].mn = t[L].mn;
+        t[v].cn = t[L].cn;
+        t[v].sn = min(t[L].sn, t[R].mn);
+    }
+    else {
+        t[v].mn = t[R].mn;
+        t[v].cn = t[R].cn;
+        t[v].sn = min(t[L].mn, t[R].sn);
+    }
+}
+void chAdd(int v, long x, int len) {
+    if (x == 0)
+        return;
+    t[v].sum += x * len;
+    t[v].mx += x;
+    t[v].mn += x;
+    t[v].lz += x;
+    if (t[v].sx != -oo)
+        t[v].sx += x;
+    if (t[v].sn != oo)
+        t[v].sn += x;
+}
+void chMin(int v, long x, int len) { // Min=
+    if (t[v].mx <= x)
+        return;
+    t[v].sum -= (t[v].mx - x) * t[v].cx;
+    t[v].mx = x;
+    if (t[v].mn > x)
+        t[v].mn = x;
+    if (t[v].sn > x)
+        t[v].sn = x;
+    if (t[v].mn == t[v].mx) {
+        t[v].sx = -oo;
+        t[v].sn = oo;
+        t[v].cx = t[v].cn = len;
+    }
+}
+void chMax(int v, long x, int len) { // Max=
+    if (t[v].mn >= x)
+        return;
+    t[v].sum += (x - t[v].mn) * t[v].cn;
+    t[v].mn = x;
+    if (t[v].mx < x)
+        t[v].mx = x;
+    if (t[v].sx < x)
+        t[v].sx = x;
+    if (t[v].mn == t[v].mx) {
+        t[v].sx = -oo;
+        t[v].sn = oo;
+        t[v].cx = t[v].cn = len;
+    }
+}
+void push(int v, int l, int r) {
+    int L = v << 1, R = L + 1, m = (l + r) >> 1;
+    chAdd(L, t[v].lz, m - l + 1);
+    chAdd(R, t[v].lz, r - m);
+    t[v].lz = 0;
+    chMin(L, t[v].mx, m - l + 1); chMax(L, t[v].mn, m - l + 1);
+    chMin(R, t[v].mx, r - m); chMax(R, t[v].mn, r - m);
+}
+void build(int v, int l, int r) {
+    t[v].lz = 0;
+    if (l == r) {
+        t[v].sum = t[v].mx = t[v].mn = a[l];
+        t[v].sx = -oo;
+        t[v].sn = oo;
+        t[v].cx = t[v].cn = 1;
+        return;
+    }
+    int m = (l + r) >> 1;
+    build(v * 2, l, m);
+    build(v * 2 + 1, m + 1, r);
+    merge(v);
+}
+void updMin(int v, int l, int r, int ql, int qr, long x) { // Min=
+    if (l > qr || r < ql || t[v].mx <= x)
+        return;
+    if (l >= ql && r <= qr && t[v].sx < x) {
+        chMin(v, x, r - l + 1);
+        return;
+    }
+    push(v, l, r);
+    int m = (l + r) >> 1;
+    updMin(2 * v, l, m, ql, qr, x);
+    updMin(2 * v + 1, m + 1, r, ql, qr, x);
+    merge(v);
+}
+void updMax(int v, int l, int r, int ql, int qr, long x) { // Max=
+    if (l > qr || r < ql || t[v].mn >= x)
+        return;
+    if (l >= ql && r <= qr && t[v].sn > x) {
+        chMax(v, x, r - l + 1);
+        return;
+    }
+    push(v, l, r);
+    int m = (l + r) >> 1;
+    updMax(2 * v, l, m, ql, qr, x);
+    updMax(2 * v + 1, m + 1, r, ql, qr, x);
+    merge(v);
+}
+void updAdd(int v, int l, int r, int ql, int qr, long x) {
+    if (l > qr || r < ql)
+        return;
+    if (l >= ql && r <= qr) {
+        chAdd(v, x, r - l + 1);
+        return;
+    }
+    push(v, l, r);
+    int m = (l + r) >> 1;
+    updAdd(2 * v, l, m, ql, qr, x);
+    updAdd(2 * v + 1, m + 1, r, ql, qr, x);
+    merge(v);
+}
+long get(int v, int l, int r, int ql, int qr) {
+    if (l > qr || r < ql)
+        return 0;
+    if (l >= ql && r <= qr)
+        return t[v].sum;
+    push(v, l, r);
+    int m = (l + r) >> 1;
+    return get(2 * v, l, m, ql, qr) + get(2 * v + 1, m + 1, r, ql, qr);
+}
+// Main
+build(1, 0, n - 1);
+updAdd/updMax/updMin (1, 0, n - 1, l, r, x);
+get(1, 0, n - 1, l, r);
+```
+== *2.10. ДО Снизу*
+```cpp
+int n, h, sz[N + N];
+long sum[N + N], mn[N + N], mx[N + N], lzMul[N + N], lzAdd[N + N];
+void apply(int v, long mul, long add) {
+    sum[v] = (sum[v] * mul + sz[v] * add) % MOD;
+    mn[v] = (mn[v] * mul + add) % MOD;
+    mx[v] = (mx[v] * mul + add) % MOD;
+    if (v < n) {
+        lzMul[v] = (lzMul[v] * mul) % MOD;
+        lzAdd[v] = (lzAdd[v] * mul + add) % MOD;
+    }
+}
+void calc(int v) {
+    sum[v] = (sum[v << 1] + sum[v << 1 | 1]) % MOD;
+    mn[v] = min(mn[v << 1], mn[v << 1 | 1]);
+    mx[v] = max(mx[v << 1], mx[v << 1 | 1]);
+}
+void push(int v) {
+    for (int s = h; s > 0; --s) {
+        int w = v >> s;
+        if (lzMul[w] != 1 || lzAdd[w] != 0) {
+            apply(w << 1, lzMul[w], lzAdd[w]);
+            apply(w << 1 | 1, lzMul[w], lzAdd[w]);
+            lzMul[w] = 1;
+            lzAdd[w] = 0;
+        }
+    }
+}
+void build(int v) {
+    while (v > 1) {
+        v >>= 1;
+        calc(p);
+    }
+}
+void init() {
+    h = 32 - __builtin_clz(n);
+    for (int i = n; i < n + n; ++i) {
+        sum[i] = mn[i] = mx[i] = a[i - n];
+        lzMul[i] = sz[i] = 1;
+        lzAdd[i] = 0;
+    }
+    for (int i = n - 1; i > 0; --i) {
+        calc(i);
+        sz[i] = sz[i << 1] + sz[i << 1 | 1];
+        lzMul[i] = 1; lzAdd[i] = 0;
+    }
+}
+void upd(int l, int r, long mul, long add) {
+    l += n; r += n;
+    int l0 = l, r0 = r;
+    push(l); push(r - 1);
+    for (; l < r; l >>= 1, r >>= 1) {
+        if (l & 1) apply(l++, mul, add);
+        if (r & 1) apply(--r, mul, add);
+    }
+    build(l0); build(r0 - 1);
+}
+long get(int l, int r) {
+    l += n; r += n;
+    push(l); push(r - 1);
+    long res = 0;
+    for (; l < r; l >>= 1, r >>= 1) {
+        if (l & 1) res = (res + sum[l++]) % MOD;
+        if (r & 1) res = (res + sum[--r]) % MOD;
+    }
+    return res;
+}
+```
+= *3. _Algebra_*
+== *3.0. Cуммы от 1 до n*
+$ 1^2+2^2+3^2+...+n^2 = (n(2n + 1)(n + 1))/6 $
+$ 1^3+2^3+3^3+...+n^3 = (n^2(n + 1)^2)/4 $
+$ 1^4+2^4+3^4+...+n^4 = (n(n + 1)(n + 2)(2n + 1)(3n^2 + 3n - 1))/30 $
+== *3.1. Числа Фибоначчи и их свойства*
+*Соотношение Кассини*
+$ F_(n + 1) F_(n - 1) - F_n^2 = (-1)^n $
+Правило "сложения"
+$ F_(n + k) = F_k F_(n + 1) + F_(k - 1)F_n  $
+НОД-равенство
+$ gcd(F_m,F_n) = F_(gcd(m, n)) $
+*Теорема Цекендорфа* утверждает, что любое натуральное число n можно представить единственным образом в виде суммы чисел Фибоначчи 
+$ N = F_k_1 + F_k_2 + F_k_3 + ... + F_k_r $
+где $2 <= k_i$ и $k_i + 2 <= k_(i + 1)$ (т.е. в записи нельзя использовать два соседних числа Фибоначчи. $F_0 = 0, F_1 = 1, F_2 = 1, ...$)
+$ sum_(i = 1)^(n) F_i^2 = F_n F_(n + 1) $
+Формула для n-го числа Фибоначчи
+$ F_n = (Phi^n-Psi^n) / sqrt(5) $
+$ Phi = (1 + sqrt(5)) / 2, Psi = (1 - sqrt(5)) / 2 $
+$Psi$ экспоненциально убывает, поэтому для больших чисел и примерного значения им можно принебречь
+== *3.2. Матрицы*
+$ c_(i,j) = sum_k a_(i,k) b_(k,j) $
+$ mat(1, 1; 1, 0)^n = mat(F_(n + 1), F_n; F_n, F_(n - 1)) $
+Допустим нужно $q$ раз возводить одну и ту же матрицу в степень и домножать на вектор. Наивное решение: $O(q n^3 log(n))$, однако если мы предпросчитаем двоичные степени матрицы, а затем $log(n)$ раз домножим на них вектор, то получим асимптотику $O(n^3 log(n) + q n^2 log(n))$.
+== *3.3. Расширенный алгоритм Евклида*
+Решает задачу поиска $a x + b y = gcd(x, y)$ с мин. $a >= 0$.
+```cpp
+long gcdex(long a, long &x, long b, long &y) {
+    long x1, y1;
+    x = y1 = 1;
+    y = x1 = 0;
+    while (b > 0) {
+        long k = a / b;
+        swap(x -= k * x1, x1);
+        swap(y -= k * y1, y1);
+        swap(a -= k * b, b);
+    }
+    if (x < 0) {
+        if (x1 < 0) {
+            x1 *= -1;
+            y1 *= -1;
+        }
+        x += x1;
+        y += y1;
+    }
+    return a;
+}
+```
+== *3.4. КТО*
+$ cases("ans" eq.triple a (mod n), "ans" eq.triple b (mod b)) $
+$x, y, g = "gcdex"(n, m)$
+$x n + y m = g$, $x n / g + y m / g = 1,$ $x n / g = 1 (mod m / g)$
+$("ans" = n k + a) mod m = b$
+$n k mod m = b - a$
+$n / g k mod (m / g) = (b - a) / g$
+$k = (b - a) / g x$
+$"ans" = (b - a) / g x n + a$
+```cpp
+pair <long, long> crt(long a, long n, long b, long m) {
+    if (n < m) {
+        swap(n, m);
+        swap(a, b);
+    }
+    long x, y, g = gcdex(n, x, m, y);
+    assert((a - b) % g == 0); // else no solution
+    m /= g;
+    x = (b - a) / g % m * x % m * n + a;
+    return {x + (x < 0) * n * m, n * m};
+}
+```
+== *3.5. Ро-алгоритм Полларда*
+Рандомизированный алгоритм факторизации целых чисел, работающий за время $O(n^(1/4))$.
+```cpp
+inline long f(long x, long n) { 
+	return (__int128_t) (x + 1) * (x + 1) % n; 
+}
+
+long find_divisor(long n, long seed = 1) {
+    long x = seed, y = seed, d = 1;
+    while (d == 1 || d == n) {
+        y = f(y);
+        x = f(f(x));
+        d = gcd(abs(x - y), n);
+    }
+    return d;
+}
+
+long pollard(long n, int iter = 100000) {
+    long b0 = rnd() % n, b1 = b0, g;
+    mulmod(b1, b1, n);
+    if (++b1 == n)
+        b1 = 0;
+    g = gcd(abs(b1 - b0), n);
+    for (int i = 0; i < iter && (g == 1 || g == n); ++i) {
+        mulmod (b0, b0, n);
+        if (++b0 == n)
+            b0 = 0;
+        mulmod (b1, b1, n);
+        ++b1;
+        mulmod (b1, b1, n);
+        if (++b1 == n)
+            b1 = 0;
+        g = gcd(abs (b1 - b0), n);
+    }
+    return g;
+}
+```
+== *3.6. Код Грея*
+$ G_i = i xor floor(i / 2) $
+== *3.7. Модули, простые числа*
+Первообразный корень ($g$) модуля $m$ (только для $m = 2, 4, p^a, 2p^a$) - число, степени которого оббегают все числа от $1$ до $m - 1$. Пусть $m = c * 2^k + 1$, тогда в FFT максимальная длина полинома $n = 2^k$.
+~~#align(center)[#table(
+  columns: 4,
+  [*$m$*], [*$c$*], [*$k$*], [*$g$*],
+  [$10^9 + 7$], [$5 * 10^8 + 3$], [$1$], [$5$],
+  [$998244353$], [$119$], [$23$], [$3$],
+  [$1004535809$], [$479$], [$21$], [$3$],
+  [$469762049$], [$7$], [$26$], [$3$],
+  [$167772161$], [$5$], [$25$], [$3$],
+)]~~
+=== *Простые и праймориалы*
+~~#align(center)[#table(
+  columns: 8,
+  [$2$], [$3$], [$5$], [$7$], [$11$], [$13$], [$17$], [$19$],
+  [$2$], [$6$], [$30$], [$210$], [$2310$], [$3.0*10^4$], [$5.1*10^5$], [$9.7*10^6$]
+)]
+#align(center)[#table(
+  columns: 5,
+  [$23$], [$29$], [$31$], [$37$], [$41$],
+  [$2.2*10^8$], [$6.5*10^9$], [$2*10^11$], [$7.4*10^12$], [$3*10^14$]
+)]
+#align(center)[#table(
+  columns: 2,
+  [$43$], [$47$],
+  [$1.3*10^16$], [$6.1*10^17$]
+)]
+~~
+=== *Кол-во простых чисел до $10^x$*
+$ pi(n) approx n / ln(n) $
+~~#align(center)[#table(
+  columns: 8,
+  [$1$], [$2$], [$3$], [$4$], [$5$], [$6$], [$7$], [$8$],
+  [$4$], [$25$], [$168$], [$1'229$], [$9'592$], [$78'498$], [$664'579$], [$5'761'455$]
+)]
+#align(center)[#table(
+  columns: 4,
+  [$9$], [$10$], [$11$], [$12$],
+  [$50'847'534$], [$455'052'511$], [$4'118'054'813$], [$37'607'912'018$]
+)]
+#align(center)[#table(
+  columns: 3,
+  [$13$], [$14$], [$15$],
+  [$346'065'536'839$], [$3'204'941'750'802$], [$29'844'570'422'669$]
+)]
+#align(center)[#table(
+  columns: 2,
+  [$16$], [$17$],
+  [$279'238'341'033'925$], [$2'623'557'157'654'233$],
+)]
+#align(center)[#table(
+  columns: 1,
+  [$18$],
+  [$24'739'954'287'740'860$]
+)]~~
+== *3.8. Ряды и полиномы*
+=== *3.8.0. Ряды*
+$ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $
+$ 1 / (1 + x) = sum_(n = 0)^infinity (-1)^n x^n = 1 - x + x^2 - x^3 + x^4 - ... $
+$ 1 / (1 - x) = sum_(n = 0)^infinity x^n = 1 + x + x^2 + x^3 + ..., |x| < 1 $
+1 / (k + x)
+1 / (k - x)
+$ ln(1 + x) = log_e (1 + x) = sum_(n = 1)^infinity (-1)^(n - 1) x^n/n = x - x^2 / 2 + x^3 / 3 - x^4 / 4 + ... $
+$ ln(1 - x) = log_e (1 - x) = -sum_(n = 1)^infinity x^n/n = -x - x^2 / 2 - x^3 / 3 - x^4 / 4 - ... $
+$ (1 + x)^a = sum_(n=0)^infinity mat(a; n) x^n = 1 + mat(a; 1) x + mat(a; 2) x^2 + ... $
+$ (k + x)^a = k^a (1 + x/k)^a $
+$ sqrt(1 + x) = 1 + 1/2 x - 1 / 8 x^2 + 1 / 16 x^3 - 5 / 128 x^4 + ... $
+$ 1 / sqrt(1 + x) = 1 - 1/2 x + 3 / 8 x^2 - 5 / 16 x^3 + ... $
+(1 - x)^a
+(k - x)^a
+sqrt(1 - x)
+1 / sqrt(1 - x)
+$ sin(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1)! = x - x^3 / 3! + x^5 / 5! - ... $
+$ cos(x) = sum_(n=0)^infinity (-1)^n x^(2n) / (2n)! = 1 - x^2 / 2! + x^4 / 4! - ... $
+$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = 1 - x^3 / 3 + x^5 / 5 - ... $
+$ arcsin(x) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $
+=== *3.8.1. Полиномы*
+$ A'_i = A_(i + 1) * (i + 1) $
+$ (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $
+$ ln(A) = integral (A') / A, A_0 = 1 $
+*Деление*
+Деление в FFT разрешено только нацело. Дробное через NTT::divMod().
+*Возведение в степень*
+Нельзя просто сделать преобразование Фурье, возвести $A_i$ в степень $k$ по модулю и применить обратное - результат будет неверным. Варианты:
+$0$. Поддерживаем тек. двоичную степень (обрезанную до n членов) и домножаем на неё ответ $O(n log(n) log(k))$
+$1$. $exp(k ln(A))$. Нужно, чтобы $A_0$ было равно 1, однако NTT::pow() решает и эту проблему
+== *3.8.2. БПФ/FFT*
+```cpp
+const int N = 1 << 20;
+
+template <int MOD, int G> // G - первообразный корень (обычно 3)
+struct Pole {
+    vector <int> inv1;
+    vector <array <int, 2>> wl;
+    int inv(int x) {
+        if (x < inv1.size())
+            return inv1[x];
+        return MOD - 1LL * MOD / x * inv(MOD % x) % MOD;
+    }
+    int pow(int x, long k /*0 <= k < MOD - 1*/) {
+        int ans = 1;
+        for (int y = x; k > 0; k >>= 1, y = 1LL * y * y % MOD)
+            if (k & 1)
+                ans = 1LL * ans * y % MOD;
+        return ans;
+    }
+    Pole() {
+        int k = __builtin_ctz(MOD - 1);
+        inv1.resize(N + 1);
+        inv1[1] = 1;
+        for (int i = 2; i <= N; ++i)
+            inv1[i] = MOD - 1LL * MOD / i * inv1[MOD % i] % MOD;
+        for (int i = 1; i <= N; i <<= 1) {
+            int y = pow(G, (MOD - 1) / i);
+            wl.pb({y, inv(y)});
+        }
+    }
+    void trans(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
+        int n = a.size(); // n = 2^k
+        for (int i = 1, j = 0; i < n; i++) { // [0, 1, 2, 3, 4, 5, 6, 7] -> [0, 4, 2, 6, 1, 5, 3, 7] (воссоздаём порядок обработки рекурсивной NTT (сначала разбили на [0, 2, 4, 6] и [1, 3, 5, 7], потом на [0, 4], [2, 6], [1, 5], [3, 7] и т. д.))
+            // j - это перевёрнутое битовое представление i. После прибавления 1 к i, добавляем 1 к j с конца.
+            int bit = n >> 1;
+            for (; j & bit; bit >>= 1)
+                j ^= bit;
+            j ^= bit;
+            if (i < j) swap(a[i], a[j]);
+        }
+        for (int len = 2, p2 = 1; len <= n; len <<= 1, ++p2)
+            for (int i = 0; i < n; i += len)
+                for (int j = 0, w = 1; j < len / 2; j++) {
+                    int u = a[i + j], v = 1LL * a[i + j + len / 2] * w % MOD;
+                    a[i + j] = (u + v) % MOD;
+                    a[i + j + len / 2] = (u - v + MOD) % MOD;
+                    w = 1LL * w * wl[p2][inverse] % MOD;
+                }
+        if (inverse) {
+            int invN = inv1[n];
+            for (int &u : a)
+                u = 1LL * u * invN % MOD;
+        }
+    }
+    vector <int> mult(vector <int> a, vector <int> b) {
+        int n = 1;
+        while (n < a.size() + b.size() - 1)
+            n <<= 1;
+        a.resize(n); b.resize(n);
+        trans(a, false); trans(b, false);
+        for (int i = 0; i < n; i++)
+            a[i] = (1LL * a[i] * b[i]) % MOD;
+        trans(a, true);
+        while (a.size() > 1 && a.back() == 0)
+            a.pop_back();
+        return a;
+    }
+
+    vector <int> deriv(const vector <int> &a) { // A'(x)
+        if (!a.size())
+            return {};
+        vector <int> res(a.size() - 1);
+        for (int i = 0; i < a.size() - 1; ++i)
+            res[i] = 1LL * a[i + 1] * (i + 1) % MOD;
+        return res;
+    }
+    vector <int> integ(const vector <int> &a) {
+        vector <int> res(a.size() + 1);
+        for (int i = 1; i <= a.size(); ++i)
+            res[i] = 1LL * a[i - 1] * inv(i) % MOD;
+        return res;
+    }
+    // 1 / A. a[0] != 0
+    vector <int> inv(const vector <int> &a) {
+        vector <int> b = { inv(a[0]) };
+        for (int m = 2;; m <<= 1) {
+            vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m)),
+                         prod = mult(sub, b);
+            prod.resize(m);
+            for (int &u : prod)
+                u = (MOD - u) % MOD;
+            prod[0] = (prod[0] + 2) % MOD;
+            b = mult(b, prod);
+            b.resize(m);
+            if (m >= a.size())
+                break;
+        }
+        b.resize(a.size());
+        return b;
+    }
+    // ln(A). a[0] == 1
+    vector <int> ln(const vector <int> &a) {
+        vector <int> res = mult(deriv(a), inv(a)); // A' * (1/A)
+        res.resize(a.size() - 1);
+        return integ(res);
+    }
+    // exp(A). A[0] == 0
+    vector <int> exp(const vector <int> &a) {
+        vector <int> b = {1};
+        for (int m = 2;; m <<= 1) {
+            b.resize(m);
+            vector <int> lnb = ln(b);
+            for (int i = 0; i < m; i++)
+                lnb[i] = ((i < a.size() ? a[i] : 0) - lnb[i] + MOD) % MOD;
+            lnb[0] = (lnb[0] + 1) % MOD; // 1 + A - ln(B)
+            b = mult(b, lnb);
+            if (m >= a.size())
+                break;
+        }
+        b.resize(a.size());
+        return b;
+    }
+    // A^k
+    vector <int> pow(vector <int> a, long k) {
+        if (k == 0)
+            return {0};
+        int cnt0 = 0;
+        while (a.size() && a[cnt0] == 0)
+            ++cnt0;
+        if (cnt0 * k >= a.size())
+            return {0};
+        vector <int> sub(a.begin() + cnt0, a.end());
+        int inv0 = inv(sub[0]),
+            pow0 = pow(sub[0], k % (MOD - 1));
+        for (int &u : sub)
+            u = 1LL * u * inv0 % MOD;
+        sub = ln(sub);
+        for (int &u : sub)
+            u = 1LL * u * k % MOD;
+        sub = exp(sub);
+        cnt0 *= k;
+        for (int i = a.size() - 1; i >= 0; --i)
+            a[i] = (cnt0 <= i ? 1LL * sub[i - cnt0] * pow0 % MOD : 0);
+        while (a.size() > 1 && a.back() == 0)
+            a.pop_back();
+        return a;
+    }
+    pair <vector <int>, vector <int>> divMod(const vector <int> &a, const vector <int> &b) {
+        int n = a.size(), m = b.size();
+        if (n < m)
+            return {{0}, a};
+        vector <int> ra = a, rb = b;
+        reverse(ra.begin(), ra.end());
+        reverse(rb.begin(), rb.end());
+        int sz = n - m + 1;
+        ra.resize(sz);
+        rb.resize(sz);
+        vector <int> q = mult(ra, inv(rb));
+        q.resize(sz);
+        reverse(q.begin(), q.end());
+        vector <int> bq = mult(b, q), r(m - 1);
+        for (int i = 0; i < m - 1; ++i)
+            r[i] = (a[i] - bq[i] + MOD) % MOD;
+        while (r.size() > 1 && r.back() == 0)
+            r.pop_back();
+        return {q, r};
+    }
+};
+
+Pole <998244353, 3>  P998;  // n <= 2^23 <=  8'388'608
+Pole <1004535809, 3> P1004; // n <= 2^21 <=  2'097'152
+Pole <469762049, 3>  P469;  // n <= 2^26 <= 67'108'864
+// Main
+vec <int> c = P998.mult(a, b);
+```
+= *4. _Geometry_*
+== *4.0. Сортировка векторов по углу*
+```cpp
+bool comp(pair <int, int> a, pair <int, int> b) {
+    if (a.f < 0 && b.f < 0)
+        return comp({-a.f, -a.s},
+                    {-b.f, -b.s});
+    if (a.f < 0) //b.f >= 0
+        return 0;
+    if (b.f < 0) //a.f >= 0
+        return 1;
+    if (a.f == 0)
+        return a.s > 0;
+    if (b.f == 0)
+        return b.s < 0;
+    return a.s * b.f > b.s * a.f;
+}
+```
+== *4.1. CHT*
+```cpp
+struct line {
+    ld k, b;
+    bool operator< (line x) {
+        if (k != x.k)
+            return k < x.k;
+        return b > x.b;
+    }
+    ld operator() (ld x) {
+        return k * x + b;
+    }
+};
+// You can speed up this code by adding "inline" to each func
+vector <line> cht;
+
+// If lst.k < new.k, it is maximum CHT, else it's minimum. sort without reverse is for max, sort with reverse is for min
+// .  max  .
+//  \     /
+//   .___.
+//
+//   .---.
+//  /     \
+// .  min  .
+
+// it isn't necessary
+ld cross(line a, line b) {
+    assert(a.k != b.k);
+    return (a.b - b.b) / (b.k - a.k);
+}
+
+// it returns cross(b, c) - cross(a, b), but it works when b.b == c.b!!!. If <= 0, delete b from CHT
+inline ld cross(line a, line b, line c) { return (b.b - c.b) * (b.k - a.k) - (a.b - b.b) * (c.k - b.k); }
+
+void add(line a) { // lst.k != a.k || (lst.k == a.k && lst.b != a.b). "!=" is < or >, depending on what suits you best, from sorting, from the need to find the maximum or minimum along straight lines
+    if (cht.size() && cht.back().k == a.k) // The new is a copy of the previous, but worse
+        return;
+    while (cht.size() > 1 && cross(cht[cht.size() - 2], cht.back(), a) <= 0)
+        cht.pop_back();
+    cht.pb(a);
+}
+
+ld get(ld x) {
+    assert(cht.size());
+    int l = 0, r = cht.size() - 1;
+    while (l < r) {
+        int md = (l + r + 1) / 2;
+        ld a = cht[md - 1].b - cht[md].b, b = x * (cht[md].k - cht[md - 1].k);
+        if (a == b || ((a < b) ^ (cht[md - 1].k > cht[md].k)))
+            l = md;
+        else
+            r = md - 1;
+    }
+    return cht[l].k * x + cht[l].b;
+}
+
+// 1e-9l = long double 1e-9
+inline ld _floor(ld x) { return floor(x + 1e-9l); }
+inline ld _ceil (ld x) { return ceil (x - 1e-9l); }
+```
+== *4.2. Дерево Ли Чао*
+```cpp
+const ld oo = 1e18, eps = 1e-9;
+
+struct line {
+    ld k, b;
+    ld operator() (ld x) {
+        return k * x + b;
+    }
+};
+
+struct LiChao { // For max
+    line ln;
+    ld l, md, r;
+    LiChao *L = 0, *R = 0;
+    LiChao(ld l, ld r, line ln = {0, -oo}): l(l), md((l + r) / 2), r(r), ln(ln) {}
+    void add(ld _l, ld _r, line nw) {
+        if (r - l < eps) {
+            if (ln(l) < nw(l))
+                ln = nw;
+            return;
+        }
+        if (_l <= l && r <= _r) {
+            if (ln(md) < nw(md) || (ln(md) == nw(md) && nw(l) < ln(l))) // For max
+                swap(ln, nw);
+            if (ln.k == nw.k)
+                return;
+            if ((ln.b - nw.b) / (nw.k - ln.k) <= md)
+                if (!L)
+                    L = new LiChao(l, md, nw);
+                else
+                    L -> add(_l, _r, nw);
+            else
+                if (!R)
+                    R = new LiChao(md, r, nw);
+                else
+                    R -> add(_l, _r, nw);
+            return;
+        }
+        if (_l <= md) {
+            if (!L)
+                L = new LiChao(l, md);
+            L -> add(_l, _r, nw);
+        }
+        if (md < _r) {
+            if (!R)
+                R = new LiChao(md, r);
+            R -> add(_l, _r, nw);
+        }
+    }
+    ld get(ld x) {
+        ld ans = ln(x);
+        if (x <= md && L)
+            ans = max(ans, L -> get(x));
+        if (md <= x && R)
+            ans = max(ans, R -> get(x));
+        return ans;
+    }
+};
+// Main
+LiChao tr(0, n);
+tr.add(l, r, {k, b});
+tr.get(x);
+```
+== *4.3. Сумма Минковского*
+Находит расстояние между выпуклыми многоугольниками (с обходом по часовой стрелке, предварительно умножив один из их на -1 и развернув) и проверяет на пересечение (точка $(0, 0)$ лежит в сумме Минковского).
+```cpp
+struct point {
+    long x, y;
+    point operator+(const point& a) { return {x + a.x, y + a.y}; }
+    point operator-(const point& a) { return {x - a.x, y - a.y}; }
+    long cross(const point& a) { return x * a.y - y * a.x; }
+    long dot(const point& a) { return x * a.x + y * a.y; }
+    long len2() { return x * x + y * y; }
+};
+
+void reorderPoly(vector <point> &p) { // Переупорядочиваем, чтобы начиналось с нижнего-левого (лексикографически)
+    int pos = 0;
+    for (int i = 1; i < p.size(); i++)
+        if (p[i].y < p[pos].y || (p[i].y == p[pos].y && p[i].x < p[pos].x))
+            pos = i;
+    rotate(p.begin(), p.begin() + pos, p.end());
+}
+
+vector <point> minkowski(vector <point> a, vector <point> b) {
+    reorderPoly(a);
+    reorderPoly(b);
+
+    vector <point> res;
+    res.pb(a[0] + b[0]);
+
+    int i = 0, j = 0;
+    while (i < a.size() || j < b.size()) {
+        if (i == a.size()) {
+            res.pb(res.back() + b[(j + 1) % b.size()] - b[j]);
+            ++j;
+            continue;
+        }
+        if (j == b.size()) {
+            res.pb(res.back() + a[(i + 1) % a.size()] - a[i]);
+            ++i;
+            continue;
+        }
+        point edgeA = a[i + 1] - a[i], edgeB = b[j + 1] - b[j];
+        long cp = edgeA.cross(edgeB);
+
+        res.pb(res.back() + (cp > 0 ? edgeA : (cp < 0 ? edgeB : edgeA + edgeB)));
+
+        if (cp >= 0) ++i;
+        if (cp <= 0) ++j;
+    }
+    return res;
+}
+
+double distToSegment(point p, point a, point b) {
+    point ab = b - a, ap = p - a;
+    if (ab.dot(ap) < 0) // Ближе к A
+        return sqrt(ap.len2());
+    point ba = a - b, bp = p - b;
+    if (ba.dot(bp) < 0) // Ближе к B
+        return sqrt(bp.len2());
+    return abs(ab.cross(ap)) / sqrt(ab.len2()); // Перпендикуляр
+}
+```

@@ -1,0 +1,198 @@
+Структуры данных:
+
+др. оптимизации ДП
+
+Алгоритм Мо + 3д МО
+
+Поиск отрицательного цикла
+
+Задача о назначениях (Венгерский алгоритм)
+
+LCA за O(1) с предпроцессингом O(n*log(n)) через обычное RMQ
+LCA за O(log(log(n)) с прероцессингом O(n*log(log(n))) через HLD
+LCA за O(1) с препроцессингом O(n) через RMQ за O(1), разбитое на блоки длины O(log/2)
+
+Математика:
+
+Простые модули
+
+Проверка числа на простоту, факторизация (Алгоритм Полларда Ро)
+
+Сумма Минсковского
+
+Строки:
+
+алгоритм Манакера (c чередуюзимися символами, чтобы найти для чётных и нечётных за 1 проход)
+Суфф. масс. + LCP
+Ахо-Карасик
+ETT ПО ВЕРШИНАМ!
+
+Тинькофф-поколение
+
+Необязательно:
+
+формулка решения квадратных и не только уравнений (есть в kactl)
+Отжиг (в том числе многослойный) (не нужен на командных)
+
+sum_(i = 0)^(n) C(n, i) * 2^i mod M = 3^(n - floor(n / M))
+
+
+chrono::high_resolution_clock::now();
+chrono::duration<double, std::milli>
+
+gcd(x, y) <= abs(x - y), for x != y
+
+Сверхбыстрый Кун (мой + https://codeforces.com/blog/entry/17023?locale=ru)
+RMQ за O(n) и O(1)
+
+Быстрый Гаусс за O(n * m * (m / 64) / log(n))
+Диха по фенвику
+
+Писать return move(v), чтобы вектор не копировался из функции за O(n), а просто перемещался (только указатель на него) за O(1)
+
+Простое вычисление угла относительно стрелки часов на 12 в направлении часовой стрелки.
+double angle(int x0, int y0, int x, int y) {
+    x -= x0;
+    y -= y0;
+    double a = atan2(x, y);
+    return a + (a < 0) * (Pi + Pi);
+}
+
+bool isInRange(pair <ld, ld> p, ld a) {
+    return p.f - eps <= p.s ? (p.f - eps <= a && a <= p.s + eps) : (p.f - eps <= a || a <= p.s + eps);
+}
+
+pair <ld, ld> mergeRanges(pair <ld, ld> a, pair <ld, ld> b) { // (a.s - a.f) % 2PI <= Pi, (b.s - b.f + 2PI) % 2PI <= PI
+    if (isInRange(b, a.f))
+        return min(pair <ld, ld>{a.f, a.s}, pair <ld, ld>{a.f, b.s}, [](pair <ld, ld> a, pair <ld, ld> b) {
+            return a.s - a.f + 2 * PI * (a.s < a.f) < b.s - b.f + 2 * PI * (b.s < b.f);
+        });
+    if (isInRange(b, a.s))
+        return min(pair <ld, ld>{a.f, a.s}, pair <ld, ld>{b.f, a.s}, [](pair <ld, ld> a, pair <ld, ld> b) {
+            return a.s - a.f + 2 * PI * (a.s < a.f) < b.s - b.f + 2 * PI * (b.s < b.f);
+        });
+    if (isInRange(a, b.f))
+        return b;
+    return {-1, -1};
+}
+
+ld distToSegment(int x0, int y0, int x1, int y1, int x2, int y2) { // From (x0, y0) to (x1, y1)-(x2, y2)
+    ld a = sqrtl(dist2(x0, y0, x1, y1)),
+       b = sqrtl(dist2(x0, y0, x2, y2)),
+       c = sqrtl(dist2(x1, y1, x2, y2));
+    ld x = (b * b - a * a - c * c) / c / -2;
+    if (0 <= x && x <= c)
+        return sqrt(a * a - x * x);
+    return 9e18; // Dist to point
+}
+Добавить всю геому из learning
+
+bool isInHull(int qx, int qy) {
+    if (qx < x[0] || x[mx] < qx)
+        return 0;
+    int l = 0, r = mx - 1;
+    while (l < r) {
+        int md = (l + r + 1) / 2;
+        if (x[md] <= qx)
+            l = md;
+        else
+            r = md - 1;
+    }
+    if ((qy - y[l]) * (x[l + 1] - x[l]) > (y[l + 1] - y[l]) * (qx - x[l]))
+        return 0;
+    l = mx;
+    r = n - 1;
+    while (l < r) {
+        int md = (l + r + 1) / 2;
+        if (qx <= x[md])
+            l = md;
+        else
+            r = md - 1;
+    }
+    if ((qy - y[(l + 1) % n]) * (x[l] - x[(l + 1) % n]) < (y[l] - y[(l + 1) % n]) * (qx - x[(l + 1) % n]))
+        return 0;
+    return 1;
+}
+7 чисел для быстрой проверки на простоту до 10^18 Миллера Рабина
+Номер страницы во всех 4 углах, чтобы легко видеть его, когда почти вся страница закрыта
+Уменьшить шрифт, чтобы помещалось больше
+Сделать комментарии в коде темнее, т. к. принтер плохо пропечатывает полупрозрачные буквы
+Как строить минимальное дерево из точек на плоскости (мин. остов полного планарного графа) за O(n * log n)
+Код для антивзлома xor-хешей + корнячка через gp_hash_table для операций xor^= на отрезке и поиска последнего вхождения x (быстрее невозможно):
+using u64 = unsigned long long;
+struct H { size_t operator()(u64 x) const { // splitmix64, против анти-хеш тестов
+    x += 0x9e3779b97f4a7c15; x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+    x = (x ^ (x >> 27)) * 0x94d049bb133111eb; return x ^ (x >> 31); } };
+const int B = 512;
+struct Block { vector<u64> c; u64 lz = 0; gp_hash_table<u64, int, H> last; };
+vector<Block> bl; int n = 0;
+
+void rebuild(int k) {
+    auto& b = bl[k]; b.last.clear();
+    for (int j = 0; j < (int)b.c.size(); j++) b.last[b.c[j]] = k * B + j; // по возрастанию => остаётся максимум
+}
+void push(u64 h) {
+    if (n % B == 0) bl.emplace_back();
+    auto& b = bl.back(); u64 v = h ^ b.lz;
+    b.c.push_back(v); b.last[v] = n++;
+}
+void suffixXor(int l, u64 x) {               // 0-индексация
+    int k = l / B;
+    for (int j = l - k * B; j < (int)bl[k].c.size(); j++) bl[k].c[j] ^= x;
+    rebuild(k);
+    for (int t = k + 1; t < (int)bl.size(); t++) bl[t].lz ^= x;
+}
+int findLast(u64 x) {
+    for (int k = (int)bl.size() - 1; k >= 0; k--) {
+        auto it = bl[k].last.find(x ^ bl[k].lz);
+        if (it != bl[k].last.end()) return it->second;
+    }
+    return -1;
+}
+
+Суф. мас. за O(n)
+Комментарии в кодах только на английском, но с большой или маленькой буквы? А если он начинается с variable: description? Нужно изучить стандарты комментариев и создать, следовать своим, упрощённым для CP, но очень качественным и коротким
+sqrtl вместо sqrt(ld())
+Код (да и обычный текст) выглядит слишком широким. Стоит уменьшить расстояние и ширину букв
+Таблички сделать уже и структурированнее, уменьшить шрифт
+Разделители между столбцами слишком толстые и чёрные - сделать тоньше и серее. Можно на треть уменьшить gaps
+
+Полностью заменить интерпретатор и протестировать тек. teambook на регулярки typst:
+// Говорим Typst: "Найди текст между знаками процента и подчеркни его"
+#show regex("%([^%]+)%"): it => {
+  // it.captures.at(0) — это текст, который попал внутрь процентов
+  underline(it.captures.at(0))
+}
+
+Привет! Теперь я могу писать %вот так% прямо в тексте, 
+и оно автоматически станет подчёркнутым, без всяких внешних скриптов!
+Или
+// Функция-парсер, написанная прямо в Typst
+#let my-format(text) = {
+  let lines = text.split("\n")
+  for line in lines {
+    if line.starts-with("!") {
+      block(fill: red.lighten(80%), width: 100%, inset: 5pt)[
+        *Важно:* #line.slice(1)
+      ]
+    } else {
+      list(line)
+    }
+  }
+}
+
+// Используем ваш кастомный формат внутри Typst:
+#my-format("
+Первая строка списка
+Вторая строка списка
+!А это важное предупреждение с восклицательным знаком
+")
+
+
+ПОДУМАТЬ НАД ДРУГИМ НАЗВАНИЕМ, ЧЕМ TEAMBOOK
+
+Формула центра окружности, описанной и вписанной в треугольник, зная координаты углов
+
+Алгоритм Хопкрофта-Карпа для макс. парсоча за O(m*sqrt(n)) (за столько же, сколько сведение к макс. потоку Диница)
+Методы _Find_first/_Find_next битсета
+Посмотреть этот teambook: https://github.com/scanof/Competitive-Programming-Notebook/blob/master/notebook.pdf
