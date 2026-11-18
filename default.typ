@@ -2,7 +2,7 @@
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels, main text, code
-#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 7pt, code: 7pt)
+#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 7pt, code: 7pt, math-block: 9pt, math-inline: 7.75pt)
 // Background of the inline code and of every second line of the code block
 #let code-fill = rgb("#EEEEEE")
 
@@ -93,6 +93,12 @@
   // Headings stay in the line, the line break after them comes from TeamBook.typ
   show heading: it => text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
   // Math
+  show math.equation.where(block: true): set text(size: font-sizes.math-block)
+  show math.equation.where(block: false): set text(size: font-sizes.math-inline)
+  show math.equation: it => {
+    show ",": [,#h(2pt)] // Wider space after a comma
+    it
+  }
   show math.equation.where(block: true): set block(
     above: 8pt,
     below: -5pt
