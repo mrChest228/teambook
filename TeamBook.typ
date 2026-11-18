@@ -812,41 +812,71 @@ pair <long, long> crt(long a, long n, long b, long m) {
     return {x + (x < 0) * n * m, n * m};
 }
 ```#br
-== *3.5.` `Ро-алгоритм` `Полларда*#br
-Рандомизированный` `алгоритм` `факторизации` `целых` `чисел,` `работающий` `за` `время` `$O(n^(1/4))$.`
+== *3.5.` `Миллер-Рабин,` `Ро-Поллард*#br
+Тест` `Миллера-Рабина:` `$O(log(n))$` `умножений` `по` `модулю.` `Ро-алгоритм` `Полларда` `находит` `делитель` `в` `среднем` `за` `$O(n^(1/4))$,` `для` `$n approx 9 * 10^18$` `это` `около` `$10$` `мс.`
 ````cpp
-inline long f(long x, long n) { 
-	return (__int128_t) (x + 1) * (x + 1) % n; 
+long mul(long a, long b, long m) {
+    return (int128) a * b % m;
 }
 
-long find_divisor(long n, long seed = 1) {
-    long x = seed, y = seed, d = 1;
-    while (d == 1 || d == n) {
-        y = f(y);
-        x = f(f(x));
-        d = gcd(abs(x - y), n);
-    }
-    return d;
+long binpow(long a, long n, long m) {
+    long res = 1;
+    for (; n; n >>= 1, a = mul(a, a, m))
+        if (n & 1)
+            res = mul(res, a, m);
+    return res;
 }
 
-long pollard(long n, int iter = 100000) {
-    long b0 = rnd() % n, b1 = b0, g;
-    mulmod(b1, b1, n);
-    if (++b1 == n)
-        b1 = 0;
-    g = gcd(abs(b1 - b0), n);
-    for (int i = 0; i < iter && (g == 1 || g == n); ++i) {
-        mulmod (b0, b0, n);
-        if (++b0 == n)
-            b0 = 0;
-        mulmod (b1, b1, n);
-        ++b1;
-        mulmod (b1, b1, n);
-        if (++b1 == n)
-            b1 = 0;
-        g = gcd(abs (b1 - b0), n);
+// Miller-Rabin, these 7 bases give the exact answer for any n < 2^64
+bool isPrime(long n) {
+    if (n < 2 || n % 2 == 0)
+        return n == 2;
+    int s = __builtin_ctzll(n - 1);
+    long d = n >> s; // n - 1 = d * 2^s
+    for (long a : {2, 325, 9375, 28178, 450775,
+                   9780504, 1795265022}) {
+        long x = binpow(a % n, d, n);
+        if (x <= 1 || x == n - 1)
+            continue;
+        bool composite = 1;
+        for (int i = 1; i < s && composite; i++) {
+            x = mul(x, x, n);
+            composite = x != n - 1;
+        }
+        if (composite)
+            return 0;
     }
-    return g;
+    return 1;
+}
+
+// n is composite. Returns a divisor d, 1 < d < n
+long findDivisor(long n) {
+    if (n % 2 == 0)
+        return 2;
+    for (long c = 1;; c++) { // x -> x^2 + c
+        long x = 2, y = 2, d = 1;
+        while (d == 1) {
+            x = (mul(x, x, n) + c) % n;
+            y = (mul(y, y, n) + c) % n;
+            y = (mul(y, y, n) + c) % n;
+            d = gcd(abs(x - y), n);
+        }
+        if (d != n) // else try another c
+            return d;
+    }
+}
+
+// Adds all prime divisors of n to res (unsorted, with repeats)
+void factor(long n, vector <long> &res) {
+    if (n == 1)
+        return;
+    if (isPrime(n)) {
+        res.pb(n);
+        return;
+    }
+    long d = findDivisor(n);
+    factor(d, res);
+    factor(n / d, res);
 }
 ```#br
 == *3.6.` `Код` `Грея*#br
