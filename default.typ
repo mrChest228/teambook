@@ -87,8 +87,8 @@
   )
   set columns(gutter: gutter) // Устанавливаем gutter между колонками
   set text(
-    // Gelasio (fonts/) has no Cyrillic, so Russian letters stay in Georgia; its digits have the same height
-    font: ("Gelasio", "Georgia"), number-type: "lining", slashed-zero: true,
+    // Digits are from Gelasio (fonts/): in Georgia they have different heights
+    font: ((name: "Gelasio", covers: regex("[0-9]")), "Georgia"), number-type: "lining", slashed-zero: true,
     size: font-sizes.text
   )
   // Headings stay in the line, the line break after them comes from TeamBook.typ
