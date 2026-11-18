@@ -1,6 +1,4 @@
 #let margin = 5mm
-// Top and bottom margins hold the page numbers, which must stay printable: not closer than 4mm to the edge
-#let margin-y = 6mm
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels, main text, code
@@ -41,7 +39,7 @@
   set page(
     paper: "a4",
     flipped: true, // Альбомная ориентация
-    margin: (x: margin, y: margin-y), // Узкие поля для экономии места
+    margin: margin, // Узкие поля для экономии места
     columns: cols-cnt,
   
     background: align(top,
@@ -69,9 +67,10 @@
 
   
     // Page number in all 4 corners, so it is seen when most of the page is covered.
-    // It stands in the top and bottom margins and has a white outline in case it touches the text
+    // It overlaps the text a bit, so it has a white outline.
+    // The distance to the paper edges is the one of the first version: it is tested to be printable
     foreground: context {
-      set text(font: "Times New Roman", size: 8pt, top-edge: "cap-height", bottom-edge: "baseline")
+      set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
       let num = counter(page).display()
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(
@@ -79,7 +78,7 @@
           dx: if corner.x == left { 6.1mm } else { -6.1mm },
           dy: if corner.y == top { 4.1mm } else { -4.1mm },
           {
-            place(text(stroke: 2pt + white, num))
+            place(text(stroke: 3pt + white, num))
             num
           }
         )
