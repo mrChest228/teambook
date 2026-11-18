@@ -1225,7 +1225,7 @@ tr.add(l, r, {k, b});
 tr.get(x);
 ```#br
 == *4.3.` `Сумма` `Минковского*#br
-Находит` `расстояние` `между` `выпуклыми` `многоугольниками` `(с` `обходом` `по` `часовой` `стрелке,` `предварительно` `умножив` `один` `из` `их` `на` `-1` `и` `развернув)` `и` `проверяет` `на` `пересечение` `(точка` `$(0, 0)$` `лежит` `в` `сумме` `Минковского).`
+#code("minkowski")` `находит` `сумму` `выпуклых` `многоугольников` `(обход` `против` `часовой` `стрелки,` `без` `трёх` `точек` `на` `одной` `прямой;` `точка` `и` `отрезок` `тоже` `подходят).` `#code("dist")` `находит` `расстояние` `между` `ними:` `один` `умножаем` `на` `$-1$` `(обход` `при` `этом` `не` `меняется)` `и` `ищем` `расстояние` `от` `$(0, 0)$` `до` `суммы.`
 ````cpp
 struct point {
     long x, y;
@@ -1263,7 +1263,7 @@ vector <point> minkowski(vector <point> a, vector <point> b) {
             ++i;
             continue;
         }
-        point edgeA = a[i + 1] - a[i], edgeB = b[j + 1] - b[j];
+        point edgeA = a[(i + 1) % a.size()] - a[i], edgeB = b[(j + 1) % b.size()] - b[j];
         long cp = edgeA.cross(edgeB);
 
         res.pb(res.back() + (cp > 0 ? edgeA : (cp < 0 ? edgeB : edgeA + edgeB)));
@@ -1271,16 +1271,32 @@ vector <point> minkowski(vector <point> a, vector <point> b) {
         if (cp >= 0) ++i;
         if (cp <= 0) ++j;
     }
+    res.pop_back(); // Последняя точка совпадает с первой
     return res;
 }
 
 double distToSegment(point p, point a, point b) {
     point ab = b - a, ap = p - a;
-    if (ab.dot(ap) < 0) // Ближе к A
+    if (ab.dot(ap) <= 0) // Ближе к A
         return sqrt(ap.len2());
     point ba = a - b, bp = p - b;
-    if (ba.dot(bp) < 0) // Ближе к B
+    if (ba.dot(bp) <= 0) // Ближе к B
         return sqrt(bp.len2());
     return abs(ab.cross(ap)) / sqrt(ab.len2()); // Перпендикуляр
+}
+
+// Расстояние между a и b; 0, если пересекаются
+double dist(vector <point> a, vector <point> b) {
+    for (point &p : b)
+        p = {-p.x, -p.y};
+    vector <point> c = minkowski(a, b);
+    double res = 1e18;
+    bool inside = 1; // (0, 0) строго внутри c
+    for (int i = 0; i < c.size(); i++) {
+        point p = c[i], q = c[(i + 1) % c.size()];
+        inside &= p.cross(q) > 0;
+        res = min(res, distToSegment({0, 0}, p, q));
+    }
+    return inside ? 0 : res;
 }
 `````
