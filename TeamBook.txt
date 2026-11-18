@@ -1247,7 +1247,7 @@ void normalize(vector <point> &p) { // Убираем точки на сторо
     p = res;
 }
 
-void reorderPoly(vector <point> &p) { // Переупорядочиваем, чтобы начиналось с нижнего-левого (лексикографически)
+void reorder(vector <point> &p) { // Переупорядочиваем, чтобы начиналось с нижнего-левого (лексикографически)
     int pos = 0;
     for (int i = 1; i < p.size(); i++)
         if (p[i].y < p[pos].y || (p[i].y == p[pos].y && p[i].x < p[pos].x))
@@ -1256,8 +1256,8 @@ void reorderPoly(vector <point> &p) { // Переупорядочиваем, ч�
 }
 
 vector <point> minkowski(vector <point> a, vector <point> b) {
-    reorderPoly(a);
-    reorderPoly(b);
+    reorder(a);
+    reorder(b);
 
     vector <point> res;
     res.pb(a[0] + b[0]);
@@ -1310,9 +1310,7 @@ ld dist(vector <point> a, vector <point> b) {
     }
     return inside ? 0 : res;
 }
-```
-Пример:
-```cpp
+// Main
 vector <point> a(n), b(m);
 // Читаем a и b по часовой стрелке
 normalize(a);
