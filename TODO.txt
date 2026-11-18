@@ -163,3 +163,5 @@ sqrtl вместо sqrt(ld())
 Посмотреть этот teambook: https://github.com/scanof/Competitive-Programming-Notebook/blob/master/notebook.pdf
 Builtin data structures в 1.1
 C++20 аналоги __builtins бесполезны, убрать
+Дерево палиндромов с примером задачи, которую им легче всего решать
+Сделать ll жирным в __builitins
