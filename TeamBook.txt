@@ -744,9 +744,10 @@ long get(int l, int r) {
 ```
 = *3. _Algebra_*
 == *3.0. Cуммы от 1 до n*
+$ 1+2+3+...+n = (n(n + 1))/2 $
 $ 1^2+2^2+3^2+...+n^2 = (n(2n + 1)(n + 1))/6 $
 $ 1^3+2^3+3^3+...+n^3 = (n^2(n + 1)^2)/4 $
-$ 1^4+2^4+3^4+...+n^4 = (n(n + 1)(n + 2)(2n + 1)(3n^2 + 3n - 1))/30 $
+$ 1^4+2^4+3^4+...+n^4 = (n(n + 1)(2n + 1)(3n^2 + 3n - 1))/30 $
 == *3.1. Числа Фибоначчи и их свойства*
 *Соотношение Кассини*
 $ F_(n + 1) F_(n - 1) - F_n^2 = (-1)^n $
@@ -767,7 +768,7 @@ $ c_(i,j) = sum_k a_(i,k) b_(k,j) $
 $ mat(1, 1; 1, 0)^n = mat(F_(n + 1), F_n; F_n, F_(n - 1)) $
 Допустим нужно $q$ раз возводить одну и ту же матрицу в степень и домножать на вектор. Наивное решение: $O(q n^3 log(n))$, однако если мы предпросчитаем двоичные степени матрицы, а затем $log(n)$ раз домножим на них вектор, то получим асимптотику $O(n^3 log(n) + q n^2 log(n))$.
 == *3.3. Расширенный алгоритм Евклида*
-Решает задачу поиска $a x + b y = gcd(x, y)$ с мин. $a >= 0$.
+Решает задачу поиска $a x + b y = gcd(a, b)$ с мин. $x >= 0$.
 ```cpp
 long gcdex(long a, long &x, long b, long &y) {
     long x1, y1;
@@ -791,7 +792,7 @@ long gcdex(long a, long &x, long b, long &y) {
 }
 ```
 == *3.4. КТО*
-$ cases("ans" eq.triple a (mod n), "ans" eq.triple b (mod b)) $
+$ cases("ans" eq.triple a (mod n), "ans" eq.triple b (mod m)) $
 $x, y, g = "gcdex"(n, m)$
 $x n + y m = g$, $x n / g + y m / g = 1,$ $x n / g = 1 (mod m / g)$
 $("ans" = n k + a) mod m = b$
@@ -880,21 +881,21 @@ $ pi(n) approx n / ln(n) $
 $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $
 $ 1 / (1 + x) = sum_(n = 0)^infinity (-1)^n x^n = 1 - x + x^2 - x^3 + x^4 - ... $
 $ 1 / (1 - x) = sum_(n = 0)^infinity x^n = 1 + x + x^2 + x^3 + ..., |x| < 1 $
-1 / (k + x)
-1 / (k - x)
+$ 1 / (k + x) = sum_(n = 0)^infinity (-1)^n x^n / k^(n + 1) = 1 / k - x / k^2 + x^2 / k^3 - ..., |x| < k $
+$ 1 / (k - x) = sum_(n = 0)^infinity x^n / k^(n + 1) = 1 / k + x / k^2 + x^2 / k^3 + ..., |x| < k $
 $ ln(1 + x) = log_e (1 + x) = sum_(n = 1)^infinity (-1)^(n - 1) x^n/n = x - x^2 / 2 + x^3 / 3 - x^4 / 4 + ... $
 $ ln(1 - x) = log_e (1 - x) = -sum_(n = 1)^infinity x^n/n = -x - x^2 / 2 - x^3 / 3 - x^4 / 4 - ... $
 $ (1 + x)^a = sum_(n=0)^infinity mat(a; n) x^n = 1 + mat(a; 1) x + mat(a; 2) x^2 + ... $
 $ (k + x)^a = k^a (1 + x/k)^a $
 $ sqrt(1 + x) = 1 + 1/2 x - 1 / 8 x^2 + 1 / 16 x^3 - 5 / 128 x^4 + ... $
 $ 1 / sqrt(1 + x) = 1 - 1/2 x + 3 / 8 x^2 - 5 / 16 x^3 + ... $
-(1 - x)^a
-(k - x)^a
-sqrt(1 - x)
-1 / sqrt(1 - x)
+$ (1 - x)^a = sum_(n=0)^infinity (-1)^n mat(a; n) x^n = 1 - mat(a; 1) x + mat(a; 2) x^2 - ... $
+$ (k - x)^a = k^a (1 - x/k)^a $
+$ sqrt(1 - x) = 1 - 1/2 x - 1 / 8 x^2 - 1 / 16 x^3 - 5 / 128 x^4 - ... $
+$ 1 / sqrt(1 - x) = 1 + 1/2 x + 3 / 8 x^2 + 5 / 16 x^3 + ... $
 $ sin(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1)! = x - x^3 / 3! + x^5 / 5! - ... $
 $ cos(x) = sum_(n=0)^infinity (-1)^n x^(2n) / (2n)! = 1 - x^2 / 2! + x^4 / 4! - ... $
-$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = 1 - x^3 / 3 + x^5 / 5 - ... $
+$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = x - x^3 / 3 + x^5 / 5 - ... $
 $ arcsin(x) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $
 === *3.8.1. Полиномы*
 $ A'_i = A_(i + 1) * (i + 1) $
