@@ -886,12 +886,11 @@ $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
 `$ ln(1 + x) = log_e (1 + x) = sum_(n = 1)^infinity (-1)^(n - 1) x^n/n = x - x^2 / 2 + x^3 / 3 - x^4 / 4 + ... $`
 `$ ln(1 - x) = log_e (1 - x) = -sum_(n = 1)^infinity x^n/n = -x - x^2 / 2 - x^3 / 3 - x^4 / 4 - ... $`
 `$ (1 + x)^a = sum_(n=0)^infinity mat(a; n) x^n = 1 + mat(a; 1) x + mat(a; 2) x^2 + ... $`
-`Здесь` `$a$` `любое:` `$mat(a; n) = (a(a - 1)...(a - n + 1)) / n!$`
-`$ (k + x)^a = k^a (1 + x/k)^a $`
+`$a$` `может` `быть` `дробным` `или` `отрицательным` `(при` `$a = 1 / 2$` `это` `$sqrt(1 + x)$),` `тогда` `$mat(a; n) = (a(a - 1)...(a - n + 1)) / n!$`
 `$ sqrt(1 + x) = sum_(n=0)^infinity ((-1)^(n - 1) mat(2n; n)) / (4^n (2n - 1)) x^n = 1 + 1/2 x - 1 / 8 x^2 + 1 / 16 x^3 - 5 / 128 x^4 + ... $`
 `$ 1 / sqrt(1 + x) = sum_(n=0)^infinity ((-1)^n mat(2n; n)) / 4^n x^n = 1 - 1/2 x + 3 / 8 x^2 - 5 / 16 x^3 + ... $`
 `$ (1 - x)^a = sum_(n=0)^infinity (-1)^n mat(a; n) x^n = 1 - mat(a; 1) x + mat(a; 2) x^2 - ... $`
-`$ (k - x)^a = k^a (1 - x/k)^a $`
+`$ (k + x)^a = k^a (1 + x/k)^a, (k - x)^a = k^a (1 - x/k)^a $`
 `$ sqrt(1 - x) = -sum_(n=0)^infinity mat(2n; n) / (4^n (2n - 1)) x^n = 1 - 1/2 x - 1 / 8 x^2 - 1 / 16 x^3 - 5 / 128 x^4 - ... $`
 `$ 1 / sqrt(1 - x) = sum_(n=0)^infinity mat(2n; n) / 4^n x^n = 1 + 1/2 x + 3 / 8 x^2 + 5 / 16 x^3 + ... $`
 `$ sin(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1)! = x - x^3 / 3! + x^5 / 5! - ... $`
