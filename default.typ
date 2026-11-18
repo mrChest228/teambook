@@ -112,7 +112,7 @@
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
     lang-outset: (x: 1pt, y: 0pt),
-    inset: 1.2pt,
+    inset: (left: 0.4pt, rest: 1.2pt),
     // Line numbers have the fill of the neighbour line and a line on the right
     number-format: n => grid.cell(
       fill: if calc.odd(n) { rgb("#FFFFFF") } else { code-fill },
@@ -140,7 +140,7 @@
     }
     show text: set text(size: font-sizes.code)
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
-    it
+    block(width: 100% + 4pt, it) // Code may go a bit to the right of the column
   }
 
   body
