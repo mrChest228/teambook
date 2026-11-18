@@ -75,10 +75,10 @@
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(
           corner,
-          dx: if corner.x == left { 6.1mm } else { -6.1mm },
-          dy: if corner.y == top { 4.1mm } else { -4.1mm },
+          dx: if corner.x == left { 5mm } else { -5mm },
+          dy: if corner.y == top { 4mm } else { -4mm },
           {
-            place(text(stroke: 3pt + white, num))
+            place(text(fill: black.transparentize(30%), stroke: 3pt + white.transparentize(30%), num))
             num
           }
         )
