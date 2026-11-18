@@ -95,8 +95,12 @@
   // Math
   show math.equation.where(block: true): set text(size: font-sizes.math-block)
   show math.equation.where(block: false): set text(size: font-sizes.math-inline)
+  // Wider space after a comma between formulas, but not inside brackets and indices: f(i, j), c_(i, j)
   show math.equation: it => {
-    show ",": [,#h(2pt)] // Wider space after a comma
+    let gap = h(7pt)
+    show ",": math.class("punctuation", ",") + gap
+    show math.lr: it => { show h.where(amount: 7pt): none; it }
+    show math.attach: it => { show h.where(amount: 7pt): none; it }
     it
   }
   show math.equation.where(block: true): set block(
