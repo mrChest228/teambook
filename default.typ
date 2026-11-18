@@ -138,9 +138,9 @@
       block(it.text)
       return
     }
-    show text: set text(size: font-sizes.code)
+    show text: set text(size: font-sizes.code, tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
-    block(width: 100% + 4pt, it) // Code may go a bit to the right of the column
+    it
   }
 
   body
