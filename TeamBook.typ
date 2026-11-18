@@ -133,6 +133,16 @@ osyncstream(std::cout) << "ans: " << ans;
 `*0xC0000094*` `-` `Integer` `Divide` `by` `Zero.`
 `*0xC000001D*` `-` `Illegal` `Instruction.` `Причины:` `выход` `из` `не-void` `функции` `без` `return.` `(_-Werror=return-type_` `в` `Other` `compiler` `options)`
 `*0xC0000417*` `-` `Invalid` `C` `Runtime` `Parameter.` `Причины:` `assert` `failed` `или` `непойманное` `исключение.#br
+== *1.6.` `Замер` `времени*#br
+```cpp
+// chrono: время как на часах, t - секунд с момента st
+auto st = chrono::steady_clock::now();
+double t = chrono::duration <double>(
+    chrono::steady_clock::now() - st).count();
+
+// clock(): время процессора с начала программы. На Linux суммируется по всем потокам и не идёт в sleep и при ожидании ввода, поэтому с потоками (1.2) нужен chrono
+double t = double(clock()) / CLOCKS_PER_SEC;
+```#br
 = *2.` `#underline[Algorithms]*` `#br
 == *2.0.` `Курево` `по` `неявному` `ключу*#br
 ```cpp
