@@ -15,8 +15,8 @@
 // Inline code: does not change the line height
 #let code(str) = box(
   radius: 3pt,
-  inset: (x: 3pt),
-  outset: (y: 3pt),
+  inset: (x: 2pt),
+  outset: (y: 1.8pt),
   fill: code-fill,
   text(font: "Courier New", size: font-sizes.code, str)
 )
@@ -67,15 +67,16 @@
 
   
     // Page number in all 4 corners, so it is seen when most of the page is covered.
-    // It may overlap the text, so it has a white outline
+    // It overlaps the text a bit, so it has a white outline.
+    // The distance to the paper edges is the one of the first version: it is tested to be printable
     foreground: context {
       set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
       let num = counter(page).display()
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(
           corner,
-          dx: if corner.x == left { margin } else { -margin },
-          dy: if corner.y == top { 1.2mm } else { -1.2mm },
+          dx: if corner.x == left { 6.1mm } else { -6.1mm },
+          dy: if corner.y == top { 4.1mm } else { -4.1mm },
           {
             place(text(stroke: 3pt + white, num))
             num
