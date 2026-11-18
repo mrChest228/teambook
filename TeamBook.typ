@@ -815,6 +815,19 @@ pair <long, long> crt(long a, long n, long b, long m) {
 == *3.5.` `Миллер-Рабин,` `Ро-Поллард*#br
 Тест` `Миллера-Рабина:` `$O(log(n))$` `умножений` `по` `модулю.` `Ро-алгоритм` `Полларда` `находит` `делитель` `в` `среднем` `за` `$O(n^(1 div 4))$,` `для` `$n approx 9 * 10^18$` `это` `около` `$10$` `мс.`
 ````cpp
+int lp[MX]; // Мин. простой делитель
+vector <int> primes;
+
+void init() {
+    iota(lp, lp + MX, 0);
+    for (int i = 2; i < MX; ++i) {
+        if (lp[i] == i)
+            primes.pb(i);
+        for (int j = 0; j < primes.size() && i * primes[j] < MX && primes[j] <= lp[i]; ++j)
+            lp[i * primes[j]] = primes[j];
+    }
+}
+
 long mulm(long a, long b, long mod) {
     return int128(a) * b % mod;
 }
@@ -827,17 +840,20 @@ long powm(long x, long n, long mod) {
     return ans;
 }
 
-// Миллер-Рабин, эти 7 оснований точны для любого n < 2^64
+// Миллер-Рабин. 7 оснований точны для нечётных n < 2^64,
+// подходят и 12 первых простых (2..37)
 int isPrime(long n) {
-    if (n < 2 || n % 2 == 0)
-        return n == 2;
+    if (n < MX)
+        return n > 1 && lp[n] == n;
+    if (n % 2 == 0)
+        return 0;
     long d = n - 1, s = 0;
     while ((d & 1) == 0) {
         d >>= 1;
         ++s;
     }
-    for (long a : {2, 325, 9375, 28178, 450775,
-                   9780504, 1795265022}) {
+    for (long a : {2, 325, 9375, 28'178, 450'775,
+                   9'780'504, 1'795'265'022}) {
         long x = powm(a % n, d, n);
         if (x <= 1 || x == n - 1)
             continue;
@@ -849,7 +865,7 @@ int isPrime(long n) {
     return 1;
 }
 
-// n - нечётное составное. Возвращает делитель d, 1 < d < n
+// n - составное. Возвращает делитель d, 1 < d < n
 long pollardRho(long n) {
     while (1) {
         long x = rnd() % n, y = x, c = rnd() % n, d = 1;
@@ -868,12 +884,13 @@ long pollardRho(long n) {
 
 // Дописывает в res простые делители n (с повторами, не по порядку)
 void factor(long n, vector <long> &res) {
-    if (n == 1)
+    if (n < MX) {
+        for (; n > 1; n /= lp[n])
+            res.pb(lp[n]);
         return;
-    if (n % 2 == 0 || isPrime(n)) {
-        long p = n % 2 == 0 ? 2 : n;
-        res.pb(p);
-        factor(n / p, res);
+    }
+    if (isPrime(n)) {
+        res.pb(n);
         return;
     }
     long d = pollardRho(n);
