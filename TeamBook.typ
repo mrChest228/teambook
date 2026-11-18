@@ -845,7 +845,7 @@ long powm(long x, long n, long mod) {
 // подходят и 12 первых простых (2..37)
 int isPrime(long n) {
     if (n < MX)
-        return n && lp[n] == n;
+        return n > 1 && lp[n] == n;
     if (n % 2 == 0)
         return 0;
     long d = n - 1, s = 0;
