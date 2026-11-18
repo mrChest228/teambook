@@ -37,9 +37,6 @@ ETT ПО ВЕРШИНАМ!
 sum_(i = 0)^(n) C(n, i) * 2^i mod M = 3^(n - floor(n / M))
 
 
-chrono::high_resolution_clock::now();
-chrono::duration<double, std::milli>
-
 gcd(x, y) <= abs(x - y), for x != y
 
 Сверхбыстрый Кун (мой + https://codeforces.com/blog/entry/17023?locale=ru)
