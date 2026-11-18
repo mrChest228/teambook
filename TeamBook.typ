@@ -813,68 +813,70 @@ pair <long, long> crt(long a, long n, long b, long m) {
 }
 ```#br
 == *3.5.` `Миллер-Рабин,` `Ро-Поллард*#br
-Тест` `Миллера-Рабина:` `$O(log(n))$` `умножений` `по` `модулю.` `Ро-алгоритм` `Полларда` `находит` `делитель` `в` `среднем` `за` `$O(n^(1/4))$,` `для` `$n approx 9 * 10^18$` `это` `около` `$10$` `мс.`
+Тест` `Миллера-Рабина:` `$O(log(n))$` `умножений` `по` `модулю.` `Ро-алгоритм` `Полларда` `находит` `делитель` `в` `среднем` `за` `$O(n^(1 div 4))$,` `для` `$n approx 9 * 10^18$` `это` `около` `$10$` `мс.`
 ````cpp
-long mul(long a, long b, long m) {
-    return (int128) a * b % m;
+long mulm(long a, long b, long mod) {
+    return int128(a) * b % mod;
 }
 
-long binpow(long a, long n, long m) {
-    long res = 1;
-    for (; n; n >>= 1, a = mul(a, a, m))
+long powm(long x, long n, long mod) {
+    long ans = 1;
+    for (long y = x; n > 0; n >>= 1, y = mulm(y, y, mod))
         if (n & 1)
-            res = mul(res, a, m);
-    return res;
+            ans = mulm(ans, y, mod);
+    return ans;
 }
 
-// Miller-Rabin, these 7 bases give the exact answer for any n < 2^64
-bool isPrime(long n) {
+// Миллер-Рабин, эти 7 оснований точны для любого n < 2^64
+int isPrime(long n) {
     if (n < 2 || n % 2 == 0)
         return n == 2;
-    int s = __builtin_ctzll(n - 1);
-    long d = n >> s; // n - 1 = d * 2^s
+    long d = n - 1, s = 0;
+    while ((d & 1) == 0) {
+        d >>= 1;
+        ++s;
+    }
     for (long a : {2, 325, 9375, 28178, 450775,
                    9780504, 1795265022}) {
-        long x = binpow(a % n, d, n);
+        long x = powm(a % n, d, n);
         if (x <= 1 || x == n - 1)
             continue;
-        bool composite = 1;
-        for (int i = 1; i < s && composite; i++) {
-            x = mul(x, x, n);
-            composite = x != n - 1;
-        }
-        if (composite)
+        for (int r = 1; r < s && x != n - 1; ++r)
+            x = mulm(x, x, n);
+        if (x != n - 1)
             return 0;
     }
     return 1;
 }
 
-// n is composite. Returns a divisor d, 1 < d < n
-long findDivisor(long n) {
-    if (n % 2 == 0)
-        return 2;
-    for (long c = 1;; c++) { // x -> x^2 + c
-        long x = 2, y = 2, d = 1;
+// n - нечётное составное. Возвращает делитель d, 1 < d < n
+long pollardRho(long n) {
+    while (1) {
+        long x = rnd() % n, y = x, c = rnd() % n, d = 1;
+        auto f = [&](long x) {
+            return (int128(x) * x + c) % n;
+        };
         while (d == 1) {
-            x = (mul(x, x, n) + c) % n;
-            y = (mul(y, y, n) + c) % n;
-            y = (mul(y, y, n) + c) % n;
+            x = f(x);
+            y = f(f(y));
             d = gcd(abs(x - y), n);
         }
-        if (d != n) // else try another c
+        if (d != n)
             return d;
     }
 }
 
-// Adds all prime divisors of n to res (unsorted, with repeats)
+// Дописывает в res простые делители n (с повторами, не по порядку)
 void factor(long n, vector <long> &res) {
     if (n == 1)
         return;
-    if (isPrime(n)) {
-        res.pb(n);
+    if (n % 2 == 0 || isPrime(n)) {
+        long p = n % 2 == 0 ? 2 : n;
+        res.pb(p);
+        factor(n / p, res);
         return;
     }
-    long d = findDivisor(n);
+    long d = pollardRho(n);
     factor(d, res);
     factor(n / d, res);
 }
