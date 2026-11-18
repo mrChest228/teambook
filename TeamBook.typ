@@ -742,13 +742,11 @@ long get(int l, int r) {
     return res;
 }
 ```#br
-== *2.11.` `Суфф.` `массив` `+` `LCP*#br
+== *2.11.` `Суффиксный` `массив` `+` `LCP*#br
 #code("sf")` `-` `суфф.` `массив,` `#code("num[i]")` `-` `позиция` `суффикса` `#code("i")` `в` `#code("sf"),` `#code("lcp[i]")` `-` `lcp` `суффиксов` `#code("sf[i]")` `и` `#code("sf[i + 1]").` `$O(n log(n))$.`
 `lcp` `суффиксов` `#code("i"),` `#code("j")` `за` `$O(1)$:` `разреженная` `таблица` `по` `#code("lcp"),` `ответ` `#code("min(lcp[L..R - 1])"),` `где` `#code("L = min(num[i], num[j])"),` `#code("R = max(num[i], num[j])").`
 ````cpp
-const int N = 1e6 + 5; // for pr and tmp arrays
-
-void build(string &s, int *sf, int *num, int *lcp) {
+void sufArr(string &s, int *sf, int *num, int *lcp) {
     assert(s.back() == '$');
     int n = s.size();
     // static: stored like globals, not on the stack; not cleared between calls
@@ -761,7 +759,7 @@ void build(string &s, int *sf, int *num, int *lcp) {
     blk[sf[0]] = 0;
     for (int i = 1; i < n; ++i)
         blk[sf[i]] = blk[sf[i - 1]] + (s[sf[i - 1]] < s[sf[i]]);
-    for (int k = 1; blk[sf[n - 1]] < n - 1; k <<= 1) { // all blks are different after the end of build
+    for (int k = 1; blk[sf[n - 1]] < n - 1; k <<= 1) { // all blks are different after the end of sufArr
         // tmp: suffixes sorted by second half
         for (int i = 0; i < n; ++i)
             tmp[i] = sf[i] - k + n * (sf[i] < k);
