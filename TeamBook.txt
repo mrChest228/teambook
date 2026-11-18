@@ -142,8 +142,9 @@ auto st = chrono::steady_clock::now();
 auto en = chrono::steady_clock::now();
 ld ms = chrono::duration <ld, milli>(en - st).count();
 ld ns = chrono::duration <ld, nano>(en - st).count();
+long x = (en - st).count(); // Целые нс. duration <long, milli> не скомпилируется
 
-// clock(): время процессора с начала программы в секундах. На Linux суммируется по всем потокам и не идёт в sleep и при ожидании ввода, поэтому с потоками (1.2) нужен chrono
+// clock(): время процессора с начала программы в секундах. На Linux суммируется по всем потокам и не идёт при sleep и ожидании ввода, поэтому с потоками (1.2) нужен chrono
 ld sec = ld(clock()) / CLOCKS_PER_SEC;
 ```
 = *2. _Algorithms_* 
