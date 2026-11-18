@@ -815,11 +815,12 @@ pair <long, long> crt(long a, long n, long b, long m) {
 == *3.5.` `Миллер-Рабин,` `Ро-Поллард*#br
 Тест` `Миллера-Рабина:` `$O(log(n))$` `умножений` `по` `модулю.` `Ро-алгоритм` `Полларда` `находит` `делитель` `в` `среднем` `за` `$O(n^(1 div 4))$,` `для` `$n approx 9 * 10^18$` `это` `около` `$10$` `мс.`
 ````cpp
-int lp[MX]; // Мин. простой делитель
+// Мин. простой делитель, MX = 1e6. Без решета fct для n < 1e6 в 27 раз медленнее, для n < 1e12 в 1.4 раза
+int lp[MX];
 vector <int> primes;
 
 void init() {
-    iota(lp, lp + MX, 0);
+    iota(lp + 2, lp + MX, 2); // lp[1] = 0, чтобы простое p == lp[p]
     for (int i = 2; i < MX; ++i) {
         if (lp[i] == i)
             primes.pb(i);
@@ -844,7 +845,7 @@ long powm(long x, long n, long mod) {
 // подходят и 12 первых простых (2..37)
 int isPrime(long n) {
     if (n < MX)
-        return n > 1 && lp[n] == n;
+        return n && lp[n] == n;
     if (n % 2 == 0)
         return 0;
     long d = n - 1, s = 0;
@@ -867,6 +868,7 @@ int isPrime(long n) {
 
 // n - составное. Возвращает делитель d, 1 < d < n
 long pollardRho(long n) {
+    assert(n >= MX);
     while (1) {
         long x = rnd() % n, y = x, c = rnd() % n, d = 1;
         auto f = [&](long x) {
@@ -883,7 +885,7 @@ long pollardRho(long n) {
 }
 
 // Дописывает в res простые делители n (с повторами, не по порядку)
-void factor(long n, vector <long> &res) {
+void fct(long n, vector <long> &res) {
     if (n < MX) {
         for (; n > 1; n /= lp[n])
             res.pb(lp[n]);
@@ -894,8 +896,8 @@ void factor(long n, vector <long> &res) {
         return;
     }
     long d = pollardRho(n);
-    factor(d, res);
-    factor(n / d, res);
+    fct(d, res);
+    fct(n / d, res);
 }
 ```#br
 == *3.6.` `Код` `Грея*#br
