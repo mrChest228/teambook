@@ -901,40 +901,42 @@ $ A'_i = A_(i + 1) * (i + 1) $`
 `$ (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $`
 `$ ln(A) = integral (A') / A, A_0 = 1 $`
 `*Деление*`
-`Деление` `в` `FFT` `разрешено` `только` `нацело.` `Дробное` `через` `NTT::divMod().`
+`Деление` `в` `FFT` `разрешено` `только` `нацело.` `Дробное` `через` `Poly::divMod().`
 `*Возведение` `в` `степень*`
-`Нельзя` `просто` `сделать` `преобразование` `Фурье,` `возвести` `$A_i$` `в` `степень` `$k$` `по` `модулю` `и` `применить` `обратное` `-` `результат` `будет` `неверным.` `Варианты:`
+`Сделать` `преобразование,` `возвести` `каждое` `значение` `в` `степень` `$k$` `и` `применить` `обратное` `(Poly::powAll())` `можно,` `только` `если` `результат` `целиком` `помещается` `в` `длину` `преобразования:` `$n > k deg(A)$.` `Иначе` `старшие` `коэффициенты` `заворачиваются` `по` `кругу` `и` `прибавляются` `к` `младшим.` `Когда` `нужны` `только` `первые` `$n$` `коэффициентов:`
 `$0$.` `Поддерживаем` `тек.` `двоичную` `степень` `(обрезанную` `до` `n` `членов)` `и` `домножаем` `на` `неё` `ответ` `$O(n log(n) log(k))$`
-`$1$.` `$exp(k ln(A))$.` `Нужно,` `чтобы` `$A_0$` `было` `равно` `1,` `однако` `NTT::pow()` `решает` `и` `эту` `проблему#br
-== *3.8.2.` `БПФ/FFT*#br
+`$1$.` `$exp(k ln(A))$.` `Нужно,` `чтобы` `$A_0$` `было` `равно` `1,` `однако` `Poly::pow()` `решает` `и` `эту` `проблему#br
+== *3.8.2.` `Полиномы` `(NTT)*#br
 ```cpp
 const int N = 1 << 20;
 
 template <int MOD, int G> // G - первообразный корень (обычно 3)
-struct Pole {
+struct Poly {
     vector <int> inv1;
-    vector <array <int, 2>> wl;
+    vector <int> rt; // rt[h + j] = w^j, где w^(2h) = 1: корни для блока длины 2h лежат подряд
     int inv(int x) {
         if (x < inv1.size())
             return inv1[x];
         return MOD - 1LL * MOD / x * inv(MOD % x) % MOD;
     }
-    int pow(int x, long k /*0 <= k < MOD - 1*/) {
+    int powm(int x, long k /*0 <= k < MOD - 1*/) {
         int ans = 1;
         for (int y = x; k > 0; k >>= 1, y = 1LL * y * y % MOD)
             if (k & 1)
                 ans = 1LL * ans * y % MOD;
         return ans;
     }
-    Pole() {
-        int k = __builtin_ctz(MOD - 1);
+    Poly() {
         inv1.resize(N + 1);
         inv1[1] = 1;
         for (int i = 2; i <= N; ++i)
             inv1[i] = MOD - 1LL * MOD / i * inv1[MOD % i] % MOD;
-        for (int i = 1; i <= N; i <<= 1) {
-            int y = pow(G, (MOD - 1) / i);
-            wl.pb({y, inv(y)});
+        rt.resize(N);
+        for (int h = 1; h < N; h <<= 1) {
+            int w = powm(G, (MOD - 1) / (2 * h));
+            rt[h] = 1;
+            for (int j = 1; j < h; ++j)
+                rt[h + j] = 1LL * rt[h + j - 1] * w % MOD;
         }
     }
     void trans(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
@@ -947,15 +949,15 @@ struct Pole {
             j ^= bit;
             if (i < j) swap(a[i], a[j]);
         }
-        for (int len = 2, p2 = 1; len <= n; len <<= 1, ++p2)
-            for (int i = 0; i < n; i += len)
-                for (int j = 0, w = 1; j < len / 2; j++) {
-                    int u = a[i + j], v = 1LL * a[i + j + len / 2] * w % MOD;
-                    a[i + j] = (u + v) % MOD;
-                    a[i + j + len / 2] = (u - v + MOD) % MOD;
-                    w = 1LL * w * wl[p2][inverse] % MOD;
+        for (int h = 1; h < n; h <<= 1)
+            for (int i = 0; i < n; i += 2 * h)
+                for (int j = 0; j < h; j++) {
+                    int u = a[i + j], v = 1LL * a[i + j + h] * rt[h + j] % MOD;
+                    a[i + j] = u + v < MOD ? u + v : u + v - MOD;
+                    a[i + j + h] = u < v ? u - v + MOD : u - v;
                 }
         if (inverse) {
+            reverse(a.begin() + 1, a.end()); // w^(-j) = w^(n - j)
             int invN = inv1[n];
             for (int &u : a)
                 u = 1LL * u * invN % MOD;
@@ -993,13 +995,12 @@ struct Pole {
     vector <int> inv(const vector <int> &a) {
         vector <int> b = { inv(a[0]) };
         for (int m = 2;; m <<= 1) {
-            vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m)),
-                         prod = mult(sub, b);
-            prod.resize(m);
-            for (int &u : prod)
-                u = (MOD - u) % MOD;
-            prod[0] = (prod[0] + 2) % MOD;
-            b = mult(b, prod);
+            vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m));
+            sub.resize(2 * m); b.resize(2 * m);
+            trans(sub, false); trans(b, false);
+            for (int i = 0; i < 2 * m; ++i) // B * (2 - A * B)
+                b[i] = 1LL * b[i] * (2 - 1LL * sub[i] * b[i] % MOD + MOD) % MOD;
+            trans(b, true);
             b.resize(m);
             if (m >= a.size())
                 break;
@@ -1029,7 +1030,19 @@ struct Pole {
         b.resize(a.size());
         return b;
     }
-    // A^k
+    // A^k целиком. deg(A) * k < N
+    vector <int> powAll(vector <int> a, int k) {
+        int n = 1;
+        while (n < (a.size() - 1) * k + 1)
+            n <<= 1;
+        a.resize(n);
+        trans(a, false);
+        for (int &u : a)
+            u = powm(u, k);
+        trans(a, true);
+        return a;
+    }
+    // A^k, первые a.size() коэффициентов
     vector <int> pow(vector <int> a, long k) {
         if (k == 0)
             return {0};
@@ -1040,7 +1053,7 @@ struct Pole {
             return {0};
         vector <int> sub(a.begin() + cnt0, a.end());
         int inv0 = inv(sub[0]),
-            pow0 = pow(sub[0], k % (MOD - 1));
+            pow0 = powm(sub[0], k % (MOD - 1));
         for (int &u : sub)
             u = 1LL * u * inv0 % MOD;
         sub = ln(sub);
@@ -1076,9 +1089,9 @@ struct Pole {
     }
 };
 
-Pole <998'244'353, 3>   P998;  // n <= 2^23 <=  8'388'608
-Pole <1'004'535'809, 3> P1004; // n <= 2^21 <=  2'097'152
-Pole <469'762'049, 3>   P469;  // n <= 2^26 <= 67'108'864
+Poly <998'244'353, 3>   P998;  // n <= 2^23 <=  8'388'608
+Poly <1'004'535'809, 3> P1004; // n <= 2^21 <=  2'097'152
+Poly <469'762'049, 3>   P469;  // n <= 2^26 <= 67'108'864
 // Main
 vec <int> c = P998.mult(a, b);
 ```#br
