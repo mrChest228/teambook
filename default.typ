@@ -95,7 +95,7 @@
   show heading: it => {
     // The number at the start: thin italic, a bit lighter than black. The font is in fonts/
     show regex("^\\d+(\\.\\d+)*\\."): n => strong(delta: -300, text(font: "Old Standard TT", style: "italic",
-      slashed-zero: false, fill: rgb("#2b2b2b"), n))
+      slashed-zero: false, fill: rgb("#4d4d4d"), n))
     text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
   }
   // Math
