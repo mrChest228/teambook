@@ -875,6 +875,41 @@ $ pi(n) approx n / ln(n) $
   [$7$], [$664'579$], [$8$], [$5'761'455$], [$9$], [$50'847'534$], [$10$], [$455'052'511$], [$11$], [$4'118'054'813$], [$12$], [$37'607'912'018$],
   [$13$], [$346'065'536'839$], [$14$], [$3'204'941'750'802$], [$15$], [$29'844'570'422'669$], [$16$], [$279'238'341'033'925$], [$17$], [$2'623'557'157'654'233$], [$18$], [$24'739'954'287'740'860$],
 )~~
+=== *Обратное, степень и корень по модулю*
+Обратное к $x$ по модулю $m$ есть, только если $gcd(x, m) = 1$. Корней степени $k$ из $c != 0$ по простому $p$ либо нет, либо ровно $d = gcd(k, p - 1)$. Корень есть, если $c^((p - 1) / d) eq.triple 1 thin (mod p)$. При $d = 1$ он равен $c^y$, где $k y eq.triple 1 thin (mod p - 1)$.
+```cpp
+int inv(int x) { // mod простое. Иначе: gcdex (3.3) или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
+    return x == 1 ? 1 : mod - mod / x * inv(mod % x) % mod;
+}
+
+int powm(int x, int k) {
+    int ans = 1;
+    for (int y = x; k > 0; k >>= 1, y = y * y % mod)
+        if (k & 1)
+            ans = ans * y % mod;
+    return ans;
+}
+
+// Корень степени k из c: x^k = c (mod простое), g - первообразный корень. -1, если корня нет. O(sqrt(mod))
+int root(int c, int k) {
+    if (c == 0)
+        return 0;
+    // Ищем t: g^t = c. Все c * g^j, j < m кладём в pos, затем перебираем g^(i * m)
+    int m = sqrtl(mod) + 1, gm = powm(g, m), t = 0;
+    unordered_map <int, int> pos;
+    for (int j = 0, cur = c; j < m; ++j, cur = cur * g % mod)
+        pos[cur] = j;
+    for (int i = 1, cur = gm; !t; ++i, cur = cur * gm % mod)
+        if (pos.count(cur))
+            t = i * m - pos[cur];
+    // x = g^y: k * y = t (mod mod - 1)
+    int d = gcd(k, mod - 1), y, z;
+    if (t % d)
+        return -1;
+    gcdex(k / d, y, (mod - 1) / d, z);
+    return powm(g, t / d % ((mod - 1) / d) * y % ((mod - 1) / d));
+}
+```
 == *3.8. Ряды и полиномы*
 === *3.8.0. Ряды*
 $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $
