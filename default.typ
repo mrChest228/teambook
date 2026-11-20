@@ -92,7 +92,12 @@
     size: font-sizes.text
   )
   // Headings stay in the line, the line break after them comes from TeamBook.typ
-  show heading: it => text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
+  show heading: it => {
+    // The number at the start: thin italic, a bit lighter than black. The font is in fonts/
+    show regex("^\\d+(\\.\\d+)*\\."): n => strong(delta: -300, text(font: "Old Standard TT", style: "italic",
+      slashed-zero: false, fill: rgb("#2b2b2b"), n))
+    text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
+  }
   // Math
   show math.equation.where(block: true): set text(size: font-sizes.math-block)
   show math.equation.where(block: false): set text(size: font-sizes.math-inline)
