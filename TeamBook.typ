@@ -111,7 +111,7 @@ fout << "Ans: " << ans; // Строку может разорвать, если 
 
 FILE* f = fopen("output.txt", "a"); // 'a' - дописывание в конец файла
 if (f != NULL) {
-    fprintf(f, "Ans: %d", ans);
+    fprintf(f, "Ans: %ld", ans); // %ld - long
     fclose(f); // 3. Закрываем
 }
 
@@ -120,6 +120,17 @@ if (f != NULL) {
 #include <syncstream>
 
 osyncstream(std::cout) << "ans: " << ans;
+```#br
+=== *printf*#br
+#code("printf(формат, ...)")` `-` `в` `консоль,` `#code("fprintf(f, формат, ...)")` `-` `в` `файл.` `Тип` `не` `проверяется:` `при` `несовпадении` `с` `форматом` `выводится` `мусор` `(предупреждение` `даёт` `#code("-Wall")).`
+````cpp
+int x; long y; ulong u; ld d; char c; string s;
+printf("%d %ld %lu %Lf %c %s\n", x, y, u, d, c, s.c_str());
+// С прекодом (#define int long) для int тоже %ld
+// double - %f, %x - 16-ричная, %% - знак процента
+printf("%.9Lf %5ld %05ld", d, y, y); // 9 знаков после запятой; ширина 5 пробелами; нулями
+// На Windows вместо %ld и %lu писать %lld и %llu
+// C++23: print("{} {:.9f}\n", y, d); - проверяет типы
 ```#br
 == *1.4.` `Builtins*#br
 #code[\_\_builtin\_clz#strong[ll]\(x)]` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
