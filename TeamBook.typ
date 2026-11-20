@@ -877,34 +877,55 @@ $ pi(n) approx n / ln(n) $`
   [$13$], [$346'065'536'839$], [$14$], [$3'204'941'750'802$], [$15$], [$29'844'570'422'669$], [$16$], [$279'238'341'033'925$], [$17$], [$2'623'557'157'654'233$], [$18$], [$24'739'954'287'740'860$],
 )#br
 === *Обратное,` `степень` `и` `корень` `по` `модулю*#br
-Обратное` `к` `$x$` `по` `модулю` `$m$` `есть,` `только` `если` `$gcd(x, m) = 1$.` `Корней` `степени` `$k$` `из` `$c != 0$` `по` `простому` `$p$` `либо` `нет,` `либо` `ровно` `$d = gcd(k, p - 1)$.` `Корень` `есть,` `если` `$c^((p - 1) / d) eq.triple 1 thin (mod p)$.` `При` `$d = 1$` `он` `равен` `$c^y$,` `где` `$k y eq.triple 1 thin (mod p - 1)$.`
+Обратное` `к` `$x$` `по` `модулю` `$m$` `есть,` `только` `если` `$gcd(x, m) = 1$.` `Корней` `степени` `$k$` `из` `$c != 0$` `по` `простому` `$p$` `либо` `нет,` `либо` `ровно` `$d = gcd(k, p - 1)$.` `Корень` `есть,` `если` `$c^((p - 1) / d) eq.triple 1 thin (mod p)$.` `При` `$d = 1$` `он` `равен` `$c^y$,` `где` `$k y eq.triple 1 thin (mod p - 1)$.` `Первообразный` `корень` `есть` `у` `любого` `простого.`
 ````cpp
-int inv(int x) { // mod простое. Иначе: gcdex (3.3) или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
+long inv(long x) { // mod простое. Иначе: gcdex (3.3) или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
     return x == 1 ? 1 : mod - mod / x * inv(mod % x) % mod;
 }
 
-int powm(int x, int k) {
-    int ans = 1;
-    for (int y = x; k > 0; k >>= 1, y = y * y % mod)
+long powm(long x, long k) {
+    long ans = 1;
+    for (long y = x; k > 0; k >>= 1, y = y * y % mod)
         if (k & 1)
             ans = ans * y % mod;
     return ans;
 }
 
+// Первообразный корень простого mod: g^((mod - 1) / q) != 1 для каждого простого q | mod - 1. O(sqrt(mod))
+long primRoot() {
+    vector <long> q;
+    long x = mod - 1;
+    for (long i = 2; i * i <= x; ++i)
+        if (x % i == 0) {
+            q.pb(i);
+            while (x % i == 0)
+                x /= i;
+        }
+    if (x > 1)
+        q.pb(x);
+    for (long g = 1;; ++g) {
+        bool ok = true;
+        for (long u : q)
+            ok &= powm(g, (mod - 1) / u) != 1;
+        if (ok)
+            return g;
+    }
+}
+
 // Корень степени k из c: x^k = c (mod простое), g - первообразный корень. -1, если корня нет. O(sqrt(mod))
-int root(int c, int k) {
+long root(long c, long k) {
     if (c == 0)
         return 0;
     // Ищем t: g^t = c. Все c * g^j, j < m кладём в pos, затем перебираем g^(i * m)
-    int m = sqrtl(mod) + 1, gm = powm(g, m), t = 0;
-    unordered_map <int, int> pos;
-    for (int j = 0, cur = c; j < m; ++j, cur = cur * g % mod)
+    long m = sqrtl(mod) + 1, gm = powm(g, m), t = 0;
+    unordered_map <long, long> pos;
+    for (long j = 0, cur = c; j < m; ++j, cur = cur * g % mod)
         pos[cur] = j;
-    for (int i = 1, cur = gm; !t; ++i, cur = cur * gm % mod)
+    for (long i = 1, cur = gm; !t; ++i, cur = cur * gm % mod)
         if (pos.count(cur))
             t = i * m - pos[cur];
     // x = g^y: k * y = t (mod mod - 1)
-    int d = gcd(k, mod - 1), y, z;
+    long d = gcd(k, mod - 1), y, z;
     if (t % d)
         return -1;
     gcdex(k / d, y, (mod - 1) / d, z);
