@@ -1298,6 +1298,8 @@ ld dist(vector <point> a, vector <point> b) {
     bool inside = 1; // (0, 0) строго внутри c
     for (int i = 0; i < c.size(); i++) {
         point p = c[i], q = c[(i + 1) % c.size()];
+        // Граница не для a и b, а для вершин и сторон суммы c = a + (-b): иначе len2, dot и cross не влезут в long
+        assert(max({abs(p.x), abs(p.y), abs(q.x - p.x), abs(q.y - p.y)}) <= 2e9);
         inside &= p.cross(q) < 0;
         res = min(res, distToSegment({0, 0}, p, q));
     }
