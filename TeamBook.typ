@@ -1032,14 +1032,15 @@ struct Poly {
     }
     // A^k целиком. deg(A) * k < N
     vector <int> powAll(vector <int> a, int k) {
-        int n = 1;
-        while (n < (a.size() - 1) * k + 1)
+        int sz = (a.size() - 1) * k + 1, n = 1;
+        while (n < sz)
             n <<= 1;
         a.resize(n);
         trans(a, false);
         for (int &u : a)
             u = powm(u, k);
         trans(a, true);
+        a.resize(sz);
         return a;
     }
     // A^k, первые a.size() коэффициентов
