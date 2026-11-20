@@ -1085,18 +1085,11 @@ vec <int> c = P998.mult(a, b);
 = *4.` `#underline[Geometry]*#br
 == *4.0.` `Сортировка` `векторов` `по` `углу*#br
 ```cpp
-bool comp(pair <int, int> a, pair <int, int> b) {
-    if (a.f < 0 && b.f < 0)
-        return comp({-a.f, -a.s},
-                    {-b.f, -b.s});
-    if (a.f < 0) //b.f >= 0
-        return 0;
-    if (b.f < 0) //a.f >= 0
-        return 1;
-    if (a.f == 0)
-        return a.s > 0;
-    if (b.f == 0)
-        return b.s < 0;
+// По часовой стрелке, начиная с направления вверх
+bool comp(pair <long, long> a, pair <long, long> b) {
+    pair <long, long> o = {0, 0};
+    if ((a < o) != (b < o)) // Левая полуплоскость позже правой
+        return b < o;
     return a.s * b.f > b.s * a.f;
 }
 ```#br
@@ -1225,7 +1218,7 @@ tr.add(l, r, {k, b});
 tr.get(x);
 ```#br
 == *4.3.` `Сумма` `Минковского*#br
-Находит` `расстояние` `между` `выпуклыми` `многоугольниками` `(с` `обходом` `по` `часовой` `стрелке,` `предварительно` `умножив` `один` `из` `их` `на` `-1` `и` `развернув)` `и` `проверяет` `на` `пересечение` `(точка` `$(0, 0)$` `лежит` `в` `сумме` `Минковского).`
+#code("minkowski")` `находит` `сумму` `выпуклых` `многоугольников` `(обход` `по` `часовой` `стрелке;` `точка` `и` `отрезок` `тоже` `подходят).` `Точки` `на` `сторонах` `убирает` `#code("normalize"),` `сонаправленные` `стороны` `разных` `многоугольников` `складываются.` `#code("dist")` `находит` `расстояние` `между` `ними:` `один` `умножаем` `на` `$-1$` `(обход` `при` `этом` `не` `меняется)` `и` `ищем` `расстояние` `от` `$(0, 0)$` `до` `суммы.`
 ````cpp
 struct point {
     long x, y;
@@ -1236,7 +1229,18 @@ struct point {
     long len2() { return x * x + y * y; }
 };
 
-void reorderPoly(vector <point> &p) { // Переупорядочиваем, чтобы начиналось с нижнего-левого (лексикографически)
+void normalize(vector <point> &p) { // Убираем точки на сторонах
+    int n = p.size();
+    if (n < 3) // Точка или отрезок
+        return;
+    vector <point> res;
+    for (int i = 0; i < n; i++)
+        if ((p[i] - p[(i + n - 1) % n]).cross(p[(i + 1) % n] - p[i]) != 0)
+            res.pb(p[i]);
+    p = res;
+}
+
+void reorder(vector <point> &p) { // Переупорядочиваем, чтобы начиналось с нижнего-левого (лексикографически)
     int pos = 0;
     for (int i = 1; i < p.size(); i++)
         if (p[i].y < p[pos].y || (p[i].y == p[pos].y && p[i].x < p[pos].x))
@@ -1245,8 +1249,8 @@ void reorderPoly(vector <point> &p) { // Переупорядочиваем, ч�
 }
 
 vector <point> minkowski(vector <point> a, vector <point> b) {
-    reorderPoly(a);
-    reorderPoly(b);
+    reorder(a);
+    reorder(b);
 
     vector <point> res;
     res.pb(a[0] + b[0]);
@@ -1263,24 +1267,69 @@ vector <point> minkowski(vector <point> a, vector <point> b) {
             ++i;
             continue;
         }
-        point edgeA = a[i + 1] - a[i], edgeB = b[j + 1] - b[j];
+        point edgeA = a[(i + 1) % a.size()] - a[i], edgeB = b[(j + 1) % b.size()] - b[j];
         long cp = edgeA.cross(edgeB);
 
-        res.pb(res.back() + (cp > 0 ? edgeA : (cp < 0 ? edgeB : edgeA + edgeB)));
+        res.pb(res.back() + (cp < 0 ? edgeA : (cp > 0 ? edgeB : edgeA + edgeB)));
 
-        if (cp >= 0) ++i;
-        if (cp <= 0) ++j;
+        if (cp <= 0) ++i;
+        if (cp >= 0) ++j;
     }
+    res.pop_back(); // Последняя точка совпадает с первой
     return res;
 }
 
-double distToSegment(point p, point a, point b) {
+ld distToSegment(point p, point a, point b) {
     point ab = b - a, ap = p - a;
-    if (ab.dot(ap) < 0) // Ближе к A
-        return sqrt(ap.len2());
+    if (ab.dot(ap) <= 0) // Ближе к A
+        return sqrtl(ap.len2());
     point ba = a - b, bp = p - b;
-    if (ba.dot(bp) < 0) // Ближе к B
-        return sqrt(bp.len2());
-    return abs(ab.cross(ap)) / sqrt(ab.len2()); // Перпендикуляр
+    if (ba.dot(bp) <= 0) // Ближе к B
+        return sqrtl(bp.len2());
+    return abs(ab.cross(ap)) / sqrtl(ab.len2()); // Перпендикуляр
+}
+
+// Расстояние между a и b; 0, если пересекаются
+ld dist(vector <point> a, vector <point> b) {
+    for (point &p : b)
+        p = {-p.x, -p.y};
+    vector <point> c = minkowski(a, b);
+    ld res = 1e18;
+    bool inside = 1; // (0, 0) строго внутри c
+    for (int i = 0; i < c.size(); i++) {
+        point p = c[i], q = c[(i + 1) % c.size()];
+        // Граница не для a и b, а для вершин и сторон суммы c = a + (-b): иначе len2, dot и cross не влезут в long
+        assert(max({abs(p.x), abs(p.y), abs(q.x - p.x), abs(q.y - p.y)}) <= 2e9);
+        inside &= p.cross(q) < 0;
+        res = min(res, distToSegment({0, 0}, p, q));
+    }
+    return inside ? 0 : res;
+}
+// Main
+vector <point> a(n), b(m);
+// Читаем a и b по часовой стрелке
+normalize(a);
+normalize(b);
+cout << dist(a, b); // 0, если пересекаются или касаются
+```#br
+== *4.4.` `Ближайшая` `пара` `точек*#br
+Идём` `по` `точкам` `слева` `направо` `и` `храним` `в` `set` `по` `$y$` `те,` `что` `левее` `не` `больше` `чем` `на` `тек.` `ответ` `$d$.` `Для` `новой` `точки` `смотрим` `только` `точки` `с` `$y$` `в` `пределах` `$d$:` `их` `$O(1)$.` `Итого` `$O(n log(n))$.`
+````cpp
+// Квадрат расстояния между двумя ближайшими точками
+long closest(vector <pair <long, long>> p) {
+    sort(p.begin(), p.end());
+    set <pair <long, long>> st; // {y, x}
+    long best = 8e18;
+    for (int i = 0, j = 0; i < p.size() && best; ++i) {
+        long d = sqrtl(best) + 1;
+        for (; p[i].f - p[j].f >= d; ++j)
+            st.erase({p[j].s, p[j].f});
+        for (auto it = st.lower_bound({p[i].s - d, -8e18}); it != st.end() && it->f <= p[i].s + d; ++it) {
+            long dx = p[i].f - it->s, dy = p[i].s - it->f;
+            best = min(best, dx * dx + dy * dy);
+        }
+        st.insert({p[i].s, p[i].f});
+    }
+    return best;
 }
 `````
