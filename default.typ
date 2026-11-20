@@ -122,12 +122,13 @@
     default-color: rgb("#FFFFFF"),
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
-    lang-outset: (x: 1pt, y: 0pt),
-    inset: (left: 0.4pt, rest: 1.2pt),
+    lang-outset: (x: 0.2pt, y: 0pt), // The label stays inside the block with the right inset of 0.4pt
+    inset: (x: 0.4pt, y: 1.2pt), // Code is closer to the left line and to the right edge
     // Line numbers have the fill of the neighbour line and a line on the right
     number-format: n => grid.cell(
       fill: if calc.odd(n) { rgb("#FFFFFF") } else { code-fill },
       stroke: (right: 0.5pt + rgb("#888888")),
+      inset: 1.2pt,
       str(n)
     )
   )
