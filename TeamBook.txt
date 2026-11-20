@@ -822,41 +822,92 @@ pair <long, long> crt(long a, long n, long b, long m) {
     return {x + (x < 0) * n * m, n * m};
 }
 ```
-== *3.5. Ро-алгоритм Полларда*
-Рандомизированный алгоритм факторизации целых чисел, работающий за время $O(n^(1/4))$.
+== *3.5. Миллер-Рабин, Ро-Поллард*
+Тест Миллера-Рабина: $O(log(n))$ умножений по модулю. Ро-алгоритм Полларда находит делитель в среднем за $O(n^(1 div 4))$, для $n approx 9 * 10^18$ это около $10$ мс.
 ```cpp
-inline long f(long x, long n) { 
-	return (__int128_t) (x + 1) * (x + 1) % n; 
+// Мин. простой делитель, MX = 1e6. Без решета fct для n < 1e6 в 27 раз медленнее, для n < 1e12 в 1.4 раза
+int lp[MX];
+vector <int> primes;
+
+void init() {
+    iota(lp + 2, lp + MX, 2); // lp[1] = 0, чтобы простое p == lp[p]
+    for (int i = 2; i < MX; ++i) {
+        if (lp[i] == i)
+            primes.pb(i);
+        for (int j = 0; j < primes.size() && i * primes[j] < MX && primes[j] <= lp[i]; ++j)
+            lp[i * primes[j]] = primes[j];
+    }
 }
 
-long find_divisor(long n, long seed = 1) {
-    long x = seed, y = seed, d = 1;
-    while (d == 1 || d == n) {
-        y = f(y);
-        x = f(f(x));
-        d = gcd(abs(x - y), n);
-    }
-    return d;
+long mulm(long a, long b, long mod) {
+    return int128(a) * b % mod;
 }
 
-long pollard(long n, int iter = 100000) {
-    long b0 = rnd() % n, b1 = b0, g;
-    mulmod(b1, b1, n);
-    if (++b1 == n)
-        b1 = 0;
-    g = gcd(abs(b1 - b0), n);
-    for (int i = 0; i < iter && (g == 1 || g == n); ++i) {
-        mulmod (b0, b0, n);
-        if (++b0 == n)
-            b0 = 0;
-        mulmod (b1, b1, n);
-        ++b1;
-        mulmod (b1, b1, n);
-        if (++b1 == n)
-            b1 = 0;
-        g = gcd(abs (b1 - b0), n);
+long powm(long x, long n, long mod) {
+    long ans = 1;
+    for (long y = x; n > 0; n >>= 1, y = mulm(y, y, mod))
+        if (n & 1)
+            ans = mulm(ans, y, mod);
+    return ans;
+}
+
+// Миллер-Рабин. 7 оснований точны для нечётных n < 2^64,
+// подходят и 12 первых простых (2..37)
+int isPrime(long n) {
+    if (n < MX)
+        return n > 1 && lp[n] == n;
+    if (n % 2 == 0)
+        return 0;
+    long d = n - 1, s = 0;
+    while ((d & 1) == 0) {
+        d >>= 1;
+        ++s;
     }
-    return g;
+    for (long a : {2, 325, 9375, 28'178, 450'775,
+                   9'780'504, 1'795'265'022}) {
+        long x = powm(a % n, d, n);
+        if (x <= 1 || x == n - 1)
+            continue;
+        for (int r = 1; r < s && x != n - 1; ++r)
+            x = mulm(x, x, n);
+        if (x != n - 1)
+            return 0;
+    }
+    return 1;
+}
+
+// n - составное. Возвращает делитель d, 1 < d < n
+long pollardRho(long n) {
+    assert(n >= MX);
+    while (1) {
+        long x = rnd() % n, y = x, c = rnd() % n, d = 1;
+        auto f = [&](long x) {
+            return (int128(x) * x + c) % n;
+        };
+        while (d == 1) {
+            x = f(x);
+            y = f(f(y));
+            d = gcd(abs(x - y), n);
+        }
+        if (d != n)
+            return d;
+    }
+}
+
+// Дописывает в res простые делители n (с повторами, не по порядку)
+void fct(long n, vector <long> &res) {
+    if (n < MX) {
+        for (; n > 1; n /= lp[n])
+            res.pb(lp[n]);
+        return;
+    }
+    if (isPrime(n)) {
+        res.pb(n);
+        return;
+    }
+    long d = pollardRho(n);
+    fct(d, res);
+    fct(n / d, res);
 }
 ```
 == *3.6. Код Грея*
