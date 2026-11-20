@@ -1063,7 +1063,7 @@ struct Poly {
             inv1[i] = MOD - 1LL * MOD / i * inv1[MOD % i] % MOD;
         rt.resize(N);
         for (int k = 1; k < N; k <<= 1) {
-            int w = powm(G, (MOD - 1) / (2 * k));
+            int w = powm(G, (MOD - 1) / (k * 2));
             rt[k] = 1;
             for (int j = 1; j < k; ++j)
                 rt[k + j] = 1LL * rt[k + j - 1] * w % MOD;
@@ -1074,8 +1074,8 @@ struct Poly {
     void NTT(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
         int n = a.size(); // n - степень двойки
         if (!inverse) {
-            for (int k = n / 2; k > 0; k >>= 1) // от длинных блоков к коротким
-                for (int i = 0; i < n; i += 2 * k)
+            for (int k = n / 2; k >= 1; k >>= 1) // от длинных блоков к коротким
+                for (int i = 0; i < n; i += k * 2)
                     for (int j = 0; j < k; j++) {
                         int u = a[i + j], v = a[i + j + k];
                         a[i + j] = u + v < MOD ? u + v : u + v - MOD;
@@ -1084,7 +1084,7 @@ struct Poly {
             return;
         }
         for (int k = 1; k < n; k <<= 1) // от коротких блоков к длинным
-            for (int i = 0; i < n; i += 2 * k)
+            for (int i = 0; i < n; i += k * 2)
                 for (int j = 0; j < k; j++) {
                     int u = a[i + j], v = 1LL * a[i + j + k] * rt[k + j] % MOD;
                     a[i + j] = u + v < MOD ? u + v : u + v - MOD;
@@ -1128,9 +1128,9 @@ struct Poly {
         vector <int> b = { inv(a[0]) };
         for (int m = 2;; m <<= 1) {
             vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m));
-            sub.resize(2 * m); b.resize(2 * m);
+            sub.resize(m * 2); b.resize(m * 2);
             NTT(sub, false); NTT(b, false);
-            for (int i = 0; i < 2 * m; ++i) // B * (2 - A * B)
+            for (int i = 0; i < m * 2; ++i) // B * (2 - A * B)
                 b[i] = 1LL * b[i] * (2 - 1LL * sub[i] * b[i] % MOD + MOD) % MOD;
             NTT(b, true);
             b.resize(m);
