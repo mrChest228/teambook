@@ -1043,7 +1043,7 @@ const int N = 1 << 20;
 template <int MOD, int G> // G - первообразный корень (обычно 3)
 struct Poly {
     vector <int> inv1;
-    vector <int> rt; // rt[h + j] = w^j, где w^(2h) = 1: корни для блока длины 2h лежат подряд
+    vector <int> rt; // rt[k + j] = w^j, где w^(2k) = 1: корни для блока длины 2k лежат подряд
     int inv(int x) {
         if (x < inv1.size())
             return inv1[x];
@@ -1062,33 +1062,33 @@ struct Poly {
         for (int i = 2; i <= N; ++i)
             inv1[i] = MOD - 1LL * MOD / i * inv1[MOD % i] % MOD;
         rt.resize(N);
-        for (int h = 1; h < N; h <<= 1) {
-            int w = powm(G, (MOD - 1) / (2 * h));
-            rt[h] = 1;
-            for (int j = 1; j < h; ++j)
-                rt[h + j] = 1LL * rt[h + j - 1] * w % MOD;
+        for (int k = 1; k < N; k <<= 1) {
+            int w = powm(G, (MOD - 1) / (2 * k));
+            rt[k] = 1;
+            for (int j = 1; j < k; ++j)
+                rt[k + j] = 1LL * rt[k + j - 1] * w % MOD;
         }
     }
     // Прямое (DIF) выдаёт значения в порядке перевёрнутых битов, обратное (DIT) принимает их в этом же порядке:
     // перестановка не нужна, пока между ними только поэлементные операции
-    void trans(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
-        int n = a.size(); // n = 2^k
+    void NTT(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
+        int n = a.size(); // n - степень двойки
         if (!inverse) {
-            for (int h = n / 2; h > 0; h >>= 1) // от длинных блоков к коротким
-                for (int i = 0; i < n; i += 2 * h)
-                    for (int j = 0; j < h; j++) {
-                        int u = a[i + j], v = a[i + j + h];
+            for (int k = n / 2; k > 0; k >>= 1) // от длинных блоков к коротким
+                for (int i = 0; i < n; i += 2 * k)
+                    for (int j = 0; j < k; j++) {
+                        int u = a[i + j], v = a[i + j + k];
                         a[i + j] = u + v < MOD ? u + v : u + v - MOD;
-                        a[i + j + h] = 1LL * (u - v + MOD) * rt[h + j] % MOD;
+                        a[i + j + k] = 1LL * (u - v + MOD) * rt[k + j] % MOD;
                     }
             return;
         }
-        for (int h = 1; h < n; h <<= 1) // от коротких блоков к длинным
-            for (int i = 0; i < n; i += 2 * h)
-                for (int j = 0; j < h; j++) {
-                    int u = a[i + j], v = 1LL * a[i + j + h] * rt[h + j] % MOD;
+        for (int k = 1; k < n; k <<= 1) // от коротких блоков к длинным
+            for (int i = 0; i < n; i += 2 * k)
+                for (int j = 0; j < k; j++) {
+                    int u = a[i + j], v = 1LL * a[i + j + k] * rt[k + j] % MOD;
                     a[i + j] = u + v < MOD ? u + v : u + v - MOD;
-                    a[i + j + h] = u < v ? u - v + MOD : u - v;
+                    a[i + j + k] = u < v ? u - v + MOD : u - v;
                 }
         reverse(a.begin() + 1, a.end()); // w^(-j) = w^(n - j)
         int invN = inv1[n];
@@ -1100,10 +1100,10 @@ struct Poly {
         while (n < a.size() + b.size() - 1)
             n <<= 1;
         a.resize(n); b.resize(n);
-        trans(a, false); trans(b, false);
+        NTT(a, false); NTT(b, false);
         for (int i = 0; i < n; i++)
             a[i] = (1LL * a[i] * b[i]) % MOD;
-        trans(a, true);
+        NTT(a, true);
         while (a.size() > 1 && a.back() == 0)
             a.pop_back();
         return a;
@@ -1129,10 +1129,10 @@ struct Poly {
         for (int m = 2;; m <<= 1) {
             vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m));
             sub.resize(2 * m); b.resize(2 * m);
-            trans(sub, false); trans(b, false);
+            NTT(sub, false); NTT(b, false);
             for (int i = 0; i < 2 * m; ++i) // B * (2 - A * B)
                 b[i] = 1LL * b[i] * (2 - 1LL * sub[i] * b[i] % MOD + MOD) % MOD;
-            trans(b, true);
+            NTT(b, true);
             b.resize(m);
             if (m >= a.size())
                 break;
@@ -1168,10 +1168,10 @@ struct Poly {
         while (n < sz)
             n <<= 1;
         a.resize(n);
-        trans(a, false);
+        NTT(a, false);
         for (int &u : a)
             u = powm(u, k);
-        trans(a, true);
+        NTT(a, true);
         a.resize(sz);
         return a;
     }
