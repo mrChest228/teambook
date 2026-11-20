@@ -122,13 +122,13 @@
     default-color: rgb("#FFFFFF"),
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
-    lang-outset: (x: 0.2pt, y: 0pt), // The label stays inside the block with the right inset of 0.4pt
-    inset: (x: 0.4pt, y: 1.2pt), // Code is closer to the left line and to the right edge
+    lang-outset: (x: 0.7pt, y: 0pt), // The label stays in place with the smaller right inset
+    inset: (x: 1pt, y: 1.2pt), // codly multiplies it by 1.5
     // Line numbers have the fill of the neighbour line and a line on the right
     number-format: n => grid.cell(
       fill: if calc.odd(n) { rgb("#FFFFFF") } else { code-fill },
       stroke: (right: 0.5pt + rgb("#888888")),
-      inset: 1.2pt,
+      inset: 1.2pt * 1.5, // Line numbers stay in place
       str(n)
     )
   )
@@ -150,7 +150,8 @@
       block(it.text)
       return
     }
-    show text: set text(size: font-sizes.code, tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
+    show text: set text(size: font-sizes.code)
+    show raw.line: set text(tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
     it
   }
