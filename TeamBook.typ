@@ -1085,18 +1085,11 @@ vec <int> c = P998.mult(a, b);
 = *4.` `#underline[Geometry]*#br
 == *4.0.` `Сортировка` `векторов` `по` `углу*#br
 ```cpp
-bool comp(pair <int, int> a, pair <int, int> b) {
-    if (a.f < 0 && b.f < 0)
-        return comp({-a.f, -a.s},
-                    {-b.f, -b.s});
-    if (a.f < 0) //b.f >= 0
-        return 0;
-    if (b.f < 0) //a.f >= 0
-        return 1;
-    if (a.f == 0)
-        return a.s > 0;
-    if (b.f == 0)
-        return b.s < 0;
+// По часовой стрелке, начиная с направления вверх
+bool comp(pair <long, long> a, pair <long, long> b) {
+    pair <long, long> o = {0, 0};
+    if ((a < o) != (b < o)) // Левая полуплоскость позже правой
+        return b < o;
     return a.s * b.f > b.s * a.f;
 }
 ```#br
