@@ -190,7 +190,7 @@ void insert(Node *v, int k) { // 0 <= k <= n
     root = merge(q.f, merge(v, q.s));
 }
 ```
-== *2.1. $2$-SAT*
+== *2.1. 2-SAT*
 ```cpp
 bool b[N + N];
 int comp[N + N];
