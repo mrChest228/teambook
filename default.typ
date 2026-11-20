@@ -1,8 +1,8 @@
 #let margin = 5mm
 #let gutter = 3.5mm
 #let cols-cnt = 3
-// Font sizes: headings of 3 levels, main text, code
-#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 7pt, code: 7pt, math-block: 9pt, math-inline: 8.25pt)
+// Font sizes: headings of 3 levels and numbers at their start, main text, code
+#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, num1: 12pt, num2: 10pt, num3: 9pt, text: 7pt, code: 7pt, math-block: 9pt, math-inline: 8.25pt)
 // Background of the inline code and of every second line of the code block
 #let code-fill = rgb("#EEEEEE")
 
@@ -93,9 +93,9 @@
   )
   // Headings stay in the line, the line break after them comes from TeamBook.typ
   show heading: it => {
-    // The number at the start: thin italic, a bit lighter than black. The font is in fonts/
+    // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
     show regex("^\\d+(\\.\\d+)*\\."): n => strong(delta: -300, text(font: "Old Standard TT", style: "italic",
-      slashed-zero: false, fill: rgb("#4d4d4d"), n))
+      size: font-sizes.at("num" + str(it.depth)), slashed-zero: false, fill: rgb("#4d4d4d"), n))
     text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
   }
   // Math
