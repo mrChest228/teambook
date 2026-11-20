@@ -24,6 +24,7 @@ typedef __int128 int128; // Или __int128_t
 #define ulong uint64_t
 
 using namespace std;
+#define int long
 mt19937_64 rnd(chrono::steady_clock::now(). time_since_epoch().count());
 
 // DEBUG or RELEASE input
