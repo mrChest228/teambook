@@ -1,8 +1,8 @@
 #let margin = 5mm
 #let gutter = 3.5mm
 #let cols-cnt = 3
-// Font sizes: headings of 3 levels, main text, code
-#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, text: 7pt, code: 7pt)
+// Font sizes: headings of 3 levels and numbers at their start, main text, code
+#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, num1: 12pt, num2: 10pt, num3: 9pt, text: 7pt, code: 7pt, math-block: 9pt, math-inline: 8.25pt)
 // Background of the inline code and of every second line of the code block
 #let code-fill = rgb("#EEEEEE")
 
@@ -87,12 +87,28 @@
   )
   set columns(gutter: gutter) // Устанавливаем gutter между колонками
   set text(
-    font: "Georgia",
+    // Digits are from Gelasio (fonts/): in Georgia they have different heights
+    font: ((name: "Gelasio", covers: regex("[0-9]")), "Georgia"), number-type: "lining", slashed-zero: true,
     size: font-sizes.text
   )
   // Headings stay in the line, the line break after them comes from TeamBook.typ
-  show heading: it => text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
+  show heading: it => {
+    // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
+    show regex("^\\d+(\\.\\d+)*\\."): n => strong(delta: -300, text(font: "Old Standard TT", style: "italic",
+      size: font-sizes.at("num" + str(it.depth)), slashed-zero: false, fill: rgb("#4d4d4d"), n))
+    text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
+  }
   // Math
+  show math.equation.where(block: true): set text(size: font-sizes.math-block)
+  show math.equation.where(block: false): set text(size: font-sizes.math-inline)
+  // Block formulas: wider space after a comma between formulas, but not inside brackets and indices: f(i, j), c_(i, j)
+  show math.equation.where(block: true): it => {
+    let gap = h(10pt)
+    show ",": math.class("punctuation", ",") + gap
+    show math.lr: it => { show h.where(amount: 10pt): none; it }
+    show math.attach: it => { show h.where(amount: 10pt): none; it }
+    it
+  }
   show math.equation.where(block: true): set block(
     above: 8pt,
     below: -5pt
@@ -111,12 +127,13 @@
     default-color: rgb("#FFFFFF"),
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
-    lang-outset: (x: 1pt, y: 0pt),
-    inset: 1.2pt,
+    lang-outset: (x: 0.7pt, y: 0pt), // The label stays in place with the smaller right inset
+    inset: (x: 1pt, y: 1.2pt), // codly multiplies it by 1.5
     // Line numbers have the fill of the neighbour line and a line on the right
     number-format: n => grid.cell(
       fill: if calc.odd(n) { rgb("#FFFFFF") } else { code-fill },
       stroke: (right: 0.5pt + rgb("#888888")),
+      inset: 1.2pt * 1.5, // Line numbers stay in place
       str(n)
     )
   )
@@ -139,6 +156,7 @@
       return
     }
     show text: set text(size: font-sizes.code)
+    show raw.line: set text(tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
     it
   }
