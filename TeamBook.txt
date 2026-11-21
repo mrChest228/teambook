@@ -1020,7 +1020,7 @@ $ ln(A) = integral (A') / A, A_0 = 1 $
 *Деление*
 Деление в FFT разрешено только нацело. Дробное через Poly::divMod().
 *Возведение в степень*
-Сделать преобразование, возвести каждое значение в степень $k$ и применить обратное (Poly::powAll()) можно, только если результат целиком помещается в длину преобразования: $n > k deg(A)$. Иначе старшие коэффициенты заворачиваются по кругу и прибавляются к младшим. Когда нужны только первые $n$ коэффициентов:
+Сделать преобразование, возвести каждое значение в степень $k$ и применить обратное (так делает Poly::pow(), когда $A^k$ помещается в длину $A$) можно, только если результат целиком помещается в длину преобразования: $n > k deg(A)$. Иначе старшие коэффициенты заворачиваются по кругу и прибавляются к младшим. Когда нужны только первые $n$ коэффициентов:
 $0$. Поддерживаем тек. двоичную степень (обрезанную до n членов) и домножаем на неё ответ $O(n log(n) log(k))$
 $1$. $exp(k ln(A))$. Нужно, чтобы $A_0$ было равно 1, однако Poly::pow() решает и эту проблему
 *Сведение к ln и exp* (первые $n$ коэффициентов)
@@ -1162,28 +1162,26 @@ struct Poly {
         b.resize(a.size());
         return b;
     }
-    // A^k целиком. deg(A) * k < N
-    vector <int> powAll(vector <int> a, int k) {
-        int sz = (a.size() - 1) * k + 1, n = 1;
-        while (n < sz)
-            n <<= 1;
-        a.resize(n);
-        NTT(a, false);
-        for (int &u : a)
-            u = powm(u, k);
-        NTT(a, true);
-        a.resize(sz);
-        return a;
-    }
     // A^k, первые a.size() коэффициентов
     vector <int> pow(vector <int> a, long k) {
-        if (k == 0)
-            return {0};
-        int cnt0 = 0;
-        while (a.size() && a[cnt0] == 0)
+        int sz = a.size(), deg = sz - 1, n = 1, cnt0 = 0;
+        while (deg > 0 && a[deg] == 0)
+            --deg;
+        if (k <= (sz - 1) / max(deg, 1)) { // A^k помещается целиком: возводим в степень каждое значение
+            while (n < sz)
+                n <<= 1;
+            a.resize(n);
+            NTT(a, false);
+            for (int &u : a)
+                u = powm(u, k);
+            NTT(a, true);
+            a.resize(sz);
+            return a;
+        }
+        while (cnt0 < sz && a[cnt0] == 0)
             ++cnt0;
-        if (cnt0 * k >= a.size())
-            return {0};
+        if (cnt0 > (sz - 1) / k)
+            return vector <int> (sz);
         vector <int> sub(a.begin() + cnt0, a.end());
         int inv0 = inv(sub[0]),
             pow0 = powm(sub[0], k % (MOD - 1));
@@ -1191,13 +1189,11 @@ struct Poly {
             u = 1LL * u * inv0 % MOD;
         sub = ln(sub);
         for (int &u : sub)
-            u = 1LL * u * k % MOD;
+            u = 1LL * u * (k % MOD) % MOD;
         sub = exp(sub);
         cnt0 *= k;
-        for (int i = a.size() - 1; i >= 0; --i)
+        for (int i = sz - 1; i >= 0; --i)
             a[i] = (cnt0 <= i ? 1LL * sub[i - cnt0] * pow0 % MOD : 0);
-        while (a.size() > 1 && a.back() == 0)
-            a.pop_back();
         return a;
     }
     pair <vector <int>, vector <int>> divMod(const vector <int> &a, const vector <int> &b) {
