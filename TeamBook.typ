@@ -1102,6 +1102,14 @@ $ A'_i = A_(i + 1) * (i + 1), (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0
 `$ product_i (1 + x^(a_i)) = exp(sum_i sum_(k >= 1) (-1)^(k - 1) x^(k a_i) / k) $`
 `$ product_i 1 / (1 - x^(a_i)) = exp(sum_i sum_(k >= 1) x^(k a_i) / k) $`
 `Корень` `степени` `$r$:` `Poly::pow(A,` `inv(r)).` `Если` `$A_0 = c != 1$,` `то` `$root(r, A) = root(r, c) root(r, A / c)$,` `$root(r, c)$` `по` `модулю` `-` `root(c,` `r)` `из` `3.7.` `Суммы` `под` `exp` `в` `двух` `последних` `формулах` `собираются` `за` `$O(n log(n))$:` `для` `каждого` `$a$` `перебираем` `$k a < n$.`
+`*Операции` `над` `значениями*`
+`$"NTT"(A)_i$` `-` `значение` `$A$` `в` `$i$-й` `точке.` `Преобразование` `линейно:` `прямое` `делаем` `раз` `на` `каждый` `полином,` `обратное` `-` `раз` `на` `ответ,` `между` `ними` `всё` `поэлементно.` `Длина` `$n$` `больше` `степени` `ответа.`
+`$ k A = k A_0 + k A_1 x + ... = "NTT"^(-1)(k thin "NTT"(A)_i) $`
+`$ A plus.minus k = (A_0 plus.minus k) + A_1 x + ... = "NTT"^(-1)("NTT"(A)_i plus.minus k) $`
+`$ A plus.minus B = "NTT"^(-1)("NTT"(A)_i plus.minus "NTT"(B)_i) $`
+`$ (A + k) B = "NTT"^(-1)(("NTT"(A)_i + k) thin "NTT"(B)_i) $`
+`$ A B + C D = "NTT"^(-1)("NTT"(A)_i thin "NTT"(B)_i + "NTT"(C)_i thin "NTT"(D)_i) $`
+`$x A = A_0 x + A_1 x^2 + ...$` `-` `сдвигаем` `коэффициенты` `до` `прямого` `или` `после` `обратного:` `значения` `лежат` `в` `порядке` `перевёрнутых` `битов,` `множитель` `у` `каждого` `свой.`
 `*Что` `считают*`
 `$A_i$` `-` `кол-во` `объектов` `веса` `$i$.` `Коэффициент` `при` `$x^n$` `в` `ответе` `-` `кол-во` `способов` `набрать` `вес` `$n$:`
 `$A B$` `-` `объект` `из` `$A$` `и` `объект` `из` `$B$.`  `$A^k$` `-` `$k$` `объектов` `по` `порядку.`
@@ -1112,6 +1120,11 @@ $ A'_i = A_(i + 1) * (i + 1), (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0
 == *3.8.2.` `Полиномы` `(NTT)*#br
 ```cpp
 const int N = 1 << 20;
+
+void shrink(vector <int> &v) { // Убираем нули в конце
+    while (v.size() > 1 && v.back() == 0)
+        v.pop_back();
+}
 
 template <int MOD, int G> // G - первообразный корень (обычно 3)
 struct Poly {
@@ -1168,17 +1181,17 @@ struct Poly {
         for (int &u : a)
             u = 1LL * u * invN % MOD;
     }
+    // A * B, a.size() + b.size() - 1 коэффициентов
     vector <int> mult(vector <int> a, vector <int> b) {
-        int n = 1;
-        while (n < a.size() + b.size() - 1)
+        int sz = a.size() + b.size() - 1, n = 1;
+        while (n < sz)
             n <<= 1;
         a.resize(n); b.resize(n);
         NTT(a, false); NTT(b, false);
         for (int i = 0; i < n; i++)
             a[i] = (1LL * a[i] * b[i]) % MOD;
         NTT(a, true);
-        while (a.size() > 1 && a.back() == 0)
-            a.pop_back();
+        a.resize(sz);
         return a;
     }
 
@@ -1215,12 +1228,14 @@ struct Poly {
     }
     // ln(A). a[0] == 1
     vector <int> ln(const vector <int> &a) {
+        assert(a[0] == 1);
         vector <int> res = mult(deriv(a), inv(a)); // A' * (1/A)
         res.resize(a.size() - 1);
         return integ(res);
     }
     // exp(A). A[0] == 0
     vector <int> exp(const vector <int> &a) {
+        assert(a[0] == 0);
         vector <int> b = {1};
         for (int m = 2;; m <<= 1) {
             b.resize(m);
@@ -1269,7 +1284,9 @@ struct Poly {
             a[i] = (cnt0 <= i ? 1LL * sub[i - cnt0] * pow0 % MOD : 0);
         return a;
     }
+    // A = Q * B + R. В Q a.size() - b.size() + 1 коэффициентов, в R - b.size() - 1. b.back() != 0
     pair <vector <int>, vector <int>> divMod(const vector <int> &a, const vector <int> &b) {
+        assert(b.back() != 0);
         int n = a.size(), m = b.size();
         if (n < m)
             return {{0}, a};
@@ -1285,8 +1302,6 @@ struct Poly {
         vector <int> bq = mult(b, q), r(m - 1);
         for (int i = 0; i < m - 1; ++i)
             r[i] = (a[i] - bq[i] + MOD) % MOD;
-        while (r.size() > 1 && r.back() == 0)
-            r.pop_back();
         return {q, r};
     }
 };
@@ -1302,9 +1317,9 @@ vec <int> c = P998.mult(a, b);
 ```cpp
 // По часовой стрелке, начиная с направления вверх
 bool comp(pair <long, long> a, pair <long, long> b) {
-    pair <long, long> o = {0, 0};
-    if ((a < o) != (b < o)) // Левая полуплоскость позже правой
-        return b < o;
+    const pair <long, long> o{}; // -O2 и -O3 её убирают
+    if ((a >= o) != (b >= o)) // Левая полуплоскость позже правой
+        return a >= o;
     return a.s * b.f > b.s * a.f;
 }
 ```#br
