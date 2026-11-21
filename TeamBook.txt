@@ -1181,11 +1181,10 @@ struct Poly {
         for (int &u : a)
             u = 1LL * u * invN % MOD;
     }
-    // A * B, первые max(a.size(), b.size()) коэффициентов
+    // A * B, a.size() + b.size() - 1 коэффициентов
     vector <int> mult(vector <int> a, vector <int> b) {
-        int sz = max(a.size(), b.size()), n = 1;
-        shrink(a); shrink(b); // Нули в конце не увеличивают длину преобразования
-        while (n < a.size() + b.size() - 1)
+        int sz = a.size() + b.size() - 1, n = 1;
+        while (n < sz)
             n <<= 1;
         a.resize(n); b.resize(n);
         NTT(a, false); NTT(b, false);
@@ -1229,12 +1228,14 @@ struct Poly {
     }
     // ln(A). a[0] == 1
     vector <int> ln(const vector <int> &a) {
+        assert(a[0] == 1);
         vector <int> res = mult(deriv(a), inv(a)); // A' * (1/A)
         res.resize(a.size() - 1);
         return integ(res);
     }
     // exp(A). A[0] == 0
     vector <int> exp(const vector <int> &a) {
+        assert(a[0] == 0);
         vector <int> b = {1};
         for (int m = 2;; m <<= 1) {
             b.resize(m);
@@ -1285,6 +1286,7 @@ struct Poly {
     }
     // A = Q * B + R. В Q a.size() - b.size() + 1 коэффициентов, в R - b.size() - 1. b.back() != 0
     pair <vector <int>, vector <int>> divMod(const vector <int> &a, const vector <int> &b) {
+        assert(b.back() != 0);
         int n = a.size(), m = b.size();
         if (n < m)
             return {{0}, a};
@@ -1308,7 +1310,6 @@ Poly <998'244'353, 3>   P998;  // n <= 2^23 <=  8'388'608
 Poly <1'004'535'809, 3> P1004; // n <= 2^21 <=  2'097'152
 Poly <469'762'049, 3>   P469;  // n <= 2^26 <= 67'108'864
 // Main
-a.resize(a.size() + b.size() - 1); // Иначе только начало
 vec <int> c = P998.mult(a, b);
 ```
 = *4. _Geometry_*
