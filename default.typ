@@ -131,7 +131,8 @@
     default-color: rgb("#FFFFFF"),
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
-    lang-outset: (x: 0.7pt, y: 0pt), // The label stays in place with the smaller right inset
+    // The label stays in place with the smaller right inset, the same gap to the top and right borders
+    lang-outset: (x: 0.7pt, y: -1pt), // From the top of the first line, see the place rule below
     inset: (x: 1pt, y: 1.2pt), // codly multiplies it by 1.5
     // Line numbers have the fill of the neighbour line and a line on the right
     number-format: n => grid.cell(
@@ -161,6 +162,8 @@
       return
     }
     show text: set text(size: font-sizes.code)
+    // codly puts the label in the middle of the first line, even if the line is wrapped
+    show place.where(alignment: right + horizon): it => place(right + top, dx: it.dx, dy: it.dy, it.body)
     show raw.line: set text(tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
     it
