@@ -1171,6 +1171,11 @@ struct Poly {
     // A * B, первые max(a.size(), b.size()) коэффициентов
     vector <int> mult(vector <int> a, vector <int> b) {
         int sz = max(a.size(), b.size()), n = 1;
+        // Нули в конце не увеличивают длину преобразования
+        while (a.size() > 1 && a.back() == 0)
+            a.pop_back();
+        while (b.size() > 1 && b.back() == 0)
+            b.pop_back();
         while (n < a.size() + b.size() - 1)
             n <<= 1;
         a.resize(n); b.resize(n);
