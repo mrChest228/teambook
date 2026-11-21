@@ -1180,7 +1180,7 @@ struct Poly {
         }
         while (cnt0 < sz && a[cnt0] == 0)
             ++cnt0;
-        if (cnt0 > (sz - 1) / k)
+        if (cnt0 == sz || cnt0 > (sz - 1) / k)
             return vector <int> (sz);
         vector <int> sub(a.begin() + cnt0, a.end());
         int inv0 = inv(sub[0]),
