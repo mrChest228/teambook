@@ -324,7 +324,7 @@ $ h_v = 42+sum_(u) log(h_u) $
 Перед взятием суммированием следует отсортировать детей по $log(h_u)$, чтобы не было коллизий.
 Либо можно после сортировки использовать обычный полиномиальный хеш.
 Для хеширования за линию можно:
-$ h_v = 42+sum_(u) h_u^2 (mod m) $
+$ h_v eq.triple 42+sum_(u) h_u^2 thin (mod m) $
 Но это не проверено на практике, также стоит поиграться с начальным значением и возведением в квадрат всей суммы.
 
 Для не корневого дерева стоит сначала однозначно найти его корень, одинаковый при запуске из любой вершины дерева. Это центроид. Если размер дерева нечётный, он единственный. Если чётный, их максимум 2. Ищем хеши из обоих и либо берём минимум, либо из сумма, либо что-то ещё.
@@ -818,30 +818,40 @@ void sufArr(string &s, int *sf, int *num, int *lcp) {
 ```
 = *3. _Algebra_*
 == *3.0. Cуммы от 1 до n*
-$ 1^2+2^2+3^2+...+n^2 = (n(2n + 1)(n + 1))/6 $
-$ 1^3+2^3+3^3+...+n^3 = (n^2(n + 1)^2)/4 $
-$ 1^4+2^4+3^4+...+n^4 = (n(n + 1)(n + 2)(2n + 1)(3n^2 + 3n - 1))/30 $
+$ 1^c + 2^c + 3^c + ... + n^c = S_c (n) $
+~~#align(center)[#table(
+  columns: 2,
+  [*$c$*], [*$S_c (n)$*],
+  [$1$], [$n(n + 1) \/ 2$],
+  [$2$], [$n(n + 1)(2n + 1) \/ 6$],
+  [$3$], [$n^2(n + 1)^2 \/ 4$],
+  [$4$], [$n(n + 1)(2n + 1)(3n^2 + 3n - 1) \/ 30$],
+  [$5$], [$n^2(n + 1)^2(2n^2 + 2n - 1) \/ 12$],
+  [$6$], [$n(n + 1)(2n + 1)(3n^4 + 6n^3 - 3n + 1) \/ 42$],
+)]~~
+Общая формула, $B_j$ - числа Бернулли: $B_0 = 1$,  $B_1 = 1 / 2$,  $B_2 = 1 / 6$,  $B_4 = -1 / 30$,  $B_6 = 1 / 42$,  $B_3 = B_5 = 0$
+$ S_c (n) = 1 / (c + 1) sum_(j = 0)^c binom(c + 1, j) B_j n^(c + 1 - j) $
+Пусть $"sum"_1(n) = 1 + 2 + ... + n$,  $"sum"_k (n) = "sum"_(k - 1)(1) + "sum"_(k - 1)(2) + ... + "sum"_(k - 1)(n)$. Тогда
+$ "sum"_k (n) = binom(n + k, k + 1), quad "sum"_2(n) = (n(n + 1)(n + 2))/6 $
+$ binom(k, k) + binom(k + 1, k) + ... + binom(n, k) = binom(n + 1, k + 1) $
+$ 1 + 3 + 5 + ... + (2n - 1) = n^2, 1 + x + x^2 + ... + x^n = (x^(n + 1) - 1)/(x - 1) $
+$ x + 2x^2 + 3x^3 + ... + n x^n = (x(1 - (n + 1)x^n + n x^(n + 1)))/(1 - x)^2 $
 == *3.1. Числа Фибоначчи и их свойства*
-*Соотношение Кассини*
-$ F_(n + 1) F_(n - 1) - F_n^2 = (-1)^n $
-Правило "сложения"
-$ F_(n + k) = F_k F_(n + 1) + F_(k - 1)F_n  $
-НОД-равенство
-$ gcd(F_m,F_n) = F_(gcd(m, n)) $
+*Соотношение Кассини*, НОД-равенство
+$ F_(n + 1) F_(n - 1) - F_n^2 = (-1)^n, gcd(F_m, F_n) = F_(gcd(m, n)) $
+Правило "сложения", сумма квадратов
+$ F_(n + k) = F_k F_(n + 1) + F_(k - 1)F_n, sum_(i = 1)^(n) F_i^2 = F_n F_(n + 1) $
 *Теорема Цекендорфа* утверждает, что любое натуральное число n можно представить единственным образом в виде суммы чисел Фибоначчи 
 $ N = F_k_1 + F_k_2 + F_k_3 + ... + F_k_r $
 где $2 <= k_i$ и $k_i + 2 <= k_(i + 1)$ (т.е. в записи нельзя использовать два соседних числа Фибоначчи. $F_0 = 0, F_1 = 1, F_2 = 1, ...$)
-$ sum_(i = 1)^(n) F_i^2 = F_n F_(n + 1) $
 Формула для n-го числа Фибоначчи
-$ F_n = (Phi^n-Psi^n) / sqrt(5) $
-$ Phi = (1 + sqrt(5)) / 2, Psi = (1 - sqrt(5)) / 2 $
-$Psi$ экспоненциально убывает, поэтому для больших чисел и примерного значения им можно принебречь
+$ F_n = (Phi^n - Psi^n) / sqrt(5), Phi = (1 + sqrt(5)) / 2, Psi = (1 - sqrt(5)) / 2 $
+$|Psi| < 1$, поэтому $F_n$ - это $Phi^n / sqrt(5)$, округлённое до ближайшего целого ($F_n approx 0.447 dot 1.618^n$). В ld точно до $n approx 80$, дальше только для оценки величины.
 == *3.2. Матрицы*
-$ c_(i,j) = sum_k a_(i,k) b_(k,j) $
-$ mat(1, 1; 1, 0)^n = mat(F_(n + 1), F_n; F_n, F_(n - 1)) $
+$ c_(i,j) = sum_k a_(i,k) b_(k,j), mat(1, 1; 1, 0)^n = mat(F_(n + 1), F_n; F_n, F_(n - 1)) $
 Допустим нужно $q$ раз возводить одну и ту же матрицу в степень и домножать на вектор. Наивное решение: $O(q n^3 log(n))$, однако если мы предпросчитаем двоичные степени матрицы, а затем $log(n)$ раз домножим на них вектор, то получим асимптотику $O(n^3 log(n) + q n^2 log(n))$.
 == *3.3. Расширенный алгоритм Евклида*
-Решает задачу поиска $a x + b y = gcd(x, y)$ с мин. $a >= 0$.
+Решает задачу поиска $a x + b y = gcd(a, b)$ с мин. $x >= 0$.
 ```cpp
 long gcdex(long a, long &x, long b, long &y) {
     long x1, y1;
@@ -865,12 +875,12 @@ long gcdex(long a, long &x, long b, long &y) {
 }
 ```
 == *3.4. КТО*
-$ cases("ans" eq.triple a (mod n), "ans" eq.triple b (mod b)) $
+$ cases("ans" eq.triple a thin (mod n), "ans" eq.triple b thin (mod m)) $
 $x, y, g = "gcdex"(n, m)$
-$x n + y m = g$, $x n / g + y m / g = 1,$ $x n / g = 1 (mod m / g)$
-$("ans" = n k + a) mod m = b$
-$n k mod m = b - a$
-$n / g k mod (m / g) = (b - a) / g$
+$x n + y m = g$,  $x n / g + y m / g = 1$,  $x n / g eq.triple 1 thin (mod m / g)$
+$n k + a eq.triple b thin (mod m)$
+$n k eq.triple b - a thin (mod m)$
+$n / g k eq.triple (b - a) / g thin (mod m / g)$
 $k = (b - a) / g x$
 $"ans" = (b - a) / g x n + a$
 ```cpp
@@ -886,41 +896,92 @@ pair <long, long> crt(long a, long n, long b, long m) {
     return {x + (x < 0) * n * m, n * m};
 }
 ```
-== *3.5. Ро-алгоритм Полларда*
-Рандомизированный алгоритм факторизации целых чисел, работающий за время $O(n^(1/4))$.
+== *3.5. Миллер-Рабин, Ро-Поллард*
+Тест Миллера-Рабина: $O(log(n))$ умножений по модулю. Ро-алгоритм Полларда находит делитель в среднем за $O(n^(1 div 4))$, для $n approx 9 * 10^18$ это около $10$ мс.
 ```cpp
-inline long f(long x, long n) { 
-	return (__int128_t) (x + 1) * (x + 1) % n; 
+// Мин. простой делитель, MX = 1e6. Без решета fct для n < 1e6 в 27 раз медленнее, для n < 1e12 в 1.4 раза
+int lp[MX];
+vector <int> primes;
+
+void init() {
+    iota(lp + 2, lp + MX, 2); // lp[1] = 0, чтобы простое p == lp[p]
+    for (int i = 2; i < MX; ++i) {
+        if (lp[i] == i)
+            primes.pb(i);
+        for (int j = 0; j < primes.size() && i * primes[j] < MX && primes[j] <= lp[i]; ++j)
+            lp[i * primes[j]] = primes[j];
+    }
 }
 
-long find_divisor(long n, long seed = 1) {
-    long x = seed, y = seed, d = 1;
-    while (d == 1 || d == n) {
-        y = f(y);
-        x = f(f(x));
-        d = gcd(abs(x - y), n);
-    }
-    return d;
+long mulm(long a, long b, long mod) {
+    return int128(a) * b % mod;
 }
 
-long pollard(long n, int iter = 100000) {
-    long b0 = rnd() % n, b1 = b0, g;
-    mulmod(b1, b1, n);
-    if (++b1 == n)
-        b1 = 0;
-    g = gcd(abs(b1 - b0), n);
-    for (int i = 0; i < iter && (g == 1 || g == n); ++i) {
-        mulmod (b0, b0, n);
-        if (++b0 == n)
-            b0 = 0;
-        mulmod (b1, b1, n);
-        ++b1;
-        mulmod (b1, b1, n);
-        if (++b1 == n)
-            b1 = 0;
-        g = gcd(abs (b1 - b0), n);
+long powm(long x, long n, long mod) {
+    long ans = 1;
+    for (long y = x; n > 0; n >>= 1, y = mulm(y, y, mod))
+        if (n & 1)
+            ans = mulm(ans, y, mod);
+    return ans;
+}
+
+// Миллер-Рабин. 7 оснований точны для нечётных n < 2^64,
+// подходят и 12 первых простых (2..37)
+int isPrime(long n) {
+    if (n < MX)
+        return n > 1 && lp[n] == n;
+    if (n % 2 == 0)
+        return 0;
+    long d = n - 1, s = 0;
+    while ((d & 1) == 0) {
+        d >>= 1;
+        ++s;
     }
-    return g;
+    for (long a : {2, 325, 9375, 28'178, 450'775,
+                   9'780'504, 1'795'265'022}) {
+        long x = powm(a % n, d, n);
+        if (x <= 1 || x == n - 1)
+            continue;
+        for (int r = 1; r < s && x != n - 1; ++r)
+            x = mulm(x, x, n);
+        if (x != n - 1)
+            return 0;
+    }
+    return 1;
+}
+
+// n - составное. Возвращает делитель d, 1 < d < n
+long pollardRho(long n) {
+    assert(n >= MX);
+    while (1) {
+        long x = rnd() % n, y = x, c = rnd() % n, d = 1;
+        auto f = [&](long x) {
+            return (int128(x) * x + c) % n;
+        };
+        while (d == 1) {
+            x = f(x);
+            y = f(f(y));
+            d = gcd(abs(x - y), n);
+        }
+        if (d != n)
+            return d;
+    }
+}
+
+// Дописывает в res простые делители n (с повторами, не по порядку)
+void fct(long n, vector <long> &res) {
+    if (n < MX) {
+        for (; n > 1; n /= lp[n])
+            res.pb(lp[n]);
+        return;
+    }
+    if (isPrime(n)) {
+        res.pb(n);
+        return;
+    }
+    long d = pollardRho(n);
+    fct(d, res);
+    fct(n / d, res);
 }
 ```
 == *3.6. Код Грея*
@@ -931,10 +992,10 @@ $ G_i = i xor floor(i / 2) $
   columns: 4,
   [*$m$*], [*$c$*], [*$k$*], [*$g$*],
   [$10^9 + 7$], [$5 * 10^8 + 3$], [$1$], [$5$],
-  [$998244353$], [$119$], [$23$], [$3$],
-  [$1004535809$], [$479$], [$21$], [$3$],
-  [$469762049$], [$7$], [$26$], [$3$],
-  [$167772161$], [$5$], [$25$], [$3$],
+  [$"998'244'353"$], [$119$], [$23$], [$3$],
+  [$"1'004'535'809"$], [$479$], [$21$], [$3$],
+  [$"469'762'049"$], [$7$], [$26$], [$3$],
+  [$"167'772'161"$], [$5$], [$25$], [$3$],
 )]~~
 === *Простые и праймориалы*
 ~~#split-table(3, ($p$, $p\#$),
@@ -949,101 +1010,173 @@ $ pi(n) approx n / ln(n) $
   [$7$], [$664'579$], [$8$], [$5'761'455$], [$9$], [$50'847'534$], [$10$], [$455'052'511$], [$11$], [$4'118'054'813$], [$12$], [$37'607'912'018$],
   [$13$], [$346'065'536'839$], [$14$], [$3'204'941'750'802$], [$15$], [$29'844'570'422'669$], [$16$], [$279'238'341'033'925$], [$17$], [$2'623'557'157'654'233$], [$18$], [$24'739'954'287'740'860$],
 )~~
+=== *Обратное, степень и корень по модулю*
+Обратное к $x$ по модулю $m$ есть, только если $gcd(x, m) = 1$. Корней степени $k$ из $c != 0$ по простому $p$ либо нет, либо ровно $d = gcd(k, p - 1)$. Корень есть, если $c^((p - 1) / d) eq.triple 1 thin (mod p)$. При $d = 1$ он равен $c^y$, где $k y eq.triple 1 thin (mod p - 1)$. Первообразный корень есть у любого простого.
+```cpp
+long inv(long x) { // mod простое. Иначе: gcdex (3.3) или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
+    return x == 1 ? 1 : mod - mod / x * inv(mod % x) % mod;
+}
+
+long powm(long x, long k) {
+    long ans = 1;
+    for (long y = x; k > 0; k >>= 1, y = y * y % mod)
+        if (k & 1)
+            ans = ans * y % mod;
+    return ans;
+}
+
+// Первообразный корень простого mod: g^((mod - 1) / q) != 1 для каждого простого q | mod - 1. O(sqrt(mod))
+long primRoot() {
+    vector <long> q;
+    long x = mod - 1;
+    for (long i = 2; i * i <= x; ++i)
+        if (x % i == 0) {
+            q.pb(i);
+            while (x % i == 0)
+                x /= i;
+        }
+    if (x > 1)
+        q.pb(x);
+    for (long g = 1;; ++g) {
+        bool ok = true;
+        for (long u : q)
+            ok &= powm(g, (mod - 1) / u) != 1;
+        if (ok)
+            return g;
+    }
+}
+
+// Корень степени k из c: x^k = c (mod простое), g - первообразный корень. -1, если корня нет. O(sqrt(mod))
+long root(long c, long k) {
+    if (c == 0)
+        return 0;
+    // Ищем t: g^t = c. Все c * g^j, j < m кладём в pos, затем перебираем g^(i * m)
+    long m = sqrtl(mod) + 1, gm = powm(g, m), t = 0;
+    unordered_map <long, long> pos;
+    for (long j = 0, cur = c; j < m; ++j, cur = cur * g % mod)
+        pos[cur] = j;
+    for (long i = 1, cur = gm; !t; ++i, cur = cur * gm % mod)
+        if (pos.count(cur))
+            t = i * m - pos[cur];
+    // x = g^y: k * y = t (mod mod - 1)
+    long d = gcd(k, mod - 1), y, z;
+    if (t % d)
+        return -1;
+    gcdex(k / d, y, (mod - 1) / d, z);
+    return powm(g, t / d % ((mod - 1) / d) * y % ((mod - 1) / d));
+}
+```
 == *3.8. Ряды и полиномы*
 === *3.8.0. Ряды*
 $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $
 $ 1 / (1 + x) = sum_(n = 0)^infinity (-1)^n x^n = 1 - x + x^2 - x^3 + x^4 - ... $
 $ 1 / (1 - x) = sum_(n = 0)^infinity x^n = 1 + x + x^2 + x^3 + ..., |x| < 1 $
-1 / (k + x)
-1 / (k - x)
+$ 1 / (k + x) = sum_(n = 0)^infinity (-1)^n x^n / k^(n + 1) = 1 / k - x / k^2 + x^2 / k^3 - ..., |x| < k $
+$ 1 / (k - x) = sum_(n = 0)^infinity x^n / k^(n + 1) = 1 / k + x / k^2 + x^2 / k^3 + ..., |x| < k $
 $ ln(1 + x) = log_e (1 + x) = sum_(n = 1)^infinity (-1)^(n - 1) x^n/n = x - x^2 / 2 + x^3 / 3 - x^4 / 4 + ... $
 $ ln(1 - x) = log_e (1 - x) = -sum_(n = 1)^infinity x^n/n = -x - x^2 / 2 - x^3 / 3 - x^4 / 4 - ... $
 $ (1 + x)^a = sum_(n=0)^infinity mat(a; n) x^n = 1 + mat(a; 1) x + mat(a; 2) x^2 + ... $
-$ (k + x)^a = k^a (1 + x/k)^a $
-$ sqrt(1 + x) = 1 + 1/2 x - 1 / 8 x^2 + 1 / 16 x^3 - 5 / 128 x^4 + ... $
-$ 1 / sqrt(1 + x) = 1 - 1/2 x + 3 / 8 x^2 - 5 / 16 x^3 + ... $
-(1 - x)^a
-(k - x)^a
-sqrt(1 - x)
-1 / sqrt(1 - x)
+$a$ может быть дробным или отрицательным (при $a = 1 / 2$ это $sqrt(1 + x)$), тогда $mat(a; n) = (a(a - 1)...(a - n + 1)) / n!$
+$ sqrt(1 + x) = sum_(n=0)^infinity ((-1)^(n - 1) mat(2n; n)) / (4^n (2n - 1)) x^n = 1 + 1/2 x - 1 / 8 x^2 + 1 / 16 x^3 - 5 / 128 x^4 + ... $
+$ 1 / sqrt(1 + x) = sum_(n=0)^infinity ((-1)^n mat(2n; n)) / 4^n x^n = 1 - 1/2 x + 3 / 8 x^2 - 5 / 16 x^3 + ... $
+$ (1 - x)^a = sum_(n=0)^infinity (-1)^n mat(a; n) x^n = 1 - mat(a; 1) x + mat(a; 2) x^2 - ... $
+$ (k + x)^a = k^a (1 + x/k)^a, (k - x)^a = k^a (1 - x/k)^a $
+$ sqrt(1 - x) = -sum_(n=0)^infinity mat(2n; n) / (4^n (2n - 1)) x^n = 1 - 1/2 x - 1 / 8 x^2 - 1 / 16 x^3 - 5 / 128 x^4 - ... $
+$ 1 / sqrt(1 - x) = sum_(n=0)^infinity mat(2n; n) / 4^n x^n = 1 + 1/2 x + 3 / 8 x^2 + 5 / 16 x^3 + ... $
 $ sin(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1)! = x - x^3 / 3! + x^5 / 5! - ... $
 $ cos(x) = sum_(n=0)^infinity (-1)^n x^(2n) / (2n)! = 1 - x^2 / 2! + x^4 / 4! - ... $
-$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = 1 - x^3 / 3 + x^5 / 5 - ... $
-$ arcsin(x) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $
+$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = x - x^3 / 3 + x^5 / 5 - ... $
+$ arcsin(x) = sum_(n=0)^infinity mat(2n; n) / (4^n (2n + 1)) x^(2n + 1) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $
 === *3.8.1. Полиномы*
-$ A'_i = A_(i + 1) * (i + 1) $
-$ (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $
+$ A'_i = A_(i + 1) * (i + 1), (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $
 $ ln(A) = integral (A') / A, A_0 = 1 $
 *Деление*
-Деление в FFT разрешено только нацело. Дробное через NTT::divMod().
+Деление в FFT разрешено только нацело. Дробное через Poly::divMod().
 *Возведение в степень*
-Нельзя просто сделать преобразование Фурье, возвести $A_i$ в степень $k$ по модулю и применить обратное - результат будет неверным. Варианты:
+Сделать преобразование, возвести каждое значение в степень $k$ и применить обратное (так делает Poly::pow(), когда $A^k$ помещается в длину $A$) можно, только если результат целиком помещается в длину преобразования: $n > k deg(A)$. Иначе старшие коэффициенты заворачиваются по кругу и прибавляются к младшим. Когда нужны только первые $n$ коэффициентов:
 $0$. Поддерживаем тек. двоичную степень (обрезанную до n членов) и домножаем на неё ответ $O(n log(n) log(k))$
-$1$. $exp(k ln(A))$. Нужно, чтобы $A_0$ было равно 1, однако NTT::pow() решает и эту проблему
-== *3.8.2. БПФ/FFT*
+$1$. $exp(k ln(A))$. Нужно, чтобы $A_0$ было равно 1, однако Poly::pow() решает и эту проблему
+*Сведение к ln и exp* (первые $n$ коэффициентов)
+$ A^k = exp(k ln(A)), root(r, A) = exp(1 / r ln(A)), A_0 = 1 $
+$ product_i A_i = exp(sum_i ln(A_i)) $
+$ product_i (1 + x^(a_i)) = exp(sum_i sum_(k >= 1) (-1)^(k - 1) x^(k a_i) / k) $
+$ product_i 1 / (1 - x^(a_i)) = exp(sum_i sum_(k >= 1) x^(k a_i) / k) $
+Корень степени $r$: Poly::pow(A, inv(r)). Если $A_0 = c != 1$, то $root(r, A) = root(r, c) root(r, A / c)$, $root(r, c)$ по модулю - root(c, r) из 3.7. Суммы под exp в двух последних формулах собираются за $O(n log(n))$: для каждого $a$ перебираем $k a < n$.
+*Что считают*
+$A_i$ - кол-во объектов веса $i$. Коэффициент при $x^n$ в ответе - кол-во способов набрать вес $n$:
+$A B$ - объект из $A$ и объект из $B$.  $A^k$ - $k$ объектов по порядку.
+$1 / (1 - A)$ - сколько угодно объектов по порядку, $A_0 = 0$. Для $A = x + x^2$ это способы пройти $n$ ступеней шагами $1$ и $2$.
+$product 1 / (1 - x^(a_i))$ - каждый вес $a_i$ сколько угодно раз, порядок не важен (разбиения числа).
+$product (1 + x^(a_i))$ - каждый вес не больше раза.
+$exp(A)$ - набор помеченных объектов без порядка, $A_i$ и ответ поделены на $i!$. $ln$ наоборот: связные графы из всех графов.
+== *3.8.2. Полиномы (NTT)*
 ```cpp
 const int N = 1 << 20;
 
 template <int MOD, int G> // G - первообразный корень (обычно 3)
-struct Pole {
+struct Poly {
     vector <int> inv1;
-    vector <array <int, 2>> wl;
+    vector <int> rt; // rt[k + j] = w^j, где w^(2k) = 1: корни для блока длины 2k лежат подряд
     int inv(int x) {
         if (x < inv1.size())
             return inv1[x];
         return MOD - 1LL * MOD / x * inv(MOD % x) % MOD;
     }
-    int pow(int x, long k /*0 <= k < MOD - 1*/) {
+    int powm(int x, long k /*0 <= k < MOD - 1*/) {
         int ans = 1;
         for (int y = x; k > 0; k >>= 1, y = 1LL * y * y % MOD)
             if (k & 1)
                 ans = 1LL * ans * y % MOD;
         return ans;
     }
-    Pole() {
-        int k = __builtin_ctz(MOD - 1);
+    Poly() {
         inv1.resize(N + 1);
         inv1[1] = 1;
         for (int i = 2; i <= N; ++i)
             inv1[i] = MOD - 1LL * MOD / i * inv1[MOD % i] % MOD;
-        for (int i = 1; i <= N; i <<= 1) {
-            int y = pow(G, (MOD - 1) / i);
-            wl.pb({y, inv(y)});
+        rt.resize(N);
+        for (int k = 1; k < N; k <<= 1) {
+            int w = powm(G, (MOD - 1) / (k * 2));
+            rt[k] = 1;
+            for (int j = 1; j < k; ++j)
+                rt[k + j] = 1LL * rt[k + j - 1] * w % MOD;
         }
     }
-    void trans(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
-        int n = a.size(); // n = 2^k
-        for (int i = 1, j = 0; i < n; i++) { // [0, 1, 2, 3, 4, 5, 6, 7] -> [0, 4, 2, 6, 1, 5, 3, 7] (воссоздаём порядок обработки рекурсивной NTT (сначала разбили на [0, 2, 4, 6] и [1, 3, 5, 7], потом на [0, 4], [2, 6], [1, 5], [3, 7] и т. д.))
-            // j - это перевёрнутое битовое представление i. После прибавления 1 к i, добавляем 1 к j с конца.
-            int bit = n >> 1;
-            for (; j & bit; bit >>= 1)
-                j ^= bit;
-            j ^= bit;
-            if (i < j) swap(a[i], a[j]);
+    // Прямое (DIF) выдаёт значения в порядке перевёрнутых битов, обратное (DIT) принимает их в этом же порядке:
+    // перестановка не нужна, пока между ними только поэлементные операции
+    void NTT(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
+        int n = a.size(); // n - степень двойки
+        if (!inverse) {
+            for (int k = n / 2; k >= 1; k >>= 1) // от длинных блоков к коротким
+                for (int i = 0; i < n; i += k * 2)
+                    for (int j = 0; j < k; j++) {
+                        int u = a[i + j], v = a[i + j + k];
+                        a[i + j] = u + v < MOD ? u + v : u + v - MOD;
+                        a[i + j + k] = 1LL * (u - v + MOD) * rt[k + j] % MOD;
+                    }
+            return;
         }
-        for (int len = 2, p2 = 1; len <= n; len <<= 1, ++p2)
-            for (int i = 0; i < n; i += len)
-                for (int j = 0, w = 1; j < len / 2; j++) {
-                    int u = a[i + j], v = 1LL * a[i + j + len / 2] * w % MOD;
-                    a[i + j] = (u + v) % MOD;
-                    a[i + j + len / 2] = (u - v + MOD) % MOD;
-                    w = 1LL * w * wl[p2][inverse] % MOD;
+        for (int k = 1; k < n; k <<= 1) // от коротких блоков к длинным
+            for (int i = 0; i < n; i += k * 2)
+                for (int j = 0; j < k; j++) {
+                    int u = a[i + j], v = 1LL * a[i + j + k] * rt[k + j] % MOD;
+                    a[i + j] = u + v < MOD ? u + v : u + v - MOD;
+                    a[i + j + k] = u < v ? u - v + MOD : u - v;
                 }
-        if (inverse) {
-            int invN = inv1[n];
-            for (int &u : a)
-                u = 1LL * u * invN % MOD;
-        }
+        reverse(a.begin() + 1, a.end()); // w^(-j) = w^(n - j)
+        int invN = inv1[n];
+        for (int &u : a)
+            u = 1LL * u * invN % MOD;
     }
     vector <int> mult(vector <int> a, vector <int> b) {
         int n = 1;
         while (n < a.size() + b.size() - 1)
             n <<= 1;
         a.resize(n); b.resize(n);
-        trans(a, false); trans(b, false);
+        NTT(a, false); NTT(b, false);
         for (int i = 0; i < n; i++)
             a[i] = (1LL * a[i] * b[i]) % MOD;
-        trans(a, true);
+        NTT(a, true);
         while (a.size() > 1 && a.back() == 0)
             a.pop_back();
         return a;
@@ -1067,13 +1200,12 @@ struct Pole {
     vector <int> inv(const vector <int> &a) {
         vector <int> b = { inv(a[0]) };
         for (int m = 2;; m <<= 1) {
-            vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m)),
-                         prod = mult(sub, b);
-            prod.resize(m);
-            for (int &u : prod)
-                u = (MOD - u) % MOD;
-            prod[0] = (prod[0] + 2) % MOD;
-            b = mult(b, prod);
+            vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m));
+            sub.resize(m * 2); b.resize(m * 2);
+            NTT(sub, false); NTT(b, false);
+            for (int i = 0; i < m * 2; ++i) // B * (2 - A * B)
+                b[i] = 1LL * b[i] * (2 - 1LL * sub[i] * b[i] % MOD + MOD) % MOD;
+            NTT(b, true);
             b.resize(m);
             if (m >= a.size())
                 break;
@@ -1103,29 +1235,38 @@ struct Pole {
         b.resize(a.size());
         return b;
     }
-    // A^k
+    // A^k, первые a.size() коэффициентов
     vector <int> pow(vector <int> a, long k) {
-        if (k == 0)
-            return {0};
-        int cnt0 = 0;
-        while (a.size() && a[cnt0] == 0)
+        int sz = a.size(), deg = sz - 1, n = 1, cnt0 = 0;
+        while (deg > 0 && a[deg] == 0)
+            --deg;
+        if (k <= (sz - 1) / max(deg, 1)) { // A^k помещается целиком: возводим в степень каждое значение
+            while (n < sz)
+                n <<= 1;
+            a.resize(n);
+            NTT(a, false);
+            for (int &u : a)
+                u = powm(u, k);
+            NTT(a, true);
+            a.resize(sz);
+            return a;
+        }
+        while (cnt0 < sz && a[cnt0] == 0)
             ++cnt0;
-        if (cnt0 * k >= a.size())
-            return {0};
+        if (cnt0 == sz || cnt0 > (sz - 1) / k)
+            return vector <int> (sz);
         vector <int> sub(a.begin() + cnt0, a.end());
         int inv0 = inv(sub[0]),
-            pow0 = pow(sub[0], k % (MOD - 1));
+            pow0 = powm(sub[0], k % (MOD - 1));
         for (int &u : sub)
             u = 1LL * u * inv0 % MOD;
         sub = ln(sub);
         for (int &u : sub)
-            u = 1LL * u * k % MOD;
+            u = 1LL * u * (k % MOD) % MOD;
         sub = exp(sub);
         cnt0 *= k;
-        for (int i = a.size() - 1; i >= 0; --i)
+        for (int i = sz - 1; i >= 0; --i)
             a[i] = (cnt0 <= i ? 1LL * sub[i - cnt0] * pow0 % MOD : 0);
-        while (a.size() > 1 && a.back() == 0)
-            a.pop_back();
         return a;
     }
     pair <vector <int>, vector <int>> divMod(const vector <int> &a, const vector <int> &b) {
@@ -1150,9 +1291,9 @@ struct Pole {
     }
 };
 
-Pole <998244353, 3>  P998;  // n <= 2^23 <=  8'388'608
-Pole <1004535809, 3> P1004; // n <= 2^21 <=  2'097'152
-Pole <469762049, 3>  P469;  // n <= 2^26 <= 67'108'864
+Poly <998'244'353, 3>   P998;  // n <= 2^23 <=  8'388'608
+Poly <1'004'535'809, 3> P1004; // n <= 2^21 <=  2'097'152
+Poly <469'762'049, 3>   P469;  // n <= 2^26 <= 67'108'864
 // Main
 vec <int> c = P998.mult(a, b);
 ```
