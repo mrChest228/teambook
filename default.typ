@@ -93,6 +93,8 @@
     font: ((name: "Gelasio", covers: regex("[0-9]")), "Georgia"), number-type: "lining", slashed-zero: true,
     size: font-sizes.text
   )
+  // A hyphen that is a separate word is a dash
+  show regex("^-$"): "—"
   // Headings stay in the line, the line break after them comes from TeamBook.typ
   show heading: it => {
     // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
@@ -141,6 +143,7 @@
   )
   set raw(theme: "BW.tmTheme", tab-size: 4)
   show raw: it => {
+    show "—": "-" // Not in code
     if it.text.trim() == "" { // Spaces and enters
       text(
         font: "Times New Roman",
