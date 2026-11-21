@@ -1102,6 +1102,14 @@ $ product_i A_i = exp(sum_i ln(A_i)) $
 $ product_i (1 + x^(a_i)) = exp(sum_i sum_(k >= 1) (-1)^(k - 1) x^(k a_i) / k) $
 $ product_i 1 / (1 - x^(a_i)) = exp(sum_i sum_(k >= 1) x^(k a_i) / k) $
 Корень степени $r$: Poly::pow(A, inv(r)). Если $A_0 = c != 1$, то $root(r, A) = root(r, c) root(r, A / c)$, $root(r, c)$ по модулю - root(c, r) из 3.7. Суммы под exp в двух последних формулах собираются за $O(n log(n))$: для каждого $a$ перебираем $k a < n$.
+*Операции над значениями*
+$"NTT"(A)_i$ - значение $A$ в $i$-й точке. Преобразование линейно: прямое делаем раз на каждый полином, обратное - раз на ответ, между ними всё поэлементно. Длина $n$ больше степени ответа.
+$ k A = k A_0 + k A_1 x + ... = "NTT"^(-1)(k thin "NTT"(A)_i) $
+$ A plus.minus k = (A_0 plus.minus k) + A_1 x + ... = "NTT"^(-1)("NTT"(A)_i plus.minus k) $
+$ A plus.minus B = "NTT"^(-1)("NTT"(A)_i plus.minus "NTT"(B)_i) $
+$ (A + k) B = "NTT"^(-1)(("NTT"(A)_i + k) thin "NTT"(B)_i) $
+$ A B + C D = "NTT"^(-1)("NTT"(A)_i thin "NTT"(B)_i + "NTT"(C)_i thin "NTT"(D)_i) $
+$x A = A_0 x + A_1 x^2 + ...$ - сдвигаем коэффициенты до прямого или после обратного: значения лежат в порядке перевёрнутых битов, множитель у каждого свой.
 *Что считают*
 $A_i$ - кол-во объектов веса $i$. Коэффициент при $x^n$ в ответе - кол-во способов набрать вес $n$:
 $A B$ - объект из $A$ и объект из $B$.  $A^k$ - $k$ объектов по порядку.
@@ -1112,6 +1120,11 @@ $exp(A)$ - набор помеченных объектов без порядк�
 == *3.8.2. Полиномы (NTT)*
 ```cpp
 const int N = 1 << 20;
+
+void shrink(vector <int> &v) { // Убираем нули в конце
+    while (v.size() > 1 && v.back() == 0)
+        v.pop_back();
+}
 
 template <int MOD, int G> // G - первообразный корень (обычно 3)
 struct Poly {
@@ -1171,11 +1184,7 @@ struct Poly {
     // A * B, первые max(a.size(), b.size()) коэффициентов
     vector <int> mult(vector <int> a, vector <int> b) {
         int sz = max(a.size(), b.size()), n = 1;
-        // Нули в конце не увеличивают длину преобразования
-        while (a.size() > 1 && a.back() == 0)
-            a.pop_back();
-        while (b.size() > 1 && b.back() == 0)
-            b.pop_back();
+        shrink(a); shrink(b); // Нули в конце не увеличивают длину преобразования
         while (n < a.size() + b.size() - 1)
             n <<= 1;
         a.resize(n); b.resize(n);
