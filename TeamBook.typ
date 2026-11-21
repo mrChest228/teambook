@@ -24,6 +24,7 @@ typedef __int128 int128; // Или __int128_t
 #define ulong uint64_t
 
 using namespace std;
+#define int long
 mt19937_64 rnd(chrono::steady_clock::now(). time_since_epoch().count());
 
 // DEBUG or RELEASE input
@@ -110,7 +111,7 @@ fout << "Ans: " << ans; // Строку может разорвать, если 
 
 FILE* f = fopen("output.txt", "a"); // 'a' - дописывание в конец файла
 if (f != NULL) {
-    fprintf(f, "Ans: %d", ans);
+    fprintf(f, "Ans: %ld", ans); // %ld - long
     fclose(f); // 3. Закрываем
 }
 
@@ -120,11 +121,22 @@ if (f != NULL) {
 
 osyncstream(std::cout) << "ans: " << ans;
 ```#br
+=== *printf*#br
+#code("printf(формат, ...)")` `-` `в` `консоль,` `#code("fprintf(f, формат, ...)")` `-` `в` `файл.` `Тип` `не` `проверяется:` `при` `несовпадении` `с` `форматом` `выводится` `мусор` `(предупреждение` `даёт` `#code("-Wall")).`
+````cpp
+int x; long y; ulong u; ld d; char c; string s;
+printf("%d %ld %lu %Lf %c %s\n", x, y, u, d, c, s.c_str());
+// С прекодом (#define int long) для int тоже %ld
+// double - %f, %x - 16-ричная, %% - знак процента
+printf("%.9Lf %5ld %05ld", d, y, y); // 9 знаков после запятой; ширина 5 пробелами; нулями
+// На Windows вместо %ld и %lu писать %lld и %llu
+// C++23: print("{} {:.9f}\n", y, d); - проверяет типы
+```#br
 == *1.4.` `Builtins*#br
-#code("__builtin_clz(x)")` `/` `#code("__builtin_clzll(x)")` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
+#code[\_\_builtin\_clz#strong[ll]\(x)]` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
 `$floor(log_2(x))$:` `#code("31 - __builtin_clz(x)")` `/` `#code("63 - __builtin_clzll(x)")`
-`#code("__builtin_ctz(x)")` `/` `#code("__builtin_ctzll(x)")` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
-`#code("__builtin_parity(x)")` `/` `#code("__builtin_parityll(x)")` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#code("__builtin_popcount(x) & 1").` `При` `$x = 0$` `-` `UB.`
+`#code[\_\_builtin\_ctz#strong[ll]\(x)]` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
+`#code[\_\_builtin\_parity#strong[ll]\(x)]` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#code("__builtin_popcount(x) & 1").` `При` `$x = 0$` `-` `UB.`
 `#code("__builtin_mul_overflow(a, b, &res)")` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.#br
 == *1.5.` `Runtime` `Errors*#br
 *0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
@@ -133,6 +145,21 @@ osyncstream(std::cout) << "ans: " << ans;
 `*0xC0000094*` `-` `Integer` `Divide` `by` `Zero.`
 `*0xC000001D*` `-` `Illegal` `Instruction.` `Причины:` `выход` `из` `не-void` `функции` `без` `return.` `(_-Werror=return-type_` `в` `Other` `compiler` `options)`
 `*0xC0000417*` `-` `Invalid` `C` `Runtime` `Parameter.` `Причины:` `assert` `failed` `или` `непойманное` `исключение.#br
+== *1.6.` `Замер` `времени*#br
+```cpp
+// chrono: время как на часах. Единицы - второй параметр duration:
+// duration <ld> - с, duration <ld, milli> - мс, duration <ld, nano> - нс
+auto st = chrono::steady_clock::now();
+// Замеряемый код
+auto en = chrono::steady_clock::now();
+ld ms = chrono::duration <ld, milli /*or nano*/>(en - st).count();
+long ns = (en - st).count(); // Целые нс. duration <long, milli> не скомпилируется
+
+// clock(): секунды с начала программы. На Windows время как на часах. На Linux время процессора: суммируется по всем потокам и не идёт при sleep и ожидании ввода, поэтому с потоками (1.2) нужен chrono
+ld sec = ld(clock()) / CLOCKS_PER_SEC;
+```#br
+== *1.7.` `Move(v)*#br
+В` `нагруженных` `рекурсивных` `функциях,` `возвращающих` `vector` `/` `set,` `писать` `#code("return move(v);").` `Без` `него` `контейнер` `копируется` `за` `$O(n)$,` `если` `возвращается` `не` `просто` `локальная` `переменная:` `#code("return x ? a : b;"),` `#code("return res[v];"),` `#code("return p.f;").#br
 = *2.` `#underline[Algorithms]*` `#br
 == *2.0.` `Курево` `по` `неявному` `ключу*#br
 ```cpp
@@ -740,6 +767,53 @@ long get(int l, int r) {
         if (r & 1) res = (res + sum[--r]) % MOD;
     }
     return res;
+}
+```#br
+== *2.11.` `Суффиксный` `массив` `+` `LCP*#br
+#code("sf")` `-` `суфф.` `массив,` `#code("num[i]")` `-` `позиция` `суффикса` `#code("i")` `в` `#code("sf"),` `#code("lcp[i]")` `-` `lcp` `суффиксов` `#code("sf[i]")` `и` `#code("sf[i + 1]").` `$O(n log(n))$.`
+`lcp` `суффиксов` `#code("i"),` `#code("j")` `за` `$O(1)$:` `разреженная` `таблица` `по` `#code("lcp"),` `ответ` `#code("min(lcp[L..R - 1])"),` `где` `#code("L = min(num[i], num[j])"),` `#code("R = max(num[i], num[j])").`
+````cpp
+void sufArr(string &s, int *sf, int *num, int *lcp) {
+    assert(s.back() == '$');
+    int n = s.size();
+    // static: stored like globals, not on the stack; not cleared between calls
+    static int pr[N], tmp[N];
+#define blk num // '$' makes all blocks different, so blk[i] is the position of i in sf, i.e. num
+    iota(sf, sf + n, 0);
+    sort(sf, sf + n, [&](int i, int j) {
+        return s[i] < s[j];
+    });
+    blk[sf[0]] = 0;
+    for (int i = 1; i < n; ++i)
+        blk[sf[i]] = blk[sf[i - 1]] + (s[sf[i - 1]] < s[sf[i]]);
+    for (int k = 1; blk[sf[n - 1]] < n - 1; k <<= 1) { // all blks are different after the end of sufArr
+        // tmp: suffixes sorted by second half
+        for (int i = 0; i < n; ++i)
+            tmp[i] = sf[i] - k + n * (sf[i] < k);
+        fill(pr, pr + n, 0);
+        for (int i = 0; i < n; ++i)
+            ++pr[blk[i] + 1];
+        for (int i = 2; i < n; ++i)
+            pr[i] += pr[i - 1];
+        for (int i = 0; i < n; ++i)
+            sf[pr[blk[tmp[i]]]++] = tmp[i];
+        // tmp is free now, store new blocks in it
+        // equal first halves have no '$', so sf[i] + k < n
+        tmp[sf[0]] = 0;
+        for (int i = 1; i < n; ++i)
+            tmp[sf[i]] = tmp[sf[i - 1]] + (blk[sf[i - 1]] < blk[sf[i]] || blk[sf[i - 1] + k] < blk[sf[i] + k]);
+        copy(tmp, tmp + n, blk);
+    }
+#undef blk
+    lcp[n - 1] = 0; // may be left from the previous call
+    for (int i = 0, cur = 0; i < n; ++i, cur -= (cur > 0)) {
+        if (num[i] == n - 1)
+            continue;
+        int nxt = sf[num[i] + 1];
+        while (s[i + cur] == s[nxt + cur])
+            ++cur;
+        lcp[num[i]] = cur;
+    }
 }
 ```#br
 = *3.` `#underline[Algebra]*#br
