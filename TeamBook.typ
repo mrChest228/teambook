@@ -1305,9 +1305,9 @@ vec <int> c = P998.mult(a, b);
 = *4.` `#underline[Geometry]*#br
 == *4.0.` `Сортировка` `векторов` `по` `углу*#br
 ```cpp
-#define o pair <long, long> {}
 // По часовой стрелке, начиная с направления вверх
 bool comp(pair <long, long> a, pair <long, long> b) {
+    const pair <long, long> o {}; // -O2 и -O3 убирают эту переменную
     if ((a >= o) != (b >= o)) // Левая полуплоскость позже правой
         return a >= o;
     return a.s * b.f > b.s * a.f;
