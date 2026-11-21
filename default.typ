@@ -3,8 +3,8 @@
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels and numbers at their start, main text, code
 #let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, num1: 12pt, num2: 10pt, num3: 9pt, text: 7pt, code: 7pt, math-block: 9pt)
-// Inline formula is this times bigger than the text around it: otherwise it looks smaller
-#let math-inline-scale = 1.18
+// Inline formula is this times bigger than the text around it: its small variables (x, n) are as high as small letters of Georgia
+#let math-inline-scale = 1.08
 // Background of the inline code and of every second line of the code block
 #let code-fill = rgb("#EEEEEE")
 
