@@ -131,7 +131,8 @@
     default-color: rgb("#FFFFFF"),
     lang-stroke: 0.5pt + rgb("#AAAAAA"),
     lang-inset: 1.3pt,
-    lang-outset: (x: 0.7pt, y: 0pt), // The label stays in place with the smaller right inset
+    // The label stays in place with the smaller right inset and does not stick to the top border
+    lang-outset: (x: 0.7pt, y: 0.275pt),
     inset: (x: 1pt, y: 1.2pt), // codly multiplies it by 1.5
     // Line numbers have the fill of the neighbour line and a line on the right
     number-format: n => grid.cell(
