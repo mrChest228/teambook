@@ -1294,7 +1294,7 @@ Poly <998'244'353, 3>   P998;  // n <= 2^23 <=  8'388'608
 Poly <1'004'535'809, 3> P1004; // n <= 2^21 <=  2'097'152
 Poly <469'762'049, 3>   P469;  // n <= 2^26 <= 67'108'864
 // Main
-a.resize(a.size() + b.size() - 1); // Иначе вернётся только начало произведения
+a.resize(a.size() + b.size() - 1); // Иначе только начало
 vec <int> c = P998.mult(a, b);
 ```#br
 = *4.` `#underline[Geometry]*#br
@@ -1302,8 +1302,10 @@ vec <int> c = P998.mult(a, b);
 ```cpp
 // По часовой стрелке, начиная с направления вверх
 bool comp(pair <long, long> a, pair <long, long> b) {
-    if ((a < pair <long, long> (0, 0)) != (b < pair <long, long> (0, 0))) // Левая полуплоскость позже правой
-        return b < pair <long, long> (0, 0);
+    // Левая полуплоскость позже правой
+    if ((a < pair <long, long> ()) !=
+        (b < pair <long, long> ()))
+        return b < pair <long, long> ();
     return a.s * b.f > b.s * a.f;
 }
 ```#br
