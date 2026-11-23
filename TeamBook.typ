@@ -1344,7 +1344,7 @@ struct Poly {
             u = 1LL * u * inv0 % MOD;
         sub = ln(sub);
         for (int &u : sub)
-            u = 1LL * u * invr % MOD; // 1 / r - множитель, не степень
+            u = 1LL * u * invr % MOD; // 1 / r - множитель
         sub = exp(sub);
         vector <int> res(t / r);
         for (int u : sub)
