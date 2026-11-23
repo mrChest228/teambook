@@ -14,13 +14,23 @@
 // Line break that leaves the real newline outside, so the next line can start with "="
 #let br = raw("\n")
 
+// l and ll at the end of long double functions and __builtin_*ll: bold
+#let bold-l(body) = {
+  show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l)\\b"): it => {
+    let t = it.text
+    let k = if t.starts-with("__builtin") { 2 } else { 1 }
+    [#t.slice(0, t.len() - k)#strong(t.slice(t.len() - k))]
+  }
+  body
+}
+
 // Inline code: does not change the line height
 #let code(str) = box(
   radius: 3pt,
   inset: (x: 2pt),
   outset: (y: 1.8pt),
   fill: code-fill,
-  text(font: "Courier New", size: font-sizes.code, str)
+  text(font: "Courier New", size: font-sizes.code, bold-l(str))
 )
 
 // Long table cut into `parts` tables standing in a row, each one repeats the header
@@ -166,7 +176,7 @@
     show place.where(alignment: right + horizon): it => place(right + top, dx: it.dx, dy: it.dy, it.body)
     show raw.line: set text(tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
-    it
+    bold-l(it)
   }
 
   body

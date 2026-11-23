@@ -133,10 +133,10 @@ printf("%.9Lf %5ld %05ld", d, y, y); // 9 знаков после запятой
 // C++23: print("{} {:.9f}\n", y, d); - проверяет типы
 ```
 == *1.4. Builtins*
-~~#code[\_\_builtin\_clz#strong[ll]\(x)]~~ - кол-во $0$ после старшей $1$ в битовом представлении. При $x = 0$ - UB.
+``__builtin_clzll(x)`` - кол-во $0$ после старшей $1$ в битовом представлении. При $x = 0$ - UB.
 $floor(log_2(x))$: ``31 - __builtin_clz(x)`` / ``63 - __builtin_clzll(x)``
-~~#code[\_\_builtin\_ctz#strong[ll]\(x)]~~ - кол-во $0$ перед младшей $1$ в битовом представлении. При $x = 0$ - UB. Поиск делимости на $2^k$.
-~~#code[\_\_builtin\_parity#strong[ll]\(x)]~~ - чётность кол-ва $1$ в битовом представлении. Аналогично ``__builtin_popcount(x) & 1``. При $x = 0$ - UB.
+``__builtin_ctzll(x)`` - кол-во $0$ перед младшей $1$ в битовом представлении. При $x = 0$ - UB. Поиск делимости на $2^k$.
+``__builtin_parityll(x)`` - чётность кол-ва $1$ в битовом представлении. Аналогично ``__builtin_popcount(x) & 1``.
 ``__builtin_mul_overflow(a, b, &res)`` - умножает a на b, сохраняет результат в res. Возвращает true, если произошло переполнение, и false, если всё ок.
 == *1.5. Runtime Errors*
 *0xC0000005* - Access Violation. Причины: выход за границы массива, слишком большой массив в стеке, обращение к NULL-указателю.
@@ -500,11 +500,11 @@ void dfs(long clck, long cndt, long bad) {
     }
 
     for (int i = 0; i < n; ++i)
-        if (((1ll << i) & bad) && (a[i] & cndt) == cndt)
+        if (((1LL << i) & bad) && (a[i] & cndt) == cndt)
             return;
 
     for (int i = 0; i < n; ++i) {
-        long u = (1ll << i);
+        long u = (1LL << i);
         if ((u & cndt) == 0)
             continue;
         cndt -= u;
@@ -513,7 +513,7 @@ void dfs(long clck, long cndt, long bad) {
     }
 }
 // Main
-dfs(0, (1ll << n) - 1, 0);
+dfs(0, (1LL << n) - 1, 0);
 ```
 == *2.8. Макс. парсоч. (Кун)*
 Асимптотика: $O(n m)$
