@@ -1,137 +1,14 @@
-#import "default.typ": *;#show: setup;#heading[_`      `_*1.` `#underline[Code]*]`
-````cpp
-// Pragmas (before libraries includes to get the highest speed up)
-#ifndef DEBUG
-    #pragma GCC optimize("O3,unroll-loops")
-    #pragma GCC target("avx2,avx512f,avx512bw,avx512dbgi,sse4.2,bmi,bmi2,fma,popcnt,lzcnt,prefer-vector-width=512")
-#endif
-
-#include <bits/stdc++.h>
-
-// Defines & typedefes
-#define f first
-#define s second
-#define pb push_back
-#define pf push_front
-#define in insert
-#define elif else if
-#define gcd __gcd
-#define nl '\n'
-
-typedef long double ld;
-typedef __int128 int128; // Или __int128_t
-#define  long  int64_t
-#define ulong uint64_t
-
-using namespace std;
-#define int long
-mt19937_64 rnd(chrono::steady_clock::now(). time_since_epoch().count());
-
-// DEBUG or RELEASE input
-#ifdef DEBUG
-    cin.exceptions(cin.failbit); //Выкидывает исключение (RE) при ошибке ввода (например, если читаешь число 10^18 в int, получишь RE вместо WA), влияние на время неизвестно
-#else
-    cin.tie(0); ios::sync_with_stdio(0);
-#endif
-```#br
+#import "default.typ": *;#show: setup;#heading[*1.` `#underline[Code]*]`
+`#code-file("code/cpp/template.cpp")#br
 == *1.1.` `Data` `structures*#br
-```cpp
-// GNU_pbds
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
-using namespace __gnu_pbds;
-
-// oset
-template <class T> using oset = tree <T, null_type, less <T>, rb_tree_tag, tree_order_statistics_node_update>; // less_equal <T> for omultiset
-
-//st.key_by_order(i);
-//st.order_of_key(x);
-
-template <class T>
-omultiset <T>::iterator find(const omultiset <T> &st, int x) {
-    int num = st.order_of_key(x);
-    if (num == st.size())
-        return st.end();
-    auto it = st.find_by_order(num);
-    return (*it == x ? it : st.end());
-}
-
-// Hash Maps
-unordered_map <int, string> mp;
-gp_hash_table <int, string> mp; //Примерно 3x быстрее unordered_map, использует 1.5x памяти, нет mp.count(), но есть mp.find() != mp.end()
-
-template <class T> using priQue = priority_queue <T, vector <T>, greater <T>>;
-```#br
+#code-file("code/cpp/data-structures.cpp")#br
 == *1.2.` `Потоки*#br
-```cpp
-#include <thread>
-#include <atomic>
-
-const int threadsCnt = 15, N = 1e8;
-
-int x;
-atomic <int> ans(1e18);
-thread *th[threadsCnt];
-
-void fnd(int l) {
-    int r = l + N;
-    for (int i = l; i < r; ++i)
-        if (check(i) && i < ans)
-            ans = i;
-}
-
-main() {
-    for (int i = 0, l = 0; ans == 1e18; i = (i + 1) % threadsCnt, l += N) {
-        if (th[i]) {
-            th[i] -> join(); // Ожидание завершения потока
-            delete th[i];
-            cout << "Checked up to " << l - N * threadsCnt << '\n';
-            th[i] = NULL;
-        }
-        th[i] = new thread(fnd, l);
-    }
-    // Ждём пока не завершатся остальные потоки, вдруг они улучшат ответ
-    for (int i = 0; i < threadsCnt; ++i)
-        if (th[i]) {
-            th[i] -> join();
-            delete th[i];
-            th[i] = NULL;
-        }
-    cout << "Ans: " << ans;
-}
-```#br
+#code-file("code/cpp/threads.cpp")#br
 == *1.3.` `Вывод` `в` `файл*#br
-```cpp
-fout.open("answers.txt", ios::app); // ios::app - дописывание в конец файла
-fout << "Ans: " << ans; // Строку может разорвать, если другой поток запустится во время копирования
-
-// Атомарная запись в файл (строку не разорвет)
-
-#include <cstdio>
-
-FILE* f = fopen("output.txt", "a"); // 'a' - дописывание в конец файла
-if (f != NULL) {
-    fprintf(f, "Ans: %ld", ans); // %ld - long
-    fclose(f); // 3. Закрываем
-}
-
-// С С++20
-
-#include <syncstream>
-
-osyncstream(std::cout) << "ans: " << ans;
-```#br
+#code-file("code/cpp/file-output.cpp")#br
 === *1.3.1.` `printf*#br
 #code("printf(формат, ...)")` `-` `в` `консоль,` `#code("fprintf(f, формат, ...)")` `-` `в` `файл.` `Тип` `не` `проверяется:` `при` `несовпадении` `с` `форматом` `выводится` `мусор` `(предупреждение` `даёт` `#code("-Wall")).`
-````cpp
-int x; long y; ulong u; ld d; char c; string s;
-printf("%d %ld %lu %Lf %c %s\n", x, y, u, d, c, s.c_str());
-// С прекодом (#define int long) для int тоже %ld
-// double - %f, %x - 16-ричная, %% - знак процента
-printf("%.9Lf %5ld %05ld", d, y, y); // 9 знаков после запятой; ширина 5 пробелами; нулями
-// На Windows вместо %ld и %lu писать %lld и %llu
-// C++23: print("{} {:.9f}\n", y, d); - проверяет типы
-```#br
+`#code-file("code/cpp/printf.cpp")#br
 == *1.4.` `Builtins*#br
 #code("__builtin_clzll(x)")` `-` `кол-во` `$0$` `после` `старшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.`
 `$floor(log_2(x))$:` `#code("31 - __builtin_clz(x)")` `/` `#code("63 - __builtin_clzll(x)")`
@@ -146,179 +23,36 @@ printf("%.9Lf %5ld %05ld", d, y, y); // 9 знаков после запятой
 `*0xC000001D*` `-` `Illegal` `Instruction.` `Причины:` `выход` `из` `не-void` `функции` `без` `return.` `(_-Werror=return-type_` `в` `Other` `compiler` `options)`
 `*0xC0000417*` `-` `Invalid` `C` `Runtime` `Parameter.` `Причины:` `assert` `failed` `или` `непойманное` `исключение.#br
 == *1.6.` `Замер` `времени*#br
-```cpp
-// chrono: время как на часах. Единицы - второй параметр duration:
-// duration <ld> - с, duration <ld, milli> - мс, duration <ld, nano> - нс
-auto st = chrono::steady_clock::now();
-// Замеряемый код
-auto en = chrono::steady_clock::now();
-ld ms = chrono::duration <ld, milli /*or nano*/>(en - st).count();
-long ns = (en - st).count(); // Целые нс. duration <long, milli> не скомпилируется
-
-// clock(): секунды с начала программы. На Windows время как на часах. На Linux время процессора: суммируется по всем потокам и не идёт при sleep и ожидании ввода, поэтому с потоками (1.2) нужен chrono
-ld sec = ld(clock()) / CLOCKS_PER_SEC;
-```#br
+#code-file("code/cpp/timing.cpp")#br
 == *1.7.` `Move(v)*#br
 В` `нагруженных` `рекурсивных` `функциях,` `возвращающих` `vector` `/` `set,` `писать` `#code("return move(v);").` `Без` `него` `контейнер` `копируется` `за` `$O(n)$,` `если` `возвращается` `не` `просто` `локальная` `переменная:` `#code("return x ? a : b;"),` `#code("return res[v];"),` `#code("return p.f;").#br
-= *2.` `#underline[Algorithms]*` `#br
+= *2.` `#underline[Data` `structures]*#br
 == *2.0.` `Курево` `по` `неявному` `ключу*#br
-```cpp
-struct Node {
-    int sz, y, val;
-    Node *L = 0,
-         *R = 0;
-    Node (int val): sz(1), y(rnd()), val(val) {}
-};
-
-Node *root;
-
-int size(Node *node) { return node ? node -> sz : 0; }
-int calc(Node *node) {
-    node -> sz = 1 + size(node -> L) + size(node -> R);
-    //...
-}
-Node* merge(Node *l, Node *r) {
-    if (!l) return r;
-    if (!r) return l;
-    if (l -> y > r -> y) {
-        l -> R = merge(l -> R, r);
-        calc(l);
-        return l;
-    }
-    else {
-        r -> L = merge(l, r -> L);
-        calc(r);
-        return r;
-    }
-}
-pair <Node*, Node*> split(Node *p, int k) { //Вырезать первые 0 <= k <= n элементов
-    if (!p) return {0, 0};
-    if (size(p -> L) + 1 <= k) {
-        auto q = split(p -> R, k - size(p -> L) - 1);
-        p -> R = q.f;
-        calc(p);
-        return {p, q.s};
-    }
-    else {
-        auto q = split(p -> L, k);
-        p -> L = q.s;
-        calc(p);
-        return {q.f, p};
-    }
-}
-Node* cut(int l, int r) { // 0 <= l <= r < n
-    auto q1 = split(root, r + 1);
-    auto q2 = split(q1.f, l);
-    root = merge(q2.f, q1.s);
-    return q2.s;
-}
-void insert(Node *v, int k) { // 0 <= k <= n
-    auto q = split(root, k);
-    root = merge(q.f, merge(v, q.s));
-}
-```#br
-== *2.1.` `2-SAT*#br
-```cpp
-bool b[N + N];
-int comp[N + N];
-vector <int> v[N + N], w[N + N], order;
-
-void add(int x, int y) { //Первый бит обозначает отрицание (0 - x, 1 - !x)
-    v[x ^ 1].pb(y); //!x >= y
-    v[y ^ 1].pb(x); //!y >= x
-    w[y].pb(x ^ 1);
-    w[x].pb(y ^ 1);
-}
-void topSort(int x) {
-    if (b[x])
-        return;
-    b[x] = 1;
-    for (int u : v[x])
-        topSort(u);
-    order.pb(x);
-}
-void dfs(int x, int c) {
-    if (comp[x] > -1)
-        return;
-    comp[x] = c;
-    for (int u : w[x])
-        dfs(u, c);
-}
-
-//... Добавление ребер ...
-for (int i = 0; i < n + n; ++i)
-    topSort(i);
-reverse(order);
-int cnt = 0;
-fill(comp, comp + n + n, -1);
-for (int u : order)
-    dfs(u, cnt++);
-for (int i = 0; i < n + n; ++i)
-    if (comp[i] == comp[i + 1])
-        //No solution
-for (int i = 0; i < n; ++i)
-    cout << (comp[i + i] < comp[i + i + 1] ? "!" : "") << i << nl;
-```#br
-== *2.2.` `Z-функция*#br
-```cpp
-vector <int> zFun(string s) {
-    int n = s.size(), l = 0;
-    vector <int> z(n);
-    for (int i = 1; i < n; ++i) {
-        if (i < l + z[l])
-            z[i] = min(l + z[l] - i, z[i - l]);
-        while (i + z[i] < n && s[z[i]] == s[i + z[i]])
-            ++z[i];
-        if (i + z[i] > l + z[l])
-            l = i;
-    }
-    return z;
-}
-```#br
-== *2.3.` `Префикс-функция*#br
-```cpp
-vector <int> prefFun(string s) {
-    int n = s.size();
-    vector <int> p(n);
-    for (int i = 1; i < n; i++) {
-        int cur = p[i - 1];
-        while (s[i] != s[cur] && cur > 0) // уменьшаем cur значение, пока новый символ не сматчится
-            cur = p[cur - 1];
-        if (s[i] == s[cur])
-            p[i] = cur + 1;
-    }
-    return p;
-}
-```#br
-== *2.4.` `Дерево-Фенвика*#br
-```cpp
-int f[N];
-
-int sum(int r) {
-    int res = 0;
-    for (; r > 0; r -= r & -r)
-        res += t[r];
-    return res;
-}
-int sum(int l, int r) {
-    return sum(r) - sum(l - 1);
-}
-void add(int k, int x) {
-    for (; k <= n; k += k & -k)
-        t[k] += x;
-}
-int lowerBound(int s) {
-    int k = 0;
-    for (int l = LOGN; l >= 0; --l) {
-        if (k + (1 << l) <= n && t[k + (1<<l)] < s) {
-            k += (1 << l);
-            s -= t[k];
-        }
-    }
-    return k;
-}
-```#br
-== *2.5.` `Хеширование` `дерева*#br
+#code-file("code/ds/implicit-treap.cpp")#br
+== *2.1.` `Дерево-Фенвика*#br
+#code-file("code/ds/fenwick.cpp")#br
+== *2.2.` `ДО` `Снизу*#br
+#code-file("code/ds/segment-tree-bottom-up.cpp")#br
+== *2.3.` `Segment` `Tree` `Beats*#br
+#code-file("code/ds/segment-tree-beats.cpp")#br
+= *3.` `#underline[Graphs]*#br
+== *3.0.` `2-SAT*#br
+#code-file("code/graphs/two-sat.cpp")#br
+== *3.1.` `Макс.` `поток` `(Диница)*#br
+С` `2-ичными` `подъёмами` `потока:` `$O(n m log("maxCap"))$`
+`Без` `2-ичных` `подъёмов:` `$O(n m^2)$`
+`#code-file("code/graphs/dinic.cpp")#br
+== *3.2.` `Макс.` `поток` `Мин.` `Стоимости*#br
+С` `2-ичными` `подъёмами` `потока:` `$O(m^2 log(n) log("maxCap"))$`
+`Без` `2-ичных` `подъёмов:` `$O(m "maxFlow" log(n))$`
+`#code-file("code/graphs/min-cost-flow.cpp")#br
+== *3.3.` `Макс.` `клика*#br
+Асимптотика:` `$O(3^(n div 3))$`
+`#code-file("code/graphs/max-clique.cpp")#br
+== *3.4.` `Макс.` `парсоч.` `(Кун)*#br
+Асимптотика:` `$O(n m)$`
+`#code-file("code/graphs/kuhn.cpp")#br
+== *3.5.` `Хеширование` `дерева*#br
 Корневой` `дерево` `можно` `захешировать` `такой` `функцией:`
 `$ h_v = 42+sum_(u) log(h_u) $`
 `Перед` `взятием` `суммированием` `следует` `отсортировать` `детей` `по` `$log(h_u)$,` `чтобы` `не` `было` `коллизий.`
@@ -328,496 +62,61 @@ int lowerBound(int s) {
 `Но` `это` `не` `проверено` `на` `практике,` `также` `стоит` `поиграться` `с` `начальным` `значением` `и` `возведением` `в` `квадрат` `всей` `суммы.`
 
 `Для` `не` `корневого` `дерева` `стоит` `сначала` `однозначно` `найти` `его` `корень,` `одинаковый` `при` `запуске` `из` `любой` `вершины` `дерева.` `Это` `центроид.` `Если` `размер` `дерева` `нечётный,` `он` `единственный.` `Если` `чётный,` `их` `максимум` `2.` `Ищем` `хеши` `из` `обоих` `и` `либо` `берём` `минимум,` `либо` `из` `сумма,` `либо` `что-то` `ещё.#br
-== *2.6.0.` `Макс.` `поток` `(Диница)*#br
-С` `2-ичными` `подъёмами` `потока:` `$O(n m log("maxCap"))$`
-`Без` `2-ичных` `подъёмов:` `$O(n m^2)$`
-````cpp
-struct edge {
-    int to, rev, cap, flow;
-};
-
-int n, ptr[N], lvl[N];
-vector <edge> v[N];
-
-void add(int x, int y, int cap, int flow) {
-    v[x].pb({y, v[y].size(), cap, flow});
-    v[y].pb({x, v[x].size() - 1, cap, cap - flow});
-}
-
-bool bfs(int s, int t, int delta) {
-    fill(lvl, lvl + n, oo);
-    list <int> q;
-    lvl[0] = 0;
-    q.pb(0);
-    while (q.size()) {
-        int p = q.front();
-        q.pop_front();
-        for (auto &u : v[p])
-            if (lvl[u.to] == oo && u.cap - u.flow >= delta) {
-                lvl[u.to] = lvl[p] + 1;
-                q.pb(u.to);
-            }
-    }
-    return lvl[t] < oo;
-}
-int dfs(int x, int flow, int t, int delta) {
-    if (x == t)
-        return flow;
-    int pushed = 0;
-    for (; ptr[x] < v[x].size() && pushed < flow; ++ptr[x]) {
-        auto &u = v[x][ptr[x]];
-        if (lvl[u.to] != lvl[x] + 1 || u.cap - u.flow < delta)
-            continue;
-        int push = dfs(u.to, min(flow - pushed, u.cap - u.flow), t, delta);
-        u.flow += push;
-        v[u.to][u.rev].flow -= push;
-        pushed += push;
-    }
-    return pushed;
-}
-int maxFlow(int s, int t) {
-    int maxCap = 0;
-    for (int i = 0; i < n; ++i)
-        for (auto &u : v[i])
-            maxCap = max(maxCap, u.cap);
-    int delta = maxCap;
-    while ((delta & (delta - 1)) > 0)
-        delta &= delta - 1;
-    int maxFlow = 0;
-    while (delta) {
-        while (bfs(s, t, delta)) { //We go on min-dist paths only (n * m times)
-            fill(ptr, ptr + n, 0);
-            while (int flow = dfs(s, oo, t, delta))
-                maxFlow += flow;
-        }
-        delta >>= 1;
-    }
-    return maxFlow;
-}
-// Main
-add(x, y, cap, flow);
-cout << maxFlow(s, t);
-```#br
-== *2.6.1.` `Макс.` `поток` `Мин.` `Стоимости*#br
-С` `2-ичными` `подъёмами` `потока:` `$O(m^2 log(n) log("maxCap"))$`
-`Без` `2-ичных` `подъёмов:` `$O(m "maxFlow" log(n))$`
-````cpp
-struct edge {
-    int to, revNum, cap, cost, flow;
-};
-
-vector <edge> v[N];
-pair <int, int> par[N];
-int n, delta, potentials[N], dists[N];
-
-void addEdge(int x, int y, int cap, int flow, int cost) {
-    v[x].pb({y, v[y].size(), cap, cost, flow});
-    v[y].pb({x, v[x].size() - 1, cap, -cost, cap - flow});
-}
-
-void bellmanFord(int s) {
-    fill(potentials, potentials + n, oo);
-    potentials[s] = 0;
-    for (int step = 0; step < n - 1; ++step)
-        for (int i = 0; i < n; ++i)
-            if (potentials[i] < oo)
-                for (auto &u : v[i])
-                    potentials[u.to] = min(potentials[u.to], potentials[i] + u.cost);
-}
-bool dijkstraWithPotentials(int s, int t) {
-    fill(dists, dists + n, oo);
-    priQue <pair <int, int>> q;
-    dists[s] = 0;
-    q.push({s, 0});
-    while (q.size()) {
-        auto [d, u] = q.top();
-        q.pop();
-        if (dists[u] < d)
-            continue;
-        for (int i = 0; i < v[u].size(); ++i) {
-            auto &e = v[u][i];
-            if (e.cap - e.flow >= delta && dists[e.to] > d + e.cost + potentials[u] - potentials[e.to]) {
-                dists[e.to] = d + e.cost + potentials[u] - potentials[e.to];
-                par[e.to] = {u, i};
-                q.push({dists[e.to], e.to});
-            }
-        }
-    }
-    for (int i = 0; i < n; ++i) //Update potentials
-        if (dists[i] < oo)
-            potentials[i] += dists[i];
-    return dists[t] < oo;
-}
-pair <int, int> maxFlowMinCost(int s, int t) {
-    bellmanFord(s); //Make potentials for negative costs (reversed edges, for example)
-
-    int maxCap = 0;
-    for (int i = 0; i < n; ++i)
-        for (auto &u : v[i])
-            maxCap = max(maxCap, u.flow);
-    delta = maxCap;
-    while ((delta & (delta - 1)) > 0) //Make delta the power of 2
-        delta &= delta - 1;
-
-    int maxFlow = 0, minCost = 0;
-    while (delta) {
-        while (dijkstraWithPotentials(s, t)) {
-            int flow = maxCap;
-            for (int i = t; i != s; i = par[i].f) {
-                auto &e = v[par[i].f][par[i].s];
-                flow = min(flow, e.cap - e.flow);
-            }
-            maxFlow += flow;
-            for (int i = t; i != s; i = par[i].f) {
-                auto &e = v[par[i].f][par[i].s];
-                e.flow += flow;
-                v[e.to][e.revNum].flow -= flow;
-                minCost += flow * e.cost;
-            }
-        }
-        delta >>= 1;
-    }
-    return {maxFlow, minCost};
-}
-
-addEdge(x, y, cap, flow, cost);
-auto [flow, cost] = maxFlowMinCost(s, f);
-```#br
-== *2.7.` `Макс.` `клика*#br
-Асимптотика:` `$O(3^(n div 3))$`
-````cpp
-const int N = 50;
-
-long a[N]; // Edges bitmask
-int n, m, k, mx;
-
-void dfs(long clck, long cndt, long bad) {
-    if (cndt == 0 && bad == 0) {
-        int cnt = __builtin_popcount(clck);
-        if (cnt > mx)
-            mx = cnt;
-        return;
-    }
-
-    for (int i = 0; i < n; ++i)
-        if (((1LL << i) & bad) && (a[i] & cndt) == cndt)
-            return;
-
-    for (int i = 0; i < n; ++i) {
-        long u = (1LL << i);
-        if ((u & cndt) == 0)
-            continue;
-        cndt -= u;
-        dfs(clck | u, cndt & a[i], bad & a[i]);
-        bad |= u;
-    }
-}
-// Main
-dfs(0, (1LL << n) - 1, 0);
-```#br
-== *2.8.` `Макс.` `парсоч.` `(Кун)*#br
-Асимптотика:` `$O(n m)$`
-````cpp
-int mt[N];
-bool b[N];
-vector <int> g[N];
-
-bool dfs(int v) {
-    if (b[v])
-        return 0;
-    b[v] = true;
-    for (int u : g[v])
-        if (mt[u] == -1 || dfs(mt[u])) {
-            mt[u] = v;
-            return 1;
-        }
-    return 0;
-}
-// Main
-int cnt = 0;
-fill(mt, mt + n, -1);
-for (int i = 0; i < n; ++i) {
-    fill(b, b + n, 0);
-    cnt += dfs(i);
-}
-```#br
-== *2.9.` `Segment` `Tree` `Beats*#br
-```cpp
-struct STB {
-    long sum,
-         mx, sx, mn, sn, lz;
-    int cx, cn; // Количество максимумов и минимумов
-} t[4 * N];
-
-void merge(int v) {
-    int L = v << 1, R = L + 1;
-    t[v].sum = t[L].sum + t[R].sum;
-    if (t[L].mx == t[R].mx) {
-        t[v].mx = t[L].mx;
-        t[v].cx = t[L].cx + t[R].cx;
-        t[v].sx = max(t[L].sx, t[R].sx);
-    }
-    elif (t[L].mx > t[R].mx) {
-        t[v].mx = t[L].mx;
-        t[v].cx = t[L].cx;
-        t[v].sx = max(t[L].sx, t[R].mx);
-    }
-    else {
-        t[v].mx = t[R].mx;
-        t[v].cx = t[R].cx;
-        t[v].sx = max(t[L].mx, t[R].sx);
-    }
-    if (t[L].mn == t[R].mn) {
-        t[v].mn = t[L].mn;
-        t[v].cn = t[L].cn + t[R].cn;
-        t[v].sn = min(t[L].sn, t[R].sn);
-    }
-    elif (t[L].mn < t[R].mn) {
-        t[v].mn = t[L].mn;
-        t[v].cn = t[L].cn;
-        t[v].sn = min(t[L].sn, t[R].mn);
-    }
-    else {
-        t[v].mn = t[R].mn;
-        t[v].cn = t[R].cn;
-        t[v].sn = min(t[L].mn, t[R].sn);
-    }
-}
-void chAdd(int v, long x, int len) {
-    if (x == 0)
-        return;
-    t[v].sum += x * len;
-    t[v].mx += x;
-    t[v].mn += x;
-    t[v].lz += x;
-    if (t[v].sx != -oo)
-        t[v].sx += x;
-    if (t[v].sn != oo)
-        t[v].sn += x;
-}
-void chMin(int v, long x, int len) { // Min=
-    if (t[v].mx <= x)
-        return;
-    t[v].sum -= (t[v].mx - x) * t[v].cx;
-    t[v].mx = x;
-    if (t[v].mn > x)
-        t[v].mn = x;
-    if (t[v].sn > x)
-        t[v].sn = x;
-    if (t[v].mn == t[v].mx) {
-        t[v].sx = -oo;
-        t[v].sn = oo;
-        t[v].cx = t[v].cn = len;
-    }
-}
-void chMax(int v, long x, int len) { // Max=
-    if (t[v].mn >= x)
-        return;
-    t[v].sum += (x - t[v].mn) * t[v].cn;
-    t[v].mn = x;
-    if (t[v].mx < x)
-        t[v].mx = x;
-    if (t[v].sx < x)
-        t[v].sx = x;
-    if (t[v].mn == t[v].mx) {
-        t[v].sx = -oo;
-        t[v].sn = oo;
-        t[v].cx = t[v].cn = len;
-    }
-}
-void push(int v, int l, int r) {
-    int L = v << 1, R = L + 1, m = (l + r) >> 1;
-    chAdd(L, t[v].lz, m - l + 1);
-    chAdd(R, t[v].lz, r - m);
-    t[v].lz = 0;
-    chMin(L, t[v].mx, m - l + 1); chMax(L, t[v].mn, m - l + 1);
-    chMin(R, t[v].mx, r - m); chMax(R, t[v].mn, r - m);
-}
-void build(int v, int l, int r) {
-    t[v].lz = 0;
-    if (l == r) {
-        t[v].sum = t[v].mx = t[v].mn = a[l];
-        t[v].sx = -oo;
-        t[v].sn = oo;
-        t[v].cx = t[v].cn = 1;
-        return;
-    }
-    int m = (l + r) >> 1;
-    build(v * 2, l, m);
-    build(v * 2 + 1, m + 1, r);
-    merge(v);
-}
-void updMin(int v, int l, int r, int ql, int qr, long x) { // Min=
-    if (l > qr || r < ql || t[v].mx <= x)
-        return;
-    if (l >= ql && r <= qr && t[v].sx < x) {
-        chMin(v, x, r - l + 1);
-        return;
-    }
-    push(v, l, r);
-    int m = (l + r) >> 1;
-    updMin(2 * v, l, m, ql, qr, x);
-    updMin(2 * v + 1, m + 1, r, ql, qr, x);
-    merge(v);
-}
-void updMax(int v, int l, int r, int ql, int qr, long x) { // Max=
-    if (l > qr || r < ql || t[v].mn >= x)
-        return;
-    if (l >= ql && r <= qr && t[v].sn > x) {
-        chMax(v, x, r - l + 1);
-        return;
-    }
-    push(v, l, r);
-    int m = (l + r) >> 1;
-    updMax(2 * v, l, m, ql, qr, x);
-    updMax(2 * v + 1, m + 1, r, ql, qr, x);
-    merge(v);
-}
-void updAdd(int v, int l, int r, int ql, int qr, long x) {
-    if (l > qr || r < ql)
-        return;
-    if (l >= ql && r <= qr) {
-        chAdd(v, x, r - l + 1);
-        return;
-    }
-    push(v, l, r);
-    int m = (l + r) >> 1;
-    updAdd(2 * v, l, m, ql, qr, x);
-    updAdd(2 * v + 1, m + 1, r, ql, qr, x);
-    merge(v);
-}
-long get(int v, int l, int r, int ql, int qr) {
-    if (l > qr || r < ql)
-        return 0;
-    if (l >= ql && r <= qr)
-        return t[v].sum;
-    push(v, l, r);
-    int m = (l + r) >> 1;
-    return get(2 * v, l, m, ql, qr) + get(2 * v + 1, m + 1, r, ql, qr);
-}
-// Main
-build(1, 0, n - 1);
-updAdd/updMax/updMin (1, 0, n - 1, l, r, x);
-get(1, 0, n - 1, l, r);
-```#br
-== *2.10.` `ДО` `Снизу*#br
-```cpp
-int n, h, sz[N + N];
-long sum[N + N], mn[N + N], mx[N + N], lzMul[N + N], lzAdd[N + N];
-void apply(int v, long mul, long add) {
-    sum[v] = (sum[v] * mul + sz[v] * add) % MOD;
-    mn[v] = (mn[v] * mul + add) % MOD;
-    mx[v] = (mx[v] * mul + add) % MOD;
-    if (v < n) {
-        lzMul[v] = (lzMul[v] * mul) % MOD;
-        lzAdd[v] = (lzAdd[v] * mul + add) % MOD;
-    }
-}
-void calc(int v) {
-    sum[v] = (sum[v << 1] + sum[v << 1 | 1]) % MOD;
-    mn[v] = min(mn[v << 1], mn[v << 1 | 1]);
-    mx[v] = max(mx[v << 1], mx[v << 1 | 1]);
-}
-void push(int v) {
-    for (int s = h; s > 0; --s) {
-        int w = v >> s;
-        if (lzMul[w] != 1 || lzAdd[w] != 0) {
-            apply(w << 1, lzMul[w], lzAdd[w]);
-            apply(w << 1 | 1, lzMul[w], lzAdd[w]);
-            lzMul[w] = 1;
-            lzAdd[w] = 0;
-        }
-    }
-}
-void build(int v) {
-    while (v > 1) {
-        v >>= 1;
-        calc(p);
-    }
-}
-void init() {
-    h = 32 - __builtin_clz(n);
-    for (int i = n; i < n + n; ++i) {
-        sum[i] = mn[i] = mx[i] = a[i - n];
-        lzMul[i] = sz[i] = 1;
-        lzAdd[i] = 0;
-    }
-    for (int i = n - 1; i > 0; --i) {
-        calc(i);
-        sz[i] = sz[i << 1] + sz[i << 1 | 1];
-        lzMul[i] = 1; lzAdd[i] = 0;
-    }
-}
-void upd(int l, int r, long mul, long add) {
-    l += n; r += n;
-    int l0 = l, r0 = r;
-    push(l); push(r - 1);
-    for (; l < r; l >>= 1, r >>= 1) {
-        if (l & 1) apply(l++, mul, add);
-        if (r & 1) apply(--r, mul, add);
-    }
-    build(l0); build(r0 - 1);
-}
-long get(int l, int r) {
-    l += n; r += n;
-    push(l); push(r - 1);
-    long res = 0;
-    for (; l < r; l >>= 1, r >>= 1) {
-        if (l & 1) res = (res + sum[l++]) % MOD;
-        if (r & 1) res = (res + sum[--r]) % MOD;
-    }
-    return res;
-}
-```#br
-== *2.11.` `Суффиксный` `массив` `+` `LCP*#br
+= *4.` `#underline[Strings]*#br
+== *4.0.` `Z-функция*#br
+#code-file("code/strings/z-function.cpp")#br
+== *4.1.` `Префикс-функция*#br
+#code-file("code/strings/prefix-function.cpp")#br
+== *4.2.` `Суффиксный` `массив` `+` `LCP*#br
 #code("sf")` `-` `суфф.` `массив,` `#code("num[i]")` `-` `позиция` `суффикса` `#code("i")` `в` `#code("sf"),` `#code("lcp[i]")` `-` `lcp` `суффиксов` `#code("sf[i]")` `и` `#code("sf[i + 1]").` `$O(n log(n))$.`
 `lcp` `суффиксов` `#code("i"),` `#code("j")` `за` `$O(1)$:` `разреженная` `таблица` `по` `#code("lcp"),` `ответ` `#code("min(lcp[L..R - 1])"),` `где` `#code("L = min(num[i], num[j])"),` `#code("R = max(num[i], num[j])").`
-````cpp
-void sufArr(string &s, int *sf, int *num, int *lcp) {
-    assert(s.back() == '$');
-    int n = s.size();
-    // static: stored like globals, not on the stack; not cleared between calls
-    static int pr[N], tmp[N];
-#define blk num // '$' makes all blocks different, so blk[i] is the position of i in sf, i.e. num
-    iota(sf, sf + n, 0);
-    sort(sf, sf + n, [&](int i, int j) {
-        return s[i] < s[j];
-    });
-    blk[sf[0]] = 0;
-    for (int i = 1; i < n; ++i)
-        blk[sf[i]] = blk[sf[i - 1]] + (s[sf[i - 1]] < s[sf[i]]);
-    for (int k = 1; blk[sf[n - 1]] < n - 1; k <<= 1) { // all blks are different after the end of sufArr
-        // tmp: suffixes sorted by second half
-        for (int i = 0; i < n; ++i)
-            tmp[i] = sf[i] - k + n * (sf[i] < k);
-        fill(pr, pr + n, 0);
-        for (int i = 0; i < n; ++i)
-            ++pr[blk[i] + 1];
-        for (int i = 2; i < n; ++i)
-            pr[i] += pr[i - 1];
-        for (int i = 0; i < n; ++i)
-            sf[pr[blk[tmp[i]]]++] = tmp[i];
-        // tmp is free now, store new blocks in it
-        // equal first halves have no '$', so sf[i] + k < n
-        tmp[sf[0]] = 0;
-        for (int i = 1; i < n; ++i)
-            tmp[sf[i]] = tmp[sf[i - 1]] + (blk[sf[i - 1]] < blk[sf[i]] || blk[sf[i - 1] + k] < blk[sf[i] + k]);
-        copy(tmp, tmp + n, blk);
-    }
-#undef blk
-    lcp[n - 1] = 0; // may be left from the previous call
-    for (int i = 0, cur = 0; i < n; ++i, cur -= (cur > 0)) {
-        if (num[i] == n - 1)
-            continue;
-        int nxt = sf[num[i] + 1];
-        while (s[i + cur] == s[nxt + cur])
-            ++cur;
-        lcp[num[i]] = cur;
-    }
-}
-```#br
-= *3.` `#underline[Algebra]*#br
-== *3.0.` `Cуммы` `от` `1` `до` `n*#br
+`#code-file("code/strings/suffix-array.cpp")#br
+= *5.` `#underline[Number` `theory]*#br
+== *5.0.` `Расширенный` `алгоритм` `Евклида*#br
+Решает` `задачу` `поиска` `$a x + b y = gcd(a, b)$` `с` `мин.` `$x >= 0$.`
+`#code-file("code/nt/extended-gcd.cpp")#br
+== *5.1.` `КТО*#br
+$ cases("ans" eq.triple a thin (mod n), "ans" eq.triple b thin (mod m)) $`
+`$ x, y, g = "gcdex"(n, m) $`
+`$ x n + y m = g, x n / g + y m / g = 1, x n / g eq.triple 1 thin (mod m / g) $`
+`$ n k + a eq.triple b thin (mod m) $`
+`$ n k eq.triple b - a thin (mod m) $`
+`$ n / g k eq.triple (b - a) / g thin (mod m / g) $`
+`$ k = (b - a) / g x $`
+`$ "ans" = (b - a) / g x n + a $`
+`#code-file("code/nt/crt.cpp")#br
+== *5.2.` `Модули,` `простые` `числа*#br
+Первообразный` `корень` `($g$)` `модуля` `$m$` `(только` `для` `$m = 2, 4, p^a, 2p^a$)` `-` `число,` `степени` `которого` `оббегают` `все` `числа` `от` `$1$` `до` `$m - 1$.` `Пусть` `$m = c * 2^k + 1$,` `тогда` `в` `FFT` `максимальная` `длина` `полинома` `$n = 2^k$.`
+`#align(center)[#table(
+  columns: 4,
+  [*$m$*], [*$c$*], [*$k$*], [*$g$*],
+  [$10^9 + 7$], [$5 * 10^8 + 3$], [$1$], [$5$],
+  [$"998'244'353"$], [$119$], [$23$], [$3$],
+  [$"1'004'535'809"$], [$479$], [$21$], [$3$],
+  [$"469'762'049"$], [$7$], [$26$], [$3$],
+  [$"167'772'161"$], [$5$], [$25$], [$3$],
+)]#br
+=== *5.2.1.` `Простые` `и` `праймориалы*#br
+#split-table(3, ($p$, $p\#$),
+  [$2$], [$2$], [$3$], [$6$], [$5$], [$30$], [$7$], [$210$], [$11$], [$2310$],
+  [$13$], [$3.0*10^4$], [$17$], [$5.1*10^5$], [$19$], [$9.7*10^6$], [$23$], [$2.2*10^8$], [$29$], [$6.5*10^9$],
+  [$31$], [$2*10^11$], [$37$], [$7.4*10^12$], [$41$], [$3*10^14$], [$43$], [$1.3*10^16$], [$47$], [$6.1*10^17$],
+)#br
+=== *5.2.2.` `Кол-во` `простых` `чисел` `до` `$10^x$*#br
+$ pi(n) approx n / ln(n) $`
+`#split-table(3, ($x$, $pi(10^x)$),
+  [$1$], [$4$], [$2$], [$25$], [$3$], [$168$], [$4$], [$1'229$], [$5$], [$9'592$], [$6$], [$78'498$],
+  [$7$], [$664'579$], [$8$], [$5'761'455$], [$9$], [$50'847'534$], [$10$], [$455'052'511$], [$11$], [$4'118'054'813$], [$12$], [$37'607'912'018$],
+  [$13$], [$346'065'536'839$], [$14$], [$3'204'941'750'802$], [$15$], [$29'844'570'422'669$], [$16$], [$279'238'341'033'925$], [$17$], [$2'623'557'157'654'233$], [$18$], [$24'739'954'287'740'860$],
+)#br
+=== *5.2.3.` `Обратное,` `степень` `и` `корень` `по` `модулю*#br
+Обратное` `к` `$x$` `по` `модулю` `$m$` `есть,` `только` `если` `$gcd(x, m) = 1$.` `Корней` `степени` `$k$` `из` `$c != 0$` `по` `простому` `$p$` `либо` `нет,` `либо` `ровно` `$d = gcd(k, p - 1)$.` `Корень` `есть,` `если` `$c^((p - 1) / d) eq.triple 1 thin (mod p)$.` `При` `$d = 1$` `он` `равен` `$c^y$,` `где` `$k y eq.triple 1 thin (mod p - 1)$.` `Первообразный` `корень` `есть` `у` `любого` `простого.`
+`#code-file("code/nt/modular.cpp")#br
+== *5.3.` `Миллер-Рабин,` `Ро-Поллард*#br
+Тест` `Миллера-Рабина:` `$O(log(n))$` `умножений` `по` `модулю.` `Ро-алгоритм` `Полларда` `находит` `делитель` `в` `среднем` `за` `$O(n^(1 div 4))$,` `для` `$n approx 9 * 10^18$` `это` `около` `$10$` `мс.`
+`#code-file("code/nt/miller-rabin.cpp")#br
+= *6.` `#underline[Combinatorics]*#br
+== *6.0.` `Суммы` `от` `1` `до` `n*#br
 $ S_c (n) = 1^c + 2^c + 3^c + ... + n^c $`
 `#align(center)[#table(
   columns: 2,
@@ -832,31 +131,7 @@ $ S_c (n) = 1^c + 2^c + 3^c + ... + n^c $`
 `Общая` `формула,` `$B_j$` `-` `числа` `Бернулли:` `$B_0 = 1$,`  `$B_1 = 1 / 2$,`  `$B_2 = 1 / 6$,`  `$B_4 = -1 / 30$,`  `$B_6 = 1 / 42$,`  `$B_3 = B_5 = 0$`
 `$ S_c (n) = 1 / (c + 1) sum_(j = 0)^c binom(c + 1, j) B_j n^(c + 1 - j) $`
 `Большое` `$c$` `по` `простому` `модулю:` `$S_c$` `-` `многочлен` `степени` `$c + 1$,` `считаем` `его` `в` `точках` `$0..c + 1$` `и` `интерполируем.`
-````cpp
-// O(c log(mod)), c = 10^6 за 200 мс. powm и inv из 3.7
-// Другой многочлен: свои y[i], k = степень + 1
-long sumPow(long n, int c) {
-    int k = c + 2; // Число точек, k < mod
-    vector <long> y(k), f(k, 1), l(k + 1, 1), r = l;
-    for (int i = 1; i < k; ++i) {
-        y[i] = (y[i - 1] + powm(i, c)) % mod; // S_c(i)
-        f[i] = f[i - 1] * i % mod; // i!
-    }
-    n %= mod;
-    for (int i = 0; i < k; ++i) // (n - 0)...(n - i)
-        l[i + 1] = l[i] * (n - i + mod) % mod;
-    for (int i = k - 1; i >= 0; --i) // (n - i)...(n - k + 1)
-        r[i] = r[i + 1] * (n - i + mod) % mod;
-    long res = 0;
-    // Лагранж: сумма y[i] * П (n - j) / (i - j) по j != i
-    for (int i = 0; i < k; ++i) {
-        long t = y[i] * l[i] % mod * r[i + 1] % mod;
-        t = t * inv(f[i] * f[k - 1 - i] % mod) % mod;
-        res += (k - i) % 2 ? t : mod - t; // Знак П (i - j)
-    }
-    return res % mod;
-}
-````
+`#code-file("code/comb/power-sums.cpp")`
 `Пусть` `$"sum"_1(n) = 1 + 2 + ... + n$,`  `$"sum"_k (n) = "sum"_(k - 1)(1) + "sum"_(k - 1)(2) + ... + "sum"_(k - 1)(n)$.` `Тогда`
 `$ "sum"_k (n) = binom(n + k, k + 1) = (n(n + 1)...(n + k)) / (k + 1)! $`
 `#align(center)[#table(
@@ -872,7 +147,7 @@ long sumPow(long n, int c) {
 `$ binom(n + 1, k + 1) = binom(n, k) + binom(n, k + 1) = binom(k, k) + binom(k + 1, k) + ... + binom(n, k) $`
 `$ 1 + 3 + 5 + ... + (2n - 1) = n^2, 1 + x + x^2 + ... + x^n = (x^(n + 1) - 1)/(x - 1) $`
 `$ x + 2x^2 + 3x^3 + ... + n x^n = (x(1 - (n + 1)x^n + n x^(n + 1)))/(1 - x)^2 $#br
-== *3.1.` `Числа` `Фибоначчи` `и` `их` `свойства*#br
+== *6.1.` `Числа` `Фибоначчи` `и` `их` `свойства*#br
 *Соотношение` `Кассини*,` `НОД-равенство`
 `$ F_(n + 1) F_(n - 1) - F_n^2 = (-1)^n, gcd(F_m, F_n) = F_(gcd(m, n)) $`
 `Правило` `"сложения",` `сумма` `квадратов`
@@ -883,228 +158,20 @@ long sumPow(long n, int c) {
 `Формула` `для` `n-го` `числа` `Фибоначчи`
 `$ F_n = (Phi^n - Psi^n) / sqrt(5), Phi = (1 + sqrt(5)) / 2, Psi = (1 - sqrt(5)) / 2 $`
 `$|Psi| < 1$,` `поэтому` `$F_n$` `-` `это` `$Phi^n / sqrt(5)$,` `округлённое` `до` `ближайшего` `целого` `($F_n approx 0.447 dot 1.618^n$).` `В` `ld` `точно` `до` `$n approx 80$,` `дальше` `только` `для` `оценки` `величины.#br
-== *3.2.` `Матрицы*#br
+== *6.2.` `Код` `Грея*#br
+$ G_i = i xor floor(i / 2) $`
+`Соседние` `$G_(i - 1)$` `и` `$G_i$` `отличаются` `одним` `битом,` `его` `номер` `$"ctz"(i)$.` `Обратно` `$i$` `по` `#code("ulong g = G_i"):` `#code("for (int k = 1; k < 64; k <<= 1) g ^= g >> k;")`
+`Другие` `коды` `Грея:`
+`По` `основанию` `$k$:` `цифра` `$j$` `кода` `равна` `$(d_j - d_(j + 1)) mod k$,` `где` `$d$` `-` `цифры` `$i$` `в` `$k$-ичной` `системе.` `Соседние` `отличаются` `одной` `цифрой` `на` `$plus.minus 1$` `по` `модулю` `$k$.`
+`Сбалансированный:` `каждый` `бит` `переключается` `почти` `поровну,` `около` `$2^n / n$` `раз.` `Строится` `сложно.`
+`Перестановки,` `соседние` `отличаются` `обменом` `двух` `соседних` `элементов:` `алгоритм` `Штейнгауза-Джонсона-Троттера.`
+`Сочетания` `из` `$n$` `по` `$k$,` `соседние` `отличаются` `заменой` `одного` `элемента` `(revolving` `door).#br
+= *7.` `#underline[Matrices]*#br
+== *7.0.` `Умножение` `и` `степень*#br
 $ c_(i,j) = sum_k a_(i,k) b_(k,j), mat(1, 1; 1, 0)^n = mat(F_(n + 1), F_n; F_n, F_(n - 1)) $`
 `Допустим` `нужно` `$q$` `раз` `возводить` `одну` `и` `ту` `же` `матрицу` `в` `степень` `и` `домножать` `на` `вектор.` `Наивное` `решение:` `$O(q n^3 log(n))$,` `однако` `если` `мы` `предпросчитаем` `двоичные` `степени` `матрицы,` `а` `затем` `$log(n)$` `раз` `домножим` `на` `них` `вектор,` `то` `получим` `асимптотику` `$O(n^3 log(n) + q n^2 log(n))$.#br
-== *3.3.` `Расширенный` `алгоритм` `Евклида*#br
-Решает` `задачу` `поиска` `$a x + b y = gcd(a, b)$` `с` `мин.` `$x >= 0$.`
-````cpp
-long gcdex(long a, long &x, long b, long &y) {
-    long x1, y1;
-    x = y1 = 1;
-    y = x1 = 0;
-    while (b > 0) {
-        long k = a / b;
-        swap(x -= k * x1, x1);
-        swap(y -= k * y1, y1);
-        swap(a -= k * b, b);
-    }
-    if (x < 0) {
-        if (x1 < 0) {
-            x1 *= -1;
-            y1 *= -1;
-        }
-        x += x1;
-        y += y1;
-    }
-    return a;
-}
-```#br
-== *3.4.` `КТО*#br
-$ cases("ans" eq.triple a thin (mod n), "ans" eq.triple b thin (mod m)) $`
-`$x, y, g = "gcdex"(n, m)$`
-`$x n + y m = g$,`  `$x n / g + y m / g = 1$,`  `$x n / g eq.triple 1 thin (mod m / g)$`
-`$n k + a eq.triple b thin (mod m)$`
-`$n k eq.triple b - a thin (mod m)$`
-`$n / g k eq.triple (b - a) / g thin (mod m / g)$`
-`$k = (b - a) / g x$`
-`$"ans" = (b - a) / g x n + a$`
-````cpp
-pair <long, long> crt(long a, long n, long b, long m) {
-    if (n < m) {
-        swap(n, m);
-        swap(a, b);
-    }
-    long x, y, g = gcdex(n, x, m, y);
-    assert((a - b) % g == 0); // else no solution
-    m /= g;
-    x = (b - a) / g % m * x % m * n + a;
-    return {x + (x < 0) * n * m, n * m};
-}
-```#br
-== *3.5.` `Миллер-Рабин,` `Ро-Поллард*#br
-Тест` `Миллера-Рабина:` `$O(log(n))$` `умножений` `по` `модулю.` `Ро-алгоритм` `Полларда` `находит` `делитель` `в` `среднем` `за` `$O(n^(1 div 4))$,` `для` `$n approx 9 * 10^18$` `это` `около` `$10$` `мс.`
-````cpp
-// Мин. простой делитель, MX = 1e6. Без решета fct для n < 1e6 в 27 раз медленнее, для n < 1e12 в 1.4 раза
-int lp[MX];
-vector <int> primes;
-
-void init() {
-    iota(lp + 2, lp + MX, 2); // lp[1] = 0, чтобы простое p == lp[p]
-    for (int i = 2; i < MX; ++i) {
-        if (lp[i] == i)
-            primes.pb(i);
-        for (int j = 0; j < primes.size() && i * primes[j] < MX && primes[j] <= lp[i]; ++j)
-            lp[i * primes[j]] = primes[j];
-    }
-}
-
-long mulm(long a, long b, long mod) {
-    return int128(a) * b % mod;
-}
-
-long powm(long x, long n, long mod) {
-    long ans = 1;
-    for (long y = x; n > 0; n >>= 1, y = mulm(y, y, mod))
-        if (n & 1)
-            ans = mulm(ans, y, mod);
-    return ans;
-}
-
-// Миллер-Рабин. 7 оснований точны для нечётных n < 2^64,
-// подходят и 12 первых простых (2..37)
-int isPrime(long n) {
-    if (n < MX)
-        return n > 1 && lp[n] == n;
-    if (n % 2 == 0)
-        return 0;
-    long d = n - 1, s = 0;
-    while ((d & 1) == 0) {
-        d >>= 1;
-        ++s;
-    }
-    for (long a : {2, 325, 9375, 28'178, 450'775,
-                   9'780'504, 1'795'265'022}) {
-        long x = powm(a % n, d, n);
-        if (x <= 1 || x == n - 1)
-            continue;
-        for (int r = 1; r < s && x != n - 1; ++r)
-            x = mulm(x, x, n);
-        if (x != n - 1)
-            return 0;
-    }
-    return 1;
-}
-
-// n - составное. Возвращает делитель d, 1 < d < n
-long pollardRho(long n) {
-    assert(n >= MX);
-    while (1) {
-        long x = rnd() % n, y = x, c = rnd() % n, d = 1;
-        auto f = [&](long x) {
-            return (int128(x) * x + c) % n;
-        };
-        while (d == 1) {
-            x = f(x);
-            y = f(f(y));
-            d = gcd(abs(x - y), n);
-        }
-        if (d != n)
-            return d;
-    }
-}
-
-// Дописывает в res простые делители n (с повторами, не по порядку)
-void fct(long n, vector <long> &res) {
-    if (n < MX) {
-        for (; n > 1; n /= lp[n])
-            res.pb(lp[n]);
-        return;
-    }
-    if (isPrime(n)) {
-        res.pb(n);
-        return;
-    }
-    long d = pollardRho(n);
-    fct(d, res);
-    fct(n / d, res);
-}
-```#br
-== *3.6.` `Код` `Грея*#br
-$ G_i = i xor floor(i / 2) $#br
-== *3.7.` `Модули,` `простые` `числа*#br
-Первообразный` `корень` `($g$)` `модуля` `$m$` `(только` `для` `$m = 2, 4, p^a, 2p^a$)` `-` `число,` `степени` `которого` `оббегают` `все` `числа` `от` `$1$` `до` `$m - 1$.` `Пусть` `$m = c * 2^k + 1$,` `тогда` `в` `FFT` `максимальная` `длина` `полинома` `$n = 2^k$.`
-`#align(center)[#table(
-  columns: 4,
-  [*$m$*], [*$c$*], [*$k$*], [*$g$*],
-  [$10^9 + 7$], [$5 * 10^8 + 3$], [$1$], [$5$],
-  [$"998'244'353"$], [$119$], [$23$], [$3$],
-  [$"1'004'535'809"$], [$479$], [$21$], [$3$],
-  [$"469'762'049"$], [$7$], [$26$], [$3$],
-  [$"167'772'161"$], [$5$], [$25$], [$3$],
-)]#br
-=== *Простые` `и` `праймориалы*#br
-#split-table(3, ($p$, $p\#$),
-  [$2$], [$2$], [$3$], [$6$], [$5$], [$30$], [$7$], [$210$], [$11$], [$2310$],
-  [$13$], [$3.0*10^4$], [$17$], [$5.1*10^5$], [$19$], [$9.7*10^6$], [$23$], [$2.2*10^8$], [$29$], [$6.5*10^9$],
-  [$31$], [$2*10^11$], [$37$], [$7.4*10^12$], [$41$], [$3*10^14$], [$43$], [$1.3*10^16$], [$47$], [$6.1*10^17$],
-)#br
-=== *Кол-во` `простых` `чисел` `до` `$10^x$*#br
-$ pi(n) approx n / ln(n) $`
-`#split-table(3, ($x$, $pi(10^x)$),
-  [$1$], [$4$], [$2$], [$25$], [$3$], [$168$], [$4$], [$1'229$], [$5$], [$9'592$], [$6$], [$78'498$],
-  [$7$], [$664'579$], [$8$], [$5'761'455$], [$9$], [$50'847'534$], [$10$], [$455'052'511$], [$11$], [$4'118'054'813$], [$12$], [$37'607'912'018$],
-  [$13$], [$346'065'536'839$], [$14$], [$3'204'941'750'802$], [$15$], [$29'844'570'422'669$], [$16$], [$279'238'341'033'925$], [$17$], [$2'623'557'157'654'233$], [$18$], [$24'739'954'287'740'860$],
-)#br
-=== *Обратное,` `степень` `и` `корень` `по` `модулю*#br
-Обратное` `к` `$x$` `по` `модулю` `$m$` `есть,` `только` `если` `$gcd(x, m) = 1$.` `Корней` `степени` `$k$` `из` `$c != 0$` `по` `простому` `$p$` `либо` `нет,` `либо` `ровно` `$d = gcd(k, p - 1)$.` `Корень` `есть,` `если` `$c^((p - 1) / d) eq.triple 1 thin (mod p)$.` `При` `$d = 1$` `он` `равен` `$c^y$,` `где` `$k y eq.triple 1 thin (mod p - 1)$.` `Первообразный` `корень` `есть` `у` `любого` `простого.`
-````cpp
-long inv(long x) { // mod простое, иначе gcdex (3.3)
-    // или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
-    return x == 1 ? 1 : mod - mod / x * inv(mod % x) % mod;
-}
-
-long powm(long x, long k) {
-    long ans = 1;
-    for (long y = x; k > 0; k >>= 1, y = y * y % mod)
-        if (k & 1)
-            ans = ans * y % mod;
-    return ans;
-}
-
-// Первообразный корень простого mod: g^((mod - 1) / q) != 1 для каждого простого q | mod - 1. O(sqrt(mod))
-long primRoot() {
-    vector <long> q;
-    long x = mod - 1;
-    for (long i = 2; i * i <= x; ++i)
-        if (x % i == 0) {
-            q.pb(i);
-            while (x % i == 0)
-                x /= i;
-        }
-    if (x > 1)
-        q.pb(x);
-    for (long g = 1;; ++g) {
-        bool ok = true;
-        for (long u : q)
-            ok &= powm(g, (mod - 1) / u) != 1;
-        if (ok)
-            return g;
-    }
-}
-
-// Корень степени k из c: x^k = c (mod простое), g - первообразный корень. -1, если корня нет. O(sqrt(mod))
-long root(long c, long k) {
-    if (c == 0)
-        return 0;
-    // Ищем t: g^t = c. Все c * g^j, j < m кладём в pos, затем перебираем g^(i * m)
-    long m = sqrtl(mod) + 1, gm = powm(g, m), t = 0;
-    unordered_map <long, long> pos;
-    for (long j = 0, cur = c; j < m; ++j, cur = cur * g % mod)
-        pos[cur] = j;
-    for (long i = 1, cur = gm; !t; ++i, cur = cur * gm % mod)
-        if (pos.count(cur))
-            t = i * m - pos[cur];
-    // x = g^y: k * y = t (mod mod - 1)
-    long d = gcd(k, mod - 1), y, z;
-    if (t % d)
-        return -1;
-    gcdex(k / d, y, (mod - 1) / d, z);
-    return powm(g, t / d % ((mod - 1) / d) * y % ((mod - 1) / d));
-}
-```#br
-== *3.8.` `Ряды` `и` `полиномы*#br
-=== *3.8.0.` `Ряды*#br
+= *8.` `#underline[Series` `and` `polynomials]*#br
+== *8.0.` `Ряды` `Маклорена*#br
 $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
 `$ 1 / (1 + x) = sum_(n = 0)^infinity (-1)^n x^n = 1 - x + x^2 - x^3 + x^4 - ... $`
 `$ 1 / (1 - x) = sum_(n = 0)^infinity x^n = 1 + x + x^2 + x^3 + ..., |x| < 1 $`
@@ -1128,268 +195,53 @@ $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
 `$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = x - x^3 / 3 + x^5 / 5 - ... $`
 `$ arcsin(x) = sum_(n=0)^infinity mat(2n; n) / (4^n (2n + 1)) x^(2n + 1) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $`
 `$ arccos(x) = pi / 2 - arcsin(x), op("arccot")(x) = pi / 2 - arctan(x) $#br
-=== *3.8.1.` `Полиномы*#br
+== *8.1.` `Полиномы*#br
 $ A'_i = A_(i + 1) * (i + 1), (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $`
-`$ ln(A) = integral (A') / A, A_0 = 1 $`
-`*Деление*`
-`Деление` `в` `FFT` `разрешено` `только` `нацело.` `Дробное` `через` `p998.divMod().`
-`*Возведение` `в` `степень*`
-`Сделать` `преобразование,` `возвести` `каждое` `значение` `в` `степень` `$k$` `и` `применить` `обратное` `(так` `делает` `p998.pow(),` `когда` `$A^k$` `помещается` `в` `длину` `$A$)` `можно,` `только` `если` `результат` `целиком` `помещается` `в` `длину` `преобразования:` `$n > k deg(A)$.` `Иначе` `старшие` `коэффициенты` `заворачиваются` `по` `кругу` `и` `прибавляются` `к` `младшим.` `Когда` `нужны` `только` `первые` `$n$` `коэффициентов:`
+`$ ln(A) = integral (A') / A, A_0 = 1 $#br
+=== *8.1.1.` `Деление*#br
+Деление` `в` `FFT` `разрешено` `только` `нацело.` `Дробное` `через` `p998.divMod().#br
+=== *8.1.2.` `Возведение` `в` `степень*#br
+Сделать` `преобразование,` `возвести` `каждое` `значение` `в` `степень` `$k$` `и` `применить` `обратное` `(так` `делает` `p998.pow(),` `когда` `$A^k$` `помещается` `в` `длину` `$A$)` `можно,` `только` `если` `результат` `целиком` `помещается` `в` `длину` `преобразования:` `$n > k deg(A)$.` `Иначе` `старшие` `коэффициенты` `заворачиваются` `по` `кругу` `и` `прибавляются` `к` `младшим.` `Когда` `нужны` `только` `первые` `$n$` `коэффициентов:`
 `$0$.` `Поддерживаем` `тек.` `двоичную` `степень` `(обрезанную` `до` `n` `членов)` `и` `домножаем` `на` `неё` `ответ` `$O(n log(n) log(k))$`
-`$1$.` `$exp(k ln(A))$.` `Нужно,` `чтобы` `$A_0$` `было` `равно` `1,` `однако` `p998.pow()` `решает` `и` `эту` `проблему`
-`*Сведение` `к` `ln` `и` `exp*` `(первые` `$n$` `коэффициентов)`
+`$1$.` `$exp(k ln(A))$.` `Нужно,` `чтобы` `$A_0$` `было` `равно` `1,` `однако` `p998.pow()` `решает` `и` `эту` `проблему#br
+=== *8.1.3.` `Сведение` `к` `ln` `и` `exp*#br
+(первые` `$n$` `коэффициентов)`
 `$ A^k = exp(k ln(A)), root(r, A) = exp(1 / r ln(A)), A_0 = 1 $`
 `$ product_i A_i = exp(sum_i ln(A_i)) $`
 `$ product_i (1 + x^(a_i)) = exp(sum_i ln(1 + x^(a_i))) = exp(sum_i sum_(k >= 1) (-1)^(k - 1) x^(k a_i) / k) $`
 `$ product_i 1 / (1 - x^(a_i)) = exp(-sum_i ln(1 - x^(a_i))) = exp(sum_i sum_(k >= 1) x^(k a_i) / k) $`
-`Корень` `степени` `$r$:` `p998.root(A,` `r).` `Это` `начало` `бесконечного` `ряда,` `как` `$sqrt(1 - x)$` `в` `3.8.0,` `а` `не` `точный` `корень.` `Точный` `тоже` `находит:` `если` `$A = B^r$` `для` `многочлена` `$B$,` `вернётся` `$B$` `и` `нули,` `с` `точностью` `до` `множителя` `$omega$,` `$omega^r = 1$.` `Корень` `есть,` `если` `первый` `ненулевой` `коэффициент` `$c$` `стоит` `на` `месте` `$t$,` `$t$` `делится` `на` `$r$` `и` `root(c,` `r)` `из` `3.7` `есть.` `p998.pow(A,` `p998.inv(r))` `верно` `только` `при` `$A_0 = 1$,` `иначе` `$A_0^(r "inv"(r)) != A_0$:` `показатели` `степени` `числа` `берутся` `по` `модулю` `$"mod" - 1$,` `а` `inv(r)` `обратен` `к` `$r$` `по` `модулю` `mod.` `Нужен` `почти` `всегда` `квадратный.` `Суммы` `под` `exp` `в` `двух` `последних` `формулах` `собираются` `за` `$O(n log(n))$:` `для` `каждого` `$a$` `перебираем` `$k a < n$.`
-`*Суммы` `степеней*` `$p_k = sum_(i = 1)^m a_i^k$` `сразу` `для` `всех` `$k = 1..n$.` `По` `ряду` `$1 / (1 - x)$` `из` `3.8.0` `$(a x) / (1 - a x) = a x + a^2 x^2 + a^3 x^3 + ...$` `-` `бесконечный` `ряд,` `берём` `члены` `до` `$x^n$` `включительно.` `$(ln(1 - a x))' = -a / (1 - a x)$,` `поэтому` `$(a x) / (1 - a x) = -x (ln(1 - a x))'$,` `а` `сумма` `логарифмов` `-` `логарифм` `произведения:`
+`Корень` `степени` `$r$:` `p998.root(A,` `r).` `Это` `начало` `бесконечного` `ряда,` `как` `$sqrt(1 - x)$` `в` `8.0,` `а` `не` `точный` `корень.` `Точный` `тоже` `находит:` `если` `$A = B^r$` `для` `многочлена` `$B$,` `вернётся` `$B$` `и` `нули,` `с` `точностью` `до` `множителя` `$omega$,` `$omega^r = 1$.` `Корень` `есть,` `если` `первый` `ненулевой` `коэффициент` `$c$` `стоит` `на` `месте` `$t$,` `$t$` `делится` `на` `$r$` `и` `root(c,` `r)` `из` `5.2` `есть.` `p998.pow(A,` `p998.inv(r))` `верно` `только` `при` `$A_0 = 1$,` `иначе` `$A_0^(r "inv"(r)) != A_0$:` `показатели` `степени` `числа` `берутся` `по` `модулю` `$"mod" - 1$,` `а` `inv(r)` `обратен` `к` `$r$` `по` `модулю` `mod.` `Нужен` `почти` `всегда` `квадратный.` `Суммы` `под` `exp` `в` `двух` `последних` `формулах` `собираются` `за` `$O(n log(n))$:` `для` `каждого` `$a$` `перебираем` `$k a < n$.#br
+=== *8.1.4.` `Суммы` `степеней*#br
+$p_k = sum_(i = 1)^m a_i^k$` `сразу` `для` `всех` `$k = 1..n$.` `По` `ряду` `$1 / (1 - x)$` `из` `8.0` `$(a x) / (1 - a x) = a x + a^2 x^2 + a^3 x^3 + ...$` `-` `бесконечный` `ряд,` `берём` `члены` `до` `$x^n$` `включительно.` `$(ln(1 - a x))' = -a / (1 - a x)$,` `поэтому` `$(a x) / (1 - a x) = -x (ln(1 - a x))'$,` `а` `сумма` `логарифмов` `-` `логарифм` `произведения:`
 `$ sum_(k = 1)^n p_k x^k = sum_(k = 1)^n sum_(i = 1)^m a_i^k x^k = sum_(i = 1)^m (a_i x) / (1 - a_i x) = -x (ln product_(i = 1)^m (1 - a_i x))' $`
 `$product (1 - a_i x)$` `разделяйкой:` `перемножаем` `через` `p998.mult` `произведения` `левой` `и` `правой` `половин,` `$O(m log^2(m))$.` `Затем` `p998.ln` `и` `p998.deriv,` `$O(n log(n))$.` `Брать` `$ln(1 - a_i x)$` `для` `каждого` `$a_i$` `отдельно` `и` `складывать` `-` `это` `$n$` `коэффициентов` `на` `каждое` `$a_i$,` `$O(n m)$.`
-`Для` `$a_i = i$` `это` `$S_c (n) = 1^c + ... + n^c$` `из` `3.0` `сразу` `для` `всех` `$c = 0..K$` `за` `$O(K log(K))$.` `Ряд` `$e^x$` `из` `3.8.0` `даёт` `$e^(i x) = sum_c i^c x^c / c!$:` `при` `$x^c$` `стоит` `$i^c / c!$.` `Поэтому` `$(S_c (n)) / c!$` `-` `коэффициент` `при` `$x^c$` `у` `суммы` `$e^x + e^(2x) + ... + e^(n x)$.` `Это` `геометрическая` `прогрессия` `со` `знаменателем` `$e^x$:`
+`Для` `$a_i = i$` `это` `$S_c (n) = 1^c + ... + n^c$` `из` `6.0` `сразу` `для` `всех` `$c = 0..K$` `за` `$O(K log(K))$.` `Ряд` `$e^x$` `из` `8.0` `даёт` `$e^(i x) = sum_c i^c x^c / c!$:` `при` `$x^c$` `стоит` `$i^c / c!$.` `Поэтому` `$(S_c (n)) / c!$` `-` `коэффициент` `при` `$x^c$` `у` `суммы` `$e^x + e^(2x) + ... + e^(n x)$.` `Это` `геометрическая` `прогрессия` `со` `знаменателем` `$e^x$:`
 `$ sum_(c = 0)^K S_c (n) x^c / c! = e^x + e^(2x) + ... + e^(n x) = (e^((n + 1) x) - e^x) / (e^x - 1) $`
 `У` `знаменателя` `$e^x - 1$` `нулевой` `коэффициент` `0,` `поэтому` `делим` `числитель` `и` `знаменатель` `на` `$x$` `и` `получаем` `ряды` `$A$` `и` `$B$.` `Их` `коэффициенты` `-` `из` `ряда` `$e^x$:`
 `$ A = (e^((n + 1) x) - e^x) / x, A_j = ((n + 1)^(j + 1) - 1) / (j + 1)! $`
 `$ B = (e^x - 1) / x, B_j = 1 / (j + 1)! $`
-`Тогда` `$S_c (n) = c! (A / B)_c$,` `$A / B$` `через` `p998.inv` `и` `p998.mult.`
-`*Операции` `над` `значениями*`
-`$"NTT"(A)_i$` `-` `значение` `$A$` `в` `$i$-й` `точке.` `Преобразование` `линейно:` `прямое` `делаем` `раз` `на` `каждый` `полином,` `обратное` `-` `раз` `на` `ответ,` `между` `ними` `всё` `поэлементно.` `Длина` `$n$` `больше` `степени` `ответа.`
+`Тогда` `$S_c (n) = c! (A / B)_c$,` `$A / B$` `через` `p998.inv` `и` `p998.mult.#br
+=== *8.1.5.` `Операции` `над` `значениями*#br
+$"NTT"(A)_i$` `-` `значение` `$A$` `в` `$i$-й` `точке.` `Преобразование` `линейно:` `прямое` `делаем` `раз` `на` `каждый` `полином,` `обратное` `-` `раз` `на` `ответ,` `между` `ними` `всё` `поэлементно.` `Длина` `$n$` `больше` `степени` `ответа.`
 `$ k A = k A_0 + k A_1 x + ... = "NTT"^(-1)(k thin "NTT"(A)_i) $`
 `$ A plus.minus k = (A_0 plus.minus k) + A_1 x + ... = "NTT"^(-1)("NTT"(A)_i plus.minus k) $`
 `$ A plus.minus B = "NTT"^(-1)("NTT"(A)_i plus.minus "NTT"(B)_i) $`
 `$ (A + k) B = "NTT"^(-1)(("NTT"(A)_i + k) thin "NTT"(B)_i) $`
 `$ A B + C D = "NTT"^(-1)("NTT"(A)_i thin "NTT"(B)_i + "NTT"(C)_i thin "NTT"(D)_i) $`
-`$x A = A_0 x + A_1 x^2 + ...$` `-` `сдвигаем` `коэффициенты` `до` `прямого` `или` `после` `обратного:` `значения` `лежат` `в` `порядке` `перевёрнутых` `битов,` `множитель` `у` `каждого` `свой.`
-`*Что` `считают*`
-`$A_i$` `-` `кол-во` `объектов` `веса` `$i$.` `Коэффициент` `при` `$x^n$` `в` `ответе` `-` `кол-во` `способов` `набрать` `вес` `$n$:`
+`$x A = A_0 x + A_1 x^2 + ...$` `-` `сдвигаем` `коэффициенты` `до` `прямого` `или` `после` `обратного:` `значения` `лежат` `в` `порядке` `перевёрнутых` `битов,` `множитель` `у` `каждого` `свой.#br
+=== *8.1.6.` `Что` `считают*#br
+$A_i$` `-` `кол-во` `объектов` `веса` `$i$.` `Коэффициент` `при` `$x^n$` `в` `ответе` `-` `кол-во` `способов` `набрать` `вес` `$n$:`
 `$A B$` `-` `объект` `из` `$A$` `и` `объект` `из` `$B$.`  `$A^k$` `-` `$k$` `объектов` `по` `порядку.`
 `$1 / (1 - A)$` `-` `сколько` `угодно` `объектов` `по` `порядку,` `$A_0 = 0$.` `Для` `$A = x + x^2$` `это` `способы` `пройти` `$n$` `ступеней` `шагами` `$1$` `и` `$2$.`
 `$product 1 / (1 - x^(a_i))$` `-` `каждый` `вес` `$a_i$` `сколько` `угодно` `раз,` `порядок` `не` `важен` `(разбиения` `числа).`
 `$product (1 + x^(a_i))$` `-` `каждый` `вес` `не` `больше` `раза.`
 `$exp(A)$` `-` `набор` `помеченных` `объектов` `без` `порядка,` `$A_i$` `и` `ответ` `поделены` `на` `$i!$.` `$ln$` `наоборот:` `связные` `графы` `из` `всех` `графов.#br
-== *3.8.2.` `Полиномы` `(NTT)*#br
+== *8.2.` `Полиномы` `(NTT)*#br
 Пример` `для` `p998.root,` `CF` `438E:` `веса` `вершин` `из` `множества` `$C$,` `вес` `дерева` `-` `сумма` `весов,` `найти` `число` `двоичных` `деревьев` `каждого` `веса` `$s <= n$.` `$F$` `и` `$G$` `-` `ряды:` `$F_s$` `-` `ответ` `для` `$s$,` `$G = sum_(c in C) x^c$.` `Дерево` `пустое` `или` `корень` `с` `левым` `и` `правым` `поддеревом,` `поэтому` `$F = 1 + G F^2 => F = 2 / (1 + sqrt(1 - 4 G))$.`
-````cpp
-const int N = 1 << 20;
-
-void shrink(vector <int> &v) { // Убираем нули в конце
-    while (v.size() > 1 && v.back() == 0)
-        v.pop_back();
-}
-
-template <int MOD, int G> // G - первообразный корень (обычно 3)
-struct Poly {
-    vector <int> inv1;
-    vector <int> rt; // rt[k + j] = w^j, где w^(2k) = 1: корни для блока длины 2k лежат подряд
-    int inv(int x) {
-        if (x < inv1.size())
-            return inv1[x];
-        return MOD - 1LL * MOD / x * inv(MOD % x) % MOD;
-    }
-    int powm(int x, long k /*0 <= k < MOD - 1*/) {
-        int ans = 1;
-        for (int y = x; k > 0; k >>= 1, y = 1LL * y * y % MOD)
-            if (k & 1)
-                ans = 1LL * ans * y % MOD;
-        return ans;
-    }
-    Poly() {
-        inv1.resize(N + 1);
-        inv1[1] = 1;
-        for (int i = 2; i <= N; ++i)
-            inv1[i] = MOD - 1LL * MOD / i * inv1[MOD % i] % MOD;
-        rt.resize(N);
-        for (int k = 1; k < N; k <<= 1) {
-            int w = powm(G, (MOD - 1) / (k * 2));
-            rt[k] = 1;
-            for (int j = 1; j < k; ++j)
-                rt[k + j] = 1LL * rt[k + j - 1] * w % MOD;
-        }
-    }
-    // Прямое (DIF) выдаёт значения в порядке перевёрнутых битов, обратное (DIT) принимает их в этом же порядке:
-    // перестановка не нужна, пока между ними только поэлементные операции
-    void NTT(vector <int> &a, bool inverse /*обратное ли преобразование*/) {
-        int n = a.size(); // n - степень двойки
-        if (!inverse) {
-            for (int k = n / 2; k >= 1; k >>= 1) // от длинных блоков к коротким
-                for (int i = 0; i < n; i += k * 2)
-                    for (int j = 0; j < k; j++) {
-                        int u = a[i + j], v = a[i + j + k];
-                        a[i + j] = u + v < MOD ? u + v : u + v - MOD;
-                        a[i + j + k] = 1LL * (u - v + MOD) * rt[k + j] % MOD;
-                    }
-            return;
-        }
-        for (int k = 1; k < n; k <<= 1) // от коротких блоков к длинным
-            for (int i = 0; i < n; i += k * 2)
-                for (int j = 0; j < k; j++) {
-                    int u = a[i + j], v = 1LL * a[i + j + k] * rt[k + j] % MOD;
-                    a[i + j] = u + v < MOD ? u + v : u + v - MOD;
-                    a[i + j + k] = u < v ? u - v + MOD : u - v;
-                }
-        reverse(a.begin() + 1, a.end()); // w^(-j) = w^(n - j)
-        int invN = inv1[n];
-        for (int &u : a)
-            u = 1LL * u * invN % MOD;
-    }
-    // A * B, a.size() + b.size() - 1 коэффициентов
-    vector <int> mult(vector <int> a, vector <int> b) {
-        int sz = a.size() + b.size() - 1, n = 1;
-        while (n < sz)
-            n <<= 1;
-        a.resize(n); b.resize(n);
-        NTT(a, false); NTT(b, false);
-        for (int i = 0; i < n; i++)
-            a[i] = (1LL * a[i] * b[i]) % MOD;
-        NTT(a, true);
-        a.resize(sz);
-        return a;
-    }
-
-    vector <int> deriv(const vector <int> &a) { // A'(x)
-        if (!a.size())
-            return {};
-        vector <int> res(a.size() - 1);
-        for (int i = 0; i < a.size() - 1; ++i)
-            res[i] = 1LL * a[i + 1] * (i + 1) % MOD;
-        return res;
-    }
-    vector <int> integ(const vector <int> &a) {
-        vector <int> res(a.size() + 1);
-        for (int i = 1; i <= a.size(); ++i)
-            res[i] = 1LL * a[i - 1] * inv(i) % MOD;
-        return res;
-    }
-    // 1 / A. a[0] != 0
-    vector <int> inv(const vector <int> &a) {
-        vector <int> b = { inv(a[0]) };
-        for (int m = 2;; m <<= 1) {
-            vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m));
-            sub.resize(m * 2); b.resize(m * 2);
-            NTT(sub, false); NTT(b, false);
-            for (int i = 0; i < m * 2; ++i) // B * (2 - A * B)
-                b[i] = 1LL * b[i] * (2 - 1LL * sub[i] * b[i] % MOD + MOD) % MOD;
-            NTT(b, true);
-            b.resize(m);
-            if (m >= a.size())
-                break;
-        }
-        b.resize(a.size());
-        return b;
-    }
-    // ln(A). a[0] == 1
-    vector <int> ln(const vector <int> &a) {
-        assert(a[0] == 1);
-        vector <int> res = mult(deriv(a), inv(a)); // A' * (1/A)
-        res.resize(a.size() - 1);
-        return integ(res);
-    }
-    // exp(A). A[0] == 0
-    vector <int> exp(const vector <int> &a) {
-        assert(a[0] == 0);
-        vector <int> b = {1};
-        for (int m = 2;; m <<= 1) {
-            b.resize(m);
-            vector <int> lnb = ln(b);
-            for (int i = 0; i < m; i++)
-                lnb[i] = ((i < a.size() ? a[i] : 0) - lnb[i] + MOD) % MOD;
-            lnb[0] = (lnb[0] + 1) % MOD; // 1 + A - ln(B)
-            b = mult(b, lnb);
-            if (m >= a.size())
-                break;
-        }
-        b.resize(a.size());
-        return b;
-    }
-    // A^k, первые a.size() коэффициентов
-    vector <int> pow(vector <int> a, long k) {
-        int sz = a.size(), deg = sz - 1, n = 1, cnt0 = 0;
-        while (deg > 0 && a[deg] == 0)
-            --deg;
-        if (k <= (sz - 1) / max(deg, 1)) { // A^k помещается целиком: возводим в степень каждое значение
-            while (n < sz)
-                n <<= 1;
-            a.resize(n);
-            NTT(a, false);
-            for (int &u : a)
-                u = powm(u, k);
-            NTT(a, true);
-            a.resize(sz);
-            return a;
-        }
-        while (cnt0 < sz && a[cnt0] == 0)
-            ++cnt0;
-        if (cnt0 == sz || cnt0 > (sz - 1) / k)
-            return vector <int> (sz);
-        vector <int> sub(a.begin() + cnt0, a.end());
-        int inv0 = inv(sub[0]),
-            pow0 = powm(sub[0], k % (MOD - 1));
-        for (int &u : sub)
-            u = 1LL * u * inv0 % MOD;
-        sub = ln(sub);
-        for (int &u : sub)
-            u = 1LL * u * (k % MOD) % MOD;
-        sub = exp(sub);
-        cnt0 *= k;
-        for (int i = sz - 1; i >= 0; --i)
-            a[i] = (cnt0 <= i ? 1LL * sub[i - cnt0] * pow0 % MOD : 0);
-        return a;
-    }
-    // A^(1 / r), первые a.size() - t + t / r коэффициентов, t - нули в начале
-    // {}, если корня нет. Нужен root(c, r) из 3.7 с mod = MOD, g = G
-    vector <int> root(vector <int> a, int r) {
-        assert(mod == MOD);
-        int sz = a.size(), t = 0;
-        while (t < sz && a[t] == 0)
-            ++t;
-        if (t == sz)
-            return a;
-        long c = ::root(a[t], r); // A = c x^t (1 + ...)
-        if (t % r || c == -1)
-            return {};
-        vector <int> sub(a.begin() + t, a.end());
-        int inv0 = inv(sub[0]), invr = inv(r);
-        for (int &u : sub)
-            u = 1LL * u * inv0 % MOD;
-        sub = ln(sub);
-        for (int &u : sub)
-            u = 1LL * u * invr % MOD; // 1 / r - множитель
-        sub = exp(sub);
-        vector <int> res(t / r);
-        for (int u : sub)
-            res.pb(1LL * u * c % MOD);
-        return res;
-    }
-    // A = Q * B + R. В Q a.size() - b.size() + 1 коэффициентов, в R - b.size() - 1. b.back() != 0
-    pair <vector <int>, vector <int>> divMod(const vector <int> &a, const vector <int> &b) {
-        assert(b.back() != 0);
-        int n = a.size(), m = b.size();
-        if (n < m)
-            return {{0}, a};
-        vector <int> ra = a, rb = b;
-        reverse(ra.begin(), ra.end());
-        reverse(rb.begin(), rb.end());
-        int sz = n - m + 1;
-        ra.resize(sz);
-        rb.resize(sz);
-        vector <int> q = mult(ra, inv(rb));
-        q.resize(sz);
-        reverse(q.begin(), q.end());
-        vector <int> bq = mult(b, q), r(m - 1);
-        for (int i = 0; i < m - 1; ++i)
-            r[i] = (a[i] - bq[i] + MOD) % MOD;
-        return {q, r};
-    }
-};
-
-Poly <998'244'353, 3>   p998;  // n <= 2^23 <=  8'388'608
-Poly <1'004'535'809, 3> p1004; // n <= 2^21 <=  2'097'152
-Poly <469'762'049, 3>   p469;  // n <= 2^26 <= 67'108'864
-// Main
-vec <int> c = p998.mult(a, b);
-```#br
-== *3.8.3.` `Интерполяция` `Лагранжа*#br
+`#code-file("code/poly/poly.cpp")#br
+== *8.3.` `Интерполяция` `Лагранжа*#br
 Через` `$n$` `точек` `$(x_i, y_i)$` `с` `разными` `$x_i$` `проходит` `ровно` `один` `многочлен` `степени` `меньше` `$n$:` `через` `$2$` `точки` `-` `прямая,` `через` `$3$` `-` `парабола.` `Два` `таких` `совпали` `бы:` `их` `разность` `имеет` `степень` `меньше` `$n$,` `но` `$n$` `корней` `$x_i$,` `значит` `она` `нулевая.`
+`Степень` `может` `выйти` `и` `меньше:` `$3$` `точки` `на` `одной` `прямой` `дадут` `прямую.` `Многочленов` `степени` `ровно` `$n$` `через` `эти` `$n$` `точек` `бесконечно` `много` `(через` `$2$` `точки` `-` `бесконечно` `много` `парабол):` `$P(x) + c (x - x_1)...(x - x_n)$,` `$c != 0$.` `Если` `все` `точки` `лежат` `на` `многочлене` `степени` `$d$,` `Лагранж` `по` `всем` `вернёт` `его` `же,` `старшие` `коэффициенты` `будут` `$0$.` `Если` `не` `лежат,` `такого` `многочлена` `нет.`
 `*Как` `построить.*` `Для` `каждой` `точки` `берём` `многочлен,` `равный` `$1$` `в` `$x_i$` `и` `$0$` `в` `остальных` `$x_j$:` `числитель` `обнуляет` `его` `в` `каждой` `$x_j$,` `знаменатель` `-` `тот` `же` `числитель` `в` `$x_i$.`
 `$ L_i (x) = product_(j != i) (x - x_j) / (x_i - x_j) $`
 `Ответ` `-` `их` `сумма` `с` `весами` `$y_i$:` `в` `точке` `$x_i$` `остаётся` `только` `своё` `слагаемое` `$y_i$,` `остальные` `равны` `$0$.`
@@ -1397,280 +249,18 @@ vec <int> c = p998.mult(a, b);
 `*Пример.*` `Точки` `$(0, 1)$,` `$(1, 3)$,` `$(2, 7)$:`
 `$ P(x) = 1 ((x - 1)(x - 2)) / ((0 - 1)(0 - 2)) + 3 (x(x - 2)) / (1 (1 - 2)) + 7 (x(x - 1)) / (2 (2 - 1)) = x^2 + x + 1 $`
 `*Зачем.*` `Ответ` `задачи` `-` `многочлен` `от` `$n$` `степени` `$d$` `(сумма` `многочлена` `степени` `$d - 1$` `по` `$i$` `от` `$1$` `до` `$n$,` `кол-во` `способов` `при` `фиксированном` `числе` `выборов),` `а` `$n$` `большое.` `Считаем` `ответ` `перебором` `в` `$d + 1$` `точке` `и` `восстанавливаем.` `Степень` `неизвестна` `-` `берём` `точек` `с` `запасом:` `лишние` `точки` `многочлен` `не` `меняют.`
-`По` `модулю` `всё` `так` `же,` `деление` `-` `это` `inv,` `модуль` `простой,` `$x_i$` `разные` `по` `модулю.` `Значение` `в` `одной` `точке` `при` `$x_i = 0..k - 1$` `считается` `за` `$O(k)$` `-` `sumPow` `в` `3.0.`
-````cpp
-// Коэффициенты многочлена степени < n по n точкам, O(n^2)
-// 0 <= x[i], y[i] < mod, x[i] разные. inv из 3.7
-vector <long> interp(vector <long> x, vector <long> y) {
-    int n = x.size();
-    vector <long> m(n + 1), q(n + 1), res(n);
-    m[0] = 1; // m = (X - x[0])...(X - x[n - 1])
-    for (int i = 0; i < n; ++i)
-        for (int j = i; j >= 0; --j) {
-            m[j + 1] = (m[j + 1] + m[j]) % mod;
-            m[j] = m[j] * (mod - x[i]) % mod;
-        }
-    for (int i = 0; i < n; ++i) {
-        long d = 0; // Знаменатель L_i = q(x[i])
-        for (int j = n - 1; j >= 0; --j) { // q = m / (X - x[i])
-            q[j] = (m[j + 1] + q[j + 1] * x[i]) % mod;
-            d = (d * x[i] + q[j]) % mod;
-        }
-        d = y[i] * inv(d) % mod;
-        for (int j = 0; j < n; ++j) // res += y[i] * L_i
-            res[j] = (res[j] + d * q[j]) % mod;
-    }
-    return res; // P = res[0] + res[1] * X + ...
-}
-```#br
-= *4.` `#underline[Geometry]*#br
-== *4.0.` `Сортировка` `векторов` `по` `углу*#br
-```cpp
-// По часовой стрелке, начиная с направления вверх
-bool comp(pair <long, long> a, pair <long, long> b) {
-    const pair <long, long> o{}; // -O2 и -O3 её убирают
-    if ((a >= o) != (b >= o)) // Левая полуплоскость позже правой
-        return a >= o;
-    return a.s * b.f > b.s * a.f;
-}
-```#br
-== *4.1.` `CHT*#br
-```cpp
-struct line {
-    ld k, b;
-    bool operator< (line x) {
-        if (k != x.k)
-            return k < x.k;
-        return b > x.b;
-    }
-    ld operator() (ld x) {
-        return k * x + b;
-    }
-};
-// You can speed up this code by adding "inline" to each func
-vector <line> cht;
-
-// If lst.k < new.k, it is maximum CHT, else it's minimum. sort without reverse is for max, sort with reverse is for min
-// .  max  .
-//  \     /
-//   .___.
-//
-//   .---.
-//  /     \
-// .  min  .
-
-// it isn't necessary
-ld cross(line a, line b) {
-    assert(a.k != b.k);
-    return (a.b - b.b) / (b.k - a.k);
-}
-
-// it returns cross(b, c) - cross(a, b), but it works when b.b == c.b!!!. If <= 0, delete b from CHT
-inline ld cross(line a, line b, line c) { return (b.b - c.b) * (b.k - a.k) - (a.b - b.b) * (c.k - b.k); }
-
-void add(line a) { // lst.k != a.k || (lst.k == a.k && lst.b != a.b). "!=" is < or >, depending on what suits you best, from sorting, from the need to find the maximum or minimum along straight lines
-    if (cht.size() && cht.back().k == a.k) // The new is a copy of the previous, but worse
-        return;
-    while (cht.size() > 1 && cross(cht[cht.size() - 2], cht.back(), a) <= 0)
-        cht.pop_back();
-    cht.pb(a);
-}
-
-ld get(ld x) {
-    assert(cht.size());
-    int l = 0, r = cht.size() - 1;
-    while (l < r) {
-        int md = (l + r + 1) / 2;
-        ld a = cht[md - 1].b - cht[md].b, b = x * (cht[md].k - cht[md - 1].k);
-        if (a == b || ((a < b) ^ (cht[md - 1].k > cht[md].k)))
-            l = md;
-        else
-            r = md - 1;
-    }
-    return cht[l].k * x + cht[l].b;
-}
-
-// 1e-9l = long double 1e-9
-inline ld _floor(ld x) { return floor(x + 1e-9l); }
-inline ld _ceil (ld x) { return ceil (x - 1e-9l); }
-```#br
-== *4.2.` `Дерево` `Ли` `Чао*#br
-```cpp
-const ld oo = 1e18, eps = 1e-9;
-
-struct line {
-    ld k, b;
-    ld operator() (ld x) {
-        return k * x + b;
-    }
-};
-
-struct LiChao { // For max
-    line ln;
-    ld l, md, r;
-    LiChao *L = 0, *R = 0;
-    LiChao(ld l, ld r, line ln = {0, -oo}): l(l), md((l + r) / 2), r(r), ln(ln) {}
-    void add(ld _l, ld _r, line nw) {
-        if (r - l < eps) {
-            if (ln(l) < nw(l))
-                ln = nw;
-            return;
-        }
-        if (_l <= l && r <= _r) {
-            if (ln(md) < nw(md) || (ln(md) == nw(md) && nw(l) < ln(l))) // For max
-                swap(ln, nw);
-            if (ln.k == nw.k)
-                return;
-            if ((ln.b - nw.b) / (nw.k - ln.k) <= md)
-                if (!L)
-                    L = new LiChao(l, md, nw);
-                else
-                    L -> add(_l, _r, nw);
-            else
-                if (!R)
-                    R = new LiChao(md, r, nw);
-                else
-                    R -> add(_l, _r, nw);
-            return;
-        }
-        if (_l <= md) {
-            if (!L)
-                L = new LiChao(l, md);
-            L -> add(_l, _r, nw);
-        }
-        if (md < _r) {
-            if (!R)
-                R = new LiChao(md, r);
-            R -> add(_l, _r, nw);
-        }
-    }
-    ld get(ld x) {
-        ld ans = ln(x);
-        if (x <= md && L)
-            ans = max(ans, L -> get(x));
-        if (md <= x && R)
-            ans = max(ans, R -> get(x));
-        return ans;
-    }
-};
-// Main
-LiChao tr(0, n);
-tr.add(l, r, {k, b});
-tr.get(x);
-```#br
-== *4.3.` `Сумма` `Минковского*#br
+`По` `модулю` `всё` `так` `же,` `деление` `-` `это` `inv,` `модуль` `простой,` `$x_i$` `разные` `по` `модулю.` `Значение` `в` `одной` `точке` `при` `$x_i = 0..k - 1$` `считается` `за` `$O(k)$` `-` `sumPow` `в` `6.0.`
+`#code-file("code/poly/interpolation.cpp")#br
+= *9.` `#underline[Geometry]*#br
+== *9.0.` `Сортировка` `векторов` `по` `углу*#br
+#code-file("code/geometry/angular-sort.cpp")#br
+== *9.1.` `CHT*#br
+#code-file("code/geometry/cht.cpp")#br
+== *9.2.` `Дерево` `Ли` `Чао*#br
+#code-file("code/geometry/li-chao.cpp")#br
+== *9.3.` `Сумма` `Минковского*#br
 #code("minkowski")` `находит` `сумму` `выпуклых` `многоугольников` `(обход` `по` `часовой` `стрелке;` `точка` `и` `отрезок` `тоже` `подходят).` `Точки` `на` `сторонах` `убирает` `#code("normalize"),` `сонаправленные` `стороны` `разных` `многоугольников` `складываются.` `#code("dist")` `находит` `расстояние` `между` `ними:` `один` `умножаем` `на` `$-1$` `(обход` `при` `этом` `не` `меняется)` `и` `ищем` `расстояние` `от` `$(0, 0)$` `до` `суммы.`
-````cpp
-struct point {
-    long x, y;
-    point operator+(const point& a) { return {x + a.x, y + a.y}; }
-    point operator-(const point& a) { return {x - a.x, y - a.y}; }
-    long cross(const point& a) { return x * a.y - y * a.x; }
-    long dot(const point& a) { return x * a.x + y * a.y; }
-    long len2() { return x * x + y * y; }
-};
-
-void normalize(vector <point> &p) { // Убираем точки на сторонах
-    int n = p.size();
-    if (n < 3) // Точка или отрезок
-        return;
-    vector <point> res;
-    for (int i = 0; i < n; i++)
-        if ((p[i] - p[(i + n - 1) % n]).cross(p[(i + 1) % n] - p[i]) != 0)
-            res.pb(p[i]);
-    p = res;
-}
-
-void reorder(vector <point> &p) { // Переупорядочиваем, чтобы начиналось с нижнего-левого (лексикографически)
-    int pos = 0;
-    for (int i = 1; i < p.size(); i++)
-        if (p[i].y < p[pos].y || (p[i].y == p[pos].y && p[i].x < p[pos].x))
-            pos = i;
-    rotate(p.begin(), p.begin() + pos, p.end());
-}
-
-vector <point> minkowski(vector <point> a, vector <point> b) {
-    reorder(a);
-    reorder(b);
-
-    vector <point> res;
-    res.pb(a[0] + b[0]);
-
-    int i = 0, j = 0;
-    while (i < a.size() || j < b.size()) {
-        if (i == a.size()) {
-            res.pb(res.back() + b[(j + 1) % b.size()] - b[j]);
-            ++j;
-            continue;
-        }
-        if (j == b.size()) {
-            res.pb(res.back() + a[(i + 1) % a.size()] - a[i]);
-            ++i;
-            continue;
-        }
-        point edgeA = a[(i + 1) % a.size()] - a[i], edgeB = b[(j + 1) % b.size()] - b[j];
-        long cp = edgeA.cross(edgeB);
-
-        res.pb(res.back() + (cp < 0 ? edgeA : (cp > 0 ? edgeB : edgeA + edgeB)));
-
-        if (cp <= 0) ++i;
-        if (cp >= 0) ++j;
-    }
-    res.pop_back(); // Последняя точка совпадает с первой
-    return res;
-}
-
-ld distToSegment(point p, point a, point b) {
-    point ab = b - a, ap = p - a;
-    if (ab.dot(ap) <= 0) // Ближе к A
-        return sqrtl(ap.len2());
-    point ba = a - b, bp = p - b;
-    if (ba.dot(bp) <= 0) // Ближе к B
-        return sqrtl(bp.len2());
-    return abs(ab.cross(ap)) / sqrtl(ab.len2()); // Перпендикуляр
-}
-
-// Расстояние между a и b; 0, если пересекаются
-ld dist(vector <point> a, vector <point> b) {
-    for (point &p : b)
-        p = {-p.x, -p.y};
-    vector <point> c = minkowski(a, b);
-    ld res = 1e18;
-    bool inside = 1; // (0, 0) строго внутри c
-    for (int i = 0; i < c.size(); i++) {
-        point p = c[i], q = c[(i + 1) % c.size()];
-        // Граница не для a и b, а для вершин и сторон суммы c = a + (-b): иначе len2, dot и cross не влезут в long
-        assert(max({abs(p.x), abs(p.y), abs(q.x - p.x), abs(q.y - p.y)}) <= 2e9);
-        inside &= p.cross(q) < 0;
-        res = min(res, distToSegment({0, 0}, p, q));
-    }
-    return inside ? 0 : res;
-}
-// Main
-vector <point> a(n), b(m);
-// Читаем a и b по часовой стрелке
-normalize(a);
-normalize(b);
-cout << dist(a, b); // 0, если пересекаются или касаются
-```#br
-== *4.4.` `Ближайшая` `пара` `точек*#br
+`#code-file("code/geometry/minkowski-sum.cpp")#br
+== *9.4.` `Ближайшая` `пара` `точек*#br
 Идём` `по` `точкам` `слева` `направо` `и` `храним` `в` `set` `по` `$y$` `те,` `что` `левее` `не` `больше` `чем` `на` `тек.` `ответ` `$d$.` `Для` `новой` `точки` `смотрим` `только` `точки` `с` `$y$` `в` `пределах` `$d$:` `их` `$O(1)$.` `Итого` `$O(n log(n))$.`
-````cpp
-// Квадрат расстояния между двумя ближайшими точками
-long closest(vector <pair <long, long>> p) {
-    sort(p.begin(), p.end());
-    set <pair <long, long>> st; // {y, x}
-    long best = 8e18;
-    for (int i = 0, j = 0; i < p.size() && best; ++i) {
-        long d = sqrtl(best) + 1;
-        for (; p[i].f - p[j].f >= d; ++j)
-            st.erase({p[j].s, p[j].f});
-        for (auto it = st.lower_bound({p[i].s - d, -8e18}); it != st.end() && it->f <= p[i].s + d; ++it) {
-            long dx = p[i].f - it->s, dy = p[i].s - it->f;
-            best = min(best, dx * dx + dy * dy);
-        }
-        st.insert({p[i].s, p[i].f});
-    }
-    return best;
-}
-`````
+`#code-file("code/geometry/closest-pair.cpp")``
