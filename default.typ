@@ -1,4 +1,4 @@
-#let margin = (x: 4mm, y: 2mm) // The printer prints from 0.45mm to the top and bottom edges
+#let margin = (x: 4mm, y: 4.5mm) // The printer prints from 4.5mm to the top and bottom edges
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels and numbers at their start, main text, code
@@ -128,7 +128,6 @@
   
     // Page number in all 4 corners, so it is seen when most of the page is covered.
     // It overlaps the text a bit, so it has a white outline.
-    // The distance to the paper edges is the one of the first version: it is tested to be printable
     foreground: context {
       set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
       let num = counter(page).display()
@@ -136,7 +135,7 @@
         place(
           corner,
           dx: if corner.x == left { margin.x } else { -margin.x },
-          dy: if corner.y == top { 1.5mm } else { -1.5mm },
+          dy: if corner.y == top { margin.y } else { -margin.y },
           {
             place(text(fill: black.transparentize(30%), stroke: 3pt + white.transparentize(30%), num))
             num
@@ -172,11 +171,13 @@
     show math.attach: it => { show h.where(amount: 10pt): none; it }
     it
   }
-  // The same gap above and under a formula, between two formulas it is smaller
-  show math.equation.where(block: true): set block(
-    above: 4.25pt,
-    below: -4.75pt
-  )
+  // The same gap above and under a formula, between two formulas it is smaller.
+  // A multi-level formula (fractions, matrices) looks farther from the text above it, so a part of the gap goes under it
+  show math.equation.where(block: true): it => context {
+    let tall = measure(it).height > 14pt
+    set block(above: if tall { 3.25pt } else { 4.25pt }, below: if tall { -3.75pt } else { -4.75pt })
+    it
+  }
   set table(inset: 3pt, stroke: 0.5pt)
   show table: set block(
     above: 8pt,

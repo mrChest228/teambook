@@ -139,7 +139,7 @@ int findLast(u64 x) {
 
 Короткие хеши для unordered_map / gp_hash_table через H выше (проверить на CF):
     pair <int, int>: H()(u64(p.first) << 32 | u32(p.second))
-    pair <long, long>: H()(p.first ^ H()(p.second))
+    pair <long, long>: H()(p.first ^ H()(p.second)) (не H()(a) ^ H()(b): у (x, x) всегда 0; проверено на 1e8 пар: все до 1e4, блоки, рандом до 1e9 и 1e18, большое + маленькие до 1e6 - коллизий нет, корзины равномерны)
     double: H()(bit_cast <u64>(x + 0.0)) (+ 0.0, чтобы -0.0 и 0.0 совпали)
     string, vector: полиномиальный хеш, либо hash <string>
 
