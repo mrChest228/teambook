@@ -9,15 +9,16 @@
 #let code-fill = rgb("#EEEEEE")
 
 #import "@preview/codly:2.0.0" as codly
-// Border of code blocks, of line numbers and of the cpp label
+// Border of line numbers and the cpp label
 #let code-stroke = 0.45pt + rgb("#777777")
+#let frame-stroke = 1pt + rgb("#AAAAAA")
 #let code-radius = 3pt
 
 // Border of a code block: the sides are on every part, the top and the bottom with round corners only at the
 // real start and end of the block, so an unfinished part is open
 #let code-cap(at-top, y: top) = {
   let r = code-radius
-  let w = code-stroke.thickness
+  let w = frame-stroke.thickness
   let s = 0.6pt + w // Covers the square corner of the sides and of the fill
   let k = 0.5523 // Control points of a cubic curve that is a quarter of a circle
   let sy = if at-top { 1 } else { -1 }
@@ -27,21 +28,21 @@
       curve.move(p(-s, -s)), curve.line(p(r, -s)), curve.line(p(r, 0pt)),
       curve.cubic(p(r - k * r, 0pt), p(0pt, r - k * r), p(0pt, r)),
       curve.line(p(-s, r)), curve.close()))
-    place(top + left, curve(stroke: code-stroke,
+    place(top + left, curve(stroke: frame-stroke,
       curve.move(p(r, 0pt)), curve.cubic(p(r - k * r, 0pt), p(0pt, r - k * r), p(0pt, r))))
   }
   place(y + left, box(width: 100%, height: 0pt, {
     place(top + left, corner(1))
     place(top + right, box(width: 0pt, corner(-1)))
-    place(top + left, dx: r - w / 2, line(length: 100% - 2 * r + w, stroke: code-stroke))
+    place(top + left, dx: r - w / 2, line(length: 100% - 2 * r + w, stroke: frame-stroke))
   }))
 }
 // The sides are the gray fill around the white block with the code. The corners are drawn twice: here over the
 // sides and in the header and the footer of codly over the lines, codly cuts them at its border
 // Line numbers have a fixed width, so the line after them is the left side of a block around the code: codly
 // paints the fills over the strokes of cells, a block draws its stroke over the content
-#let code-frame(it) = block(breakable: true, width: 100%, inset: (x: code-stroke.thickness),
-  fill: code-stroke.paint, {
+#let code-frame(it) = block(breakable: true, width: 100%, inset: (x: frame-stroke.thickness),
+  fill: frame-stroke.paint, {
     code-cap(true)
     block(breakable: true, width: 100%, fill: white, context {
       let inset = (left: 1.5pt, right: 1.2pt, y: 1.07pt)
@@ -51,7 +52,7 @@
         values: row => if row.kind == "code" { place(top + right, dx: inset.right, dy: -inset.y,
           block(width: 0pt, height: 100% + 2 * inset.y, stroke: (right: code-stroke))) + str(row.number) },
         fill: (white, code-fill), // Inverse of the line
-        align: right + top, // Digits stay under each other: 9 and 10
+        align: right + horizon, // Digits stay under each other: 9 and 10
         width: width, inset: inset
       ),))
       codly.new(it)
@@ -73,6 +74,8 @@
 }
 
 // Inline code: does not change the line height
+#let code-file(path) = raw(read(path).replace("\r\n", "\n").trim(at: end), lang: path.split(".").last(), block: true)
+
 #let code(str) = box(
   radius: 3pt,
   inset: (x: 2pt),
@@ -153,13 +156,12 @@
   set par(leading: 2.5pt)
   // A hyphen that is a separate word is a dash
   show regex("^-$"): "—"
-  // Headings stay in the line, the line break after them comes from TeamBook.typ
-  show heading: it => {
+  show heading: it => block(above: 2.5pt, sticky: true, {
     // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
     show regex("^\\d+(\\.\\d+)*\\."): n => strong(delta: -300, text(font: "Old Standard TT", style: "italic",
       size: font-sizes.at("num" + str(it.depth)), slashed-zero: false, fill: rgb("#4d4d4d"), n))
     text(size: font-sizes.at("h" + str(it.depth)), weight: "regular", it.body)
-  }
+  })
   // Math
   show math.equation.where(block: true): set text(size: font-sizes.math-block)
   show math.equation.where(block: false): set text(size: math-inline-scale * 1em)
@@ -175,7 +177,7 @@
   // A multi-level formula (fractions, matrices) looks farther from the text above it, so a part of the gap goes under it
   show math.equation.where(block: true): it => context {
     let tall = measure(it).height > 14pt
-    set block(above: if tall { 2.25pt } else { 3.25pt }, below: if tall { -3.75pt } else { -4.75pt })
+    set block(above: if tall { 2.25pt } else { 3.25pt }, below: if tall { -4.75pt } else { -5.25pt })
     it
   }
   set table(inset: 3pt, stroke: 0.5pt)
@@ -194,8 +196,8 @@
     footer: code-cap(false),
     indent-guides: (width: 4, color: luma(40%).transparentize(40%), thickness: 0.3pt)
   )
-  show: codly.header-set_(repeat: false, inset: 0pt, fill: none, stroke: none)
-  show: codly.footer-set_(repeat: false, inset: 0pt, fill: none, stroke: none)
+  show: codly.header-set_(repeat: false, inset: (x: 0pt, y: 0pt, bottom: 1pt), fill: none, stroke: none)
+  show: codly.footer-set_(repeat: false, inset: (x: 0pt, y: 0pt, top: 1pt), fill: none, stroke: none)
   show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (x: 1pt, y: 1.07pt))
   // The label hangs from the top border, not bound to the first line
   show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
@@ -213,7 +215,7 @@
     }
     // Code
     set par(leading: 0.35em)
-    set block(spacing: 5pt, below: -2.5pt) // below + height of the text line after the code = gap under the code
+    set block(spacing: 5pt)
     show text: set text(font: "Courier New") // All text is Courier New
     if it.lang == none { // Styled text
       block(it.text)
