@@ -16,7 +16,7 @@
 #define gcd __gcd
 #define nl '\n'
 
-typedef long double ld;
+typedef long double ld; // sqrt, pow, ... от long считать через sqrtl, powl, ...: они в long double и точны до 2^64
 typedef __int128 int128; // Или __int128_t
 #define  long  int64_t
 #define ulong uint64_t
