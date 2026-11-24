@@ -73,6 +73,8 @@
 }
 
 // Inline code: does not change the line height
+#let code-file(path) = raw(read(path).replace("\r\n", "\n").trim(at: end), lang: path.split(".").last(), block: true)
+
 #let code(str) = box(
   radius: 3pt,
   inset: (x: 2pt),
