@@ -7,3 +7,5 @@
 ``sf`` - суфф. массив, ``num[i]`` - позиция суффикса ``i`` в ``sf``, ``lcp[i]`` - lcp суффиксов ``sf[i]`` и ``sf[i + 1]``. $O(n log(n))$.
 lcp суффиксов ``i``, ``j`` за $O(1)$: разреженная таблица по ``lcp``, ответ ``min(lcp[L..R - 1])``, где ``L = min(num[i], num[j])``, ``R = max(num[i], num[j])``.
 ~~#code-file("code/strings/suffix-array.cpp")~~
+== *4.3. Манакер*
+~~#code-file("code/strings/manacher.cpp")~~
