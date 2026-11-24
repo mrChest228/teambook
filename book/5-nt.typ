@@ -1,11 +1,10 @@
-#import "../default.typ": *;#br
-#heading(depth: 1)[*5.` `#underline[Number` `theory]*#br]
+#import "../default.typ": *;#heading(depth: 1)[*5.` `#underline[Number` `theory]*]
 == *5.0.` `Расширенный` `алгоритм` `Евклида*#br
 Решает` `задачу` `поиска` `$a x + b y = gcd(a, b)$` `с` `мин.` `$x >= 0$.`
 `#code-file("code/nt/extended-gcd.cpp")#br
 == *5.1.` `КТО*#br
 $ cases("ans" eq.triple a thin (mod n), "ans" eq.triple b thin (mod m)) $`
-`$& (x, y, g) = "gcdex"(n, m) \
+`$ & (x, y, g) = "gcdex"(n, m) \
 & x n + y m = g, x n / g + y m / g = 1, x n / g eq.triple 1 thin (mod m / g) \
 & n k + a eq.triple b thin (mod m) \
 & n k eq.triple b - a thin (mod m) \

@@ -1,5 +1,4 @@
-#import "../default.typ": *;#br
-#heading(depth: 1)[*2.` `#underline[Data` `structures]*#br]
+#import "../default.typ": *;#heading(depth: 1)[*2.` `#underline[Data` `structures]*]
 == *2.0.` `Курево` `по` `неявному` `ключу*#br
 #code-file("code/ds/treap.cpp")#br
 == *2.1.` `Дерево-Фенвика*#br

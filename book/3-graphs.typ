@@ -1,5 +1,4 @@
-#import "../default.typ": *;#br
-#heading(depth: 1)[*3.` `#underline[Graphs]*#br]
+#import "../default.typ": *;#heading(depth: 1)[*3.` `#underline[Graphs]*]
 == *3.0.` `2-SAT*#br
 #code-file("code/graphs/two-sat.cpp")#br
 == *3.1.` `Макс.` `поток` `(Диница)*#br

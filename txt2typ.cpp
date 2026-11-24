@@ -49,6 +49,7 @@ vector <array <string, 4>> tokens = {
 };
 
 const int inlineCode = 2;   // Index of the inline code in tokens
+const int typstFun = 3;     // Index of Typst functions in tokens
 const int firstHeading = 7; // Index of the first heading in tokens
 
 // Escapes text for a Typst string literal
@@ -74,7 +75,7 @@ string normalSpaces(const string str) {
     return ans;
 }
 
-string solve(const string &text, int l, int r, bool sectionHeader = false) {
+string solve(const string &text, int l, int r) {
     if (l == r)
         return "";
     for (int i = l; i < r; ++i)
@@ -103,17 +104,16 @@ string solve(const string &text, int l, int r, bool sectionHeader = false) {
                 if (j >= firstHeading && i == 0) {
                     open = "#heading(depth: " + to_string(10 - j) + ")[";
                     close = "]";
-                    if (sectionHeader) {
-                        pref = "#br\n";
-                        close = "#br]";
-                    }
                 }
                 int next = k + tokens[j][1].size();
                 if (j >= firstHeading && i == 0 && k < r && text[k] == '\n')
                     return pref + open + inner + close + "\n" + solve(text, next, r);
-                if (j == 3 && (inner.starts_with("#show:") || inner.starts_with("#include ")) &&
-                    next < r && text[next] == '\n')
-                    return pref + open + inner + close + "\n" + solve(text, next + 1, r);
+                if (j == typstFun && next < r && text[next] == '\n') {
+                    if (inner.starts_with("#show:"))
+                        return pref + open + inner + close + "\n" + solve(text, next + 1, r);
+                    if (inner.starts_with("#include "))
+                        return pref + open + inner + close + "\n#br\n" + solve(text, next + 1, r);
+                }
                 return pref +
                        open + inner + close +
                        solve(text, next, r);
@@ -137,8 +137,7 @@ void convert(const fs::path &src) {
     string res;
 
     try {
-        bool sectionHeader = src.filename() != "TeamBook.txt" && src.filename() != "1-code.txt";
-        res = "#import \"../default.typ\": *;" + solve(text, 0, text.size(), sectionHeader);
+        res = "#import \"../default.typ\": *;" + solve(text, 0, text.size());
     }
     catch (string err) {
         cerr << src.generic_string() << ":" << err << nl;
@@ -191,7 +190,13 @@ void watch() {
                     auto seen = lastTime.find(src);
                     if (seen == lastTime.end() || seen->second != curTime) {
                         lastTime[src] = curTime;
+                        cout << "Changes have been detected in " << src.generic_string() << nl;
+                        auto start = chrono::steady_clock::now();
                         convert(src);
+                        auto elapsed = chrono::duration_cast<chrono::milliseconds>(
+                            chrono::steady_clock::now() - start
+                        ).count();
+                        cout << "Time: " << elapsed << "ms." << nl;
                     }
                 }
             }

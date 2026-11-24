@@ -1,5 +1,4 @@
-#import "../default.typ": *;#br
-#heading(depth: 1)[*9.` `#underline[Geometry]*#br]
+#import "../default.typ": *;#heading(depth: 1)[*9.` `#underline[Geometry]*]
 == *9.0.` `Сортировка` `векторов` `по` `углу*#br
 #code-file("code/geometry/angular-sort.cpp")#br
 == *9.1.` `CHT*#br

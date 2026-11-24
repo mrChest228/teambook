@@ -4,7 +4,7 @@
 ~~#code-file("code/nt/extended-gcd.cpp")~~
 == *5.1. КТО*
 $ cases("ans" eq.triple a thin (mod n), "ans" eq.triple b thin (mod m)) $
-$& (x, y, g) = "gcdex"(n, m) \
+$ & (x, y, g) = "gcdex"(n, m) \
 & x n + y m = g, x n / g + y m / g = 1, x n / g eq.triple 1 thin (mod m / g) \
 & n k + a eq.triple b thin (mod m) \
 & n k eq.triple b - a thin (mod m) \

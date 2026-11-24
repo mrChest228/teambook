@@ -1,5 +1,4 @@
-#import "../default.typ": *;#br
-#heading(depth: 1)[*4.` `#underline[Strings]*#br]
+#import "../default.typ": *;#heading(depth: 1)[*4.` `#underline[Strings]*]
 == *4.0.` `Z-функция*#br
 #code-file("code/strings/z-function.cpp")#br
 == *4.1.` `Префикс-функция*#br
