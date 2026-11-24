@@ -137,19 +137,22 @@ void convert(const fs::path &src) {
     string res;
 
     try {
-        res = "#import \"../default.typ\": *;" + solve(text, 0, text.size());
+        res = solve(text, 0, text.size());
     }
     catch (string err) {
         cerr << src.generic_string() << ":" << err << nl;
         return;
     }
     // Drop the line break made by the final newline
-    if (res.ends_with("#br\n"))
-        res.erase(res.size() - 4);
-    elif (res.ends_with('\n'))
-        res.pop_back();
-    else
-        res.erase(----res.end());
+    if (!res.empty()) {
+        if (res.ends_with("#br\n"))
+            res.erase(res.size() - 4);
+        elif (res.ends_with('\n'))
+            res.pop_back();
+        else
+            res.erase(----res.end());
+    }
+    res = "#import \"../default.typ\": *;" + res;
 
     // Writing
     ofstream out(dest, ios::binary);
