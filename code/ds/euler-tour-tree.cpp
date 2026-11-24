@@ -4,28 +4,17 @@ struct node {
 
 const int M = 2e6; // n + 2 * m
 
-int fre[M], freSz;
+int fre[M], freSz, cnt;
 node nodes[M];
 
-void initPool() {
-    static bool inited = false;
-    if (inited)
-        return;
-    for (int i = 0; i < M; ++i)
-        fre[M - 1 - i] = i;
-    freSz = M;
-    inited = true;
-}
-
 int nw(int u, int v) {
-    assert(freSz);
-    int nd = fre[--freSz];
+    assert(freSz || cnt < M);
+    int nd = freSz ? fre[--freSz] : cnt++;
     nodes[nd].y = rnd();
     nodes[nd].u = u;
     nodes[nd].v = v;
     return nd;
 }
-
 void del(int v) {
     assert(v != -1);
     nodes[v].sz = 1;
@@ -96,14 +85,11 @@ int mkFirst(int v) {
 struct treap {
     int n, *nd;
     unordered_map <long, int> mp;
-
     treap(int n): n(n) {
-        initPool();
         nd = new int[n];
         for (int i = 0; i < n; ++i)
             nd[i] = nw(i, i);
     }
-
     ~treap() {
         for (int i = 0; i < n; ++i)
             del(nd[i]);
@@ -111,15 +97,12 @@ struct treap {
             del(u.s);
         delete[] nd;
     }
-
     bool connected(int x, int y) {
         return getRoot(nd[x]).f == getRoot(nd[y]).f;
     }
-
     int size(int x) {
         return (sz(getRoot(nd[x]).f) + 2) / 3; // n + (n - 1) * 2
     }
-
     void link(int x, int y) {
         assert(getRoot(nd[x]).f != getRoot(nd[y]).f);
         int rootX = mkFirst(nd[x]),
@@ -130,7 +113,6 @@ struct treap {
         mp[long(y) << 32 | x] = yx;
         merge(merge(merge(rootX, xy), rootY), yx);
     }
-
     void cut(int x, int y) {
         assert(getRoot(nd[x]).f == getRoot(nd[y]).f);
         int root = mkFirst(nd[x]),
