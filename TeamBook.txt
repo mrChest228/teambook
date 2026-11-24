@@ -77,13 +77,13 @@ lcp суффиксов ``i``, ``j`` за $O(1)$: разреженная табл
 ~~#code-file("code/nt/extended-gcd.cpp")~~
 == *5.1. КТО*
 $ cases("ans" eq.triple a thin (mod n), "ans" eq.triple b thin (mod m)) $
-$x, y, g = "gcdex"(n, m)$
-$x n + y m = g$,  $x n / g + y m / g = 1$,  $x n / g eq.triple 1 thin (mod m / g)$
-$n k + a eq.triple b thin (mod m)$
-$n k eq.triple b - a thin (mod m)$
-$n / g k eq.triple (b - a) / g thin (mod m / g)$
-$k = (b - a) / g x$
-$"ans" = (b - a) / g x n + a$
+$ x, y, g = "gcdex"(n, m) $
+$ x n + y m = g, x n / g + y m / g = 1, x n / g eq.triple 1 thin (mod m / g) $
+$ n k + a eq.triple b thin (mod m) $
+$ n k eq.triple b - a thin (mod m) $
+$ n / g k eq.triple (b - a) / g thin (mod m / g) $
+$ k = (b - a) / g x $
+$ "ans" = (b - a) / g x n + a $
 ~~#code-file("code/nt/crt.cpp")~~
 == *5.2. Модули, простые числа*
 Первообразный корень ($g$) модуля $m$ (только для $m = 2, 4, p^a, 2p^a$) - число, степени которого оббегают все числа от $1$ до $m - 1$. Пусть $m = c * 2^k + 1$, тогда в FFT максимальная длина полинома $n = 2^k$.
@@ -116,7 +116,7 @@ $ pi(n) approx n / ln(n) $
 Тест Миллера-Рабина: $O(log(n))$ умножений по модулю. Ро-алгоритм Полларда находит делитель в среднем за $O(n^(1 div 4))$, для $n approx 9 * 10^18$ это около $10$ мс.
 ~~#code-file("code/nt/miller-rabin.cpp")~~
 = *6. _Combinatorics_*
-== *6.0. Cуммы от 1 до n*
+== *6.0. Суммы от 1 до n*
 $ S_c (n) = 1^c + 2^c + 3^c + ... + n^c $
 ~~#align(center)[#table(
   columns: 2,
