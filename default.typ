@@ -174,8 +174,8 @@
   }
   // The same gap above and under a formula, between two formulas it is smaller
   show math.equation.where(block: true): set block(
-    above: 5pt,
-    below: -5.5pt
+    above: 4.25pt,
+    below: -4.75pt
   )
   set table(inset: 3pt, stroke: 0.5pt)
   show table: set block(
