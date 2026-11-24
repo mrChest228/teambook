@@ -164,7 +164,7 @@ struct Poly {
         return a;
     }
     // A^(1 / r), первые a.size() - t + t / r коэффициентов, t - нули в начале
-    // {}, если корня нет. Нужен root(c, r) из 3.7 с mod = MOD, g = G
+    // {}, если корня нет. Нужен root(c, r) из 5.2 с mod = MOD, g = G
     vector <int> root(vector <int> a, int r) {
         assert(mod == MOD);
         int sz = a.size(), t = 0;

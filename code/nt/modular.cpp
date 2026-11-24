@@ -1,4 +1,4 @@
-long inv(long x) { // mod простое, иначе gcdex (3.3)
+long inv(long x) { // mod простое, иначе gcdex (5.0)
     // или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
     return x == 1 ? 1 : mod - mod / x * inv(mod % x) % mod;
 }

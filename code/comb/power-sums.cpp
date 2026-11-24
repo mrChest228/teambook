@@ -1,4 +1,4 @@
-// O(c log(mod)), c = 10^6 за 200 мс. powm и inv из 3.7
+// O(c log(mod)), c = 10^6 за 200 мс. powm и inv из 5.2
 // Другой многочлен: свои y[i], k = степень + 1
 long sumPow(long n, int c) {
     int k = c + 2; // Число точек, k < mod

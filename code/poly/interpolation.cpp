@@ -1,5 +1,5 @@
 // Коэффициенты многочлена степени < n по n точкам, O(n^2)
-// 0 <= x[i], y[i] < mod, x[i] разные. inv из 3.7
+// 0 <= x[i], y[i] < mod, x[i] разные. inv из 5.2
 vector <long> interp(vector <long> x, vector <long> y) {
     int n = x.size();
     vector <long> m(n + 1), q(n + 1), res(n);
