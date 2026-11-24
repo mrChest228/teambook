@@ -9,3 +9,5 @@
 ~~#code-file("code/ds/segment-tree-beats.cpp")~~
 == *2.4. Дерево Ли Чао*
 ~~#code-file("code/ds/li-chao.cpp")~~
+== *2.5. Euler Tour Tree*
+~~#code-file("code/ds/euler-tour-tree.cpp")~~

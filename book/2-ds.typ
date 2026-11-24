@@ -9,4 +9,6 @@
 == *2.3.` `Segment` `Tree` `Beats*#br
 #code-file("code/ds/segment-tree-beats.cpp")#br
 == *2.4.` `Дерево` `Ли` `Чао*#br
-#code-file("code/ds/li-chao.cpp")``
+#code-file("code/ds/li-chao.cpp")#br
+== *2.5.` `Euler` `Tour` `Tree*#br
+#code-file("code/ds/euler-tour-tree.cpp")``
