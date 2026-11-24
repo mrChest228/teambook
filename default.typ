@@ -215,7 +215,7 @@
     }
     // Code
     set par(leading: 0.35em)
-    set block(spacing: 5pt)
+    set block(spacing: 5pt, below: -2.5pt) // below + height of the text line after the code = gap under the code
     show text: set text(font: "Courier New") // All text is Courier New
     if it.lang == none { // Styled text
       block(it.text)
