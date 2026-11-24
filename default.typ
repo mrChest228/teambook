@@ -175,7 +175,7 @@
   // A multi-level formula (fractions, matrices) looks farther from the text above it, so a part of the gap goes under it
   show math.equation.where(block: true): it => context {
     let tall = measure(it).height > 14pt
-    set block(above: if tall { 3.25pt } else { 4.25pt }, below: if tall { -3.75pt } else { -4.75pt })
+    set block(above: if tall { 2.25pt } else { 3.25pt }, below: if tall { -3.75pt } else { -4.75pt })
     it
   }
   set table(inset: 3pt, stroke: 0.5pt)

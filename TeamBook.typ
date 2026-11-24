@@ -1122,8 +1122,12 @@ $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
 `$ 1 / sqrt(1 - x) = sum_(n=0)^infinity mat(2n; n) / 4^n x^n = 1 + 1/2 x + 3 / 8 x^2 + 5 / 16 x^3 + ... $`
 `$ sin(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1)! = x - x^3 / 3! + x^5 / 5! - ... $`
 `$ cos(x) = sum_(n=0)^infinity (-1)^n x^(2n) / (2n)! = 1 - x^2 / 2! + x^4 / 4! - ... $`
+`$ tan(x) = sum_(n=1)^infinity ((-1)^(n - 1) 2^(2n) (2^(2n) - 1) B_(2n)) / (2n)! x^(2n - 1) = x + x^3 / 3 + 2 / 15 x^5 + ... $`
+`$ cot(x) = sum_(n=0)^infinity ((-1)^n 2^(2n) B_(2n)) / (2n)! x^(2n - 1) = 1 / x - x / 3 - x^3 / 45 - 2 / 945 x^5 - ... $`
+`$B_(2n)$` `-` `числа` `Бернулли` `из` `3.0,` `$|x| < pi \/ 2$` `для` `$tan$` `и` `$0 < |x| < pi$` `для` `$cot$.` `Ряд` `$tan$` `проще` `считать` `как` `$sin dot cos^(-1)$` `через` `p998.inv,` `$cot$` `-` `как` `$cos dot (sin(x) \/ x)^(-1)$` `и` `сдвиг` `на` `$x^(-1)$`
 `$ arctan(x) = sum_(n=0)^infinity (-1)^n x^(2n + 1) / (2n + 1) = x - x^3 / 3 + x^5 / 5 - ... $`
-`$ arcsin(x) = sum_(n=0)^infinity mat(2n; n) / (4^n (2n + 1)) x^(2n + 1) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $#br
+`$ arcsin(x) = sum_(n=0)^infinity mat(2n; n) / (4^n (2n + 1)) x^(2n + 1) = x + 1 / 2 x^3 / 3 + (1 * 3) / (2 * 4) x^5 / 5 + ... $`
+`$ arccos(x) = pi / 2 - arcsin(x), op("arccot")(x) = pi / 2 - arctan(x) $#br
 === *3.8.1.` `Полиномы*#br
 $ A'_i = A_(i + 1) * (i + 1), (integral A)_i = A_(i - 1) / i, (integral A)_0 = 0 $`
 `$ ln(A) = integral (A') / A, A_0 = 1 $`
