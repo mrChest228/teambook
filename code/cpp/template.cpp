@@ -1,7 +1,7 @@
 // Pragmas (before libraries includes to get the highest speed up)
 #ifndef DEBUG
     #pragma GCC optimize("O3,unroll-loops")
-    #pragma GCC target("avx2,avx512f,avx512bw,avx512dbgi,sse4.2,bmi,bmi2,fma,popcnt,lzcnt,prefer-vector-width=512")
+    #pragma GCC target("avx2,avx512f,avx512bw,avx512dbgi, sse4.2,bmi,bmi2,fma,popcnt,lzcnt,prefer-vector-width=512")
 #endif
 
 #include <bits/stdc++.h>
