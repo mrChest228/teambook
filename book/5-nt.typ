@@ -5,13 +5,13 @@
 `#code-file("code/nt/extended-gcd.cpp")#br
 == *5.1.` `КТО*#br
 $ cases("ans" eq.triple a thin (mod n), "ans" eq.triple b thin (mod m)) $`
-`$ x, y, g = "gcdex"(n, m) $`
-`$ x n + y m = g, x n / g + y m / g = 1, x n / g eq.triple 1 thin (mod m / g) $`
-`$ n k + a eq.triple b thin (mod m) $`
-`$ n k eq.triple b - a thin (mod m) $`
-`$ n / g k eq.triple (b - a) / g thin (mod m / g) $`
-`$ k = (b - a) / g x $`
-`$ "ans" = (b - a) / g x n + a $`
+`$& (x, y, g) = "gcdex"(n, m) \
+& x n + y m = g, x n / g + y m / g = 1, x n / g eq.triple 1 thin (mod m / g) \
+& n k + a eq.triple b thin (mod m) \
+& n k eq.triple b - a thin (mod m) \
+& n / g k eq.triple (b - a) / g thin (mod m / g) \
+& k = (b - a) / g x \
+& "ans" = (b - a) / g x n + a $`
 `#code-file("code/nt/crt.cpp")#br
 == *5.2.` `Модули,` `простые` `числа*#br
 Первообразный` `корень` `($g$)` `модуля` `$m$` `(только` `для` `$m = 2, 4, p^a, 2p^a$)` `-` `число,` `степени` `которого` `оббегают` `все` `числа` `от` `$1$` `до` `$m - 1$.` `Пусть` `$m = c * 2^k + 1$,` `тогда` `в` `FFT` `максимальная` `длина` `полинома` `$n = 2^k$.`

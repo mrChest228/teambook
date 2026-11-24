@@ -1,9 +1,11 @@
 = *2. _Data structures_*
 == *2.0. Курево по неявному ключу*
-~~#code-file("code/ds/implicit-treap.cpp")~~
+~~#code-file("code/ds/treap.cpp")~~
 == *2.1. Дерево-Фенвика*
 ~~#code-file("code/ds/fenwick.cpp")~~
 == *2.2. ДО Снизу*
 ~~#code-file("code/ds/segment-tree-bottom-up.cpp")~~
 == *2.3. Segment Tree Beats*
 ~~#code-file("code/ds/segment-tree-beats.cpp")~~
+== *2.4. Дерево Ли Чао*
+~~#code-file("code/ds/li-chao.cpp")~~
