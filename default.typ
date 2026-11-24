@@ -1,4 +1,4 @@
-#let margin = (x: 4mm, y: 4.5mm) // The printer prints from 4.5mm to the top and bottom edges
+#let margin = (x: 4.5mm, y: 4.5mm) // The printer prints from 4.5mm to the edges
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels and numbers at their start, main text, code
