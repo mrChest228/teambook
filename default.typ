@@ -1,4 +1,4 @@
-#let margin = 5mm
+#let margin = (x: 4mm, y: 2mm) // The printer prints from 0.45mm to the top and bottom edges
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels and numbers at their start, main text, code
@@ -9,30 +9,41 @@
 #let code-fill = rgb("#EEEEEE")
 
 #import "@preview/codly:2.0.0" as codly
-// Border of code blocks and of the cpp label
-#let code-stroke = 0.4pt + rgb("#555555")
+// Border of code blocks, of line numbers and of the cpp label
+#let code-stroke = 0.45pt + rgb("#777777")
 #let code-radius = 3pt
 
-// Code blocks have square corners, the first and the last part of a block get round ones from the header and
-// the footer: they are not repeated on page and column breaks, so an unfinished part has square corners
-#let code-corners(at-top) = {
+// Border of a code block: the sides are on every part, the top and the bottom with round corners only at the
+// real start and end of the block, so an unfinished part is open
+#let code-cap(at-top, y: top) = {
   let r = code-radius
-  let s = 0.6pt // Covers the square corner of the border
+  let w = code-stroke.thickness
+  let s = 0.6pt + w // Covers the square corner of the sides and of the fill
   let k = 0.5523 // Control points of a cubic curve that is a quarter of a circle
-  let corner = box(width: 0pt, height: 0pt, {
-    place(top + left, dx: -s, dy: -s, curve(fill: white,
-      curve.move((0pt, 0pt)), curve.line((r + s, 0pt)), curve.line((r + s, s)),
-      curve.cubic((r + s - k * r, s), (s, r + s - k * r), (s, r + s)),
-      curve.line((0pt, r + s)), curve.close()))
+  let sy = if at-top { 1 } else { -1 }
+  let corner(sx) = {
+    let p(x, y) = (sx * (x - w / 2), sy * y) // The middle of the side
+    place(top + left, curve(fill: white,
+      curve.move(p(-s, -s)), curve.line(p(r, -s)), curve.line(p(r, 0pt)),
+      curve.cubic(p(r - k * r, 0pt), p(0pt, r - k * r), p(0pt, r)),
+      curve.line(p(-s, r)), curve.close()))
     place(top + left, curve(stroke: code-stroke,
-      curve.move((r, 0pt)), curve.cubic((r - k * r, 0pt), (0pt, r - k * r), (0pt, r))))
-  })
-  let flip(x, y) = scale(x: x, y: y, origin: top + left, reflow: false, corner)
-  let y = if at-top { top } else { bottom }
-  let sy = if at-top { 100% } else { -100% }
-  place(y + left, flip(100%, sy))
-  place(y + right, flip(-100%, sy))
+      curve.move(p(r, 0pt)), curve.cubic(p(r - k * r, 0pt), p(0pt, r - k * r), p(0pt, r))))
+  }
+  place(y + left, box(width: 100%, height: 0pt, {
+    place(top + left, corner(1))
+    place(top + right, box(width: 0pt, corner(-1)))
+    place(top + left, dx: r - w / 2, line(length: 100% - 2 * r + w, stroke: code-stroke))
+  }))
 }
+// The sides are the gray fill around the white block with the code. The corners are drawn twice: here over the
+// sides and in the header and the footer of codly over the lines, codly cuts them at its border
+#let code-frame(body) = block(breakable: true, width: 100%, inset: (x: code-stroke.thickness),
+  fill: code-stroke.paint, {
+    code-cap(true)
+    block(breakable: true, width: 100%, fill: white, body)
+    code-cap(false, y: bottom)
+  })
 
 // Line break that leaves the real newline outside, so the next line can start with "="
 #let br = raw("\n")
@@ -80,7 +91,7 @@
     background: align(top,
       layout(size => {
         // Вычисляем полезную ширину текста
-        let width = size.width - 2 * margin
+        let width = size.width - 2 * margin.x
         // Ширина одной колонки
         let col-width = (width - (cols-cnt - 1) * gutter) / cols-cnt
       
@@ -92,7 +103,7 @@
         let y-end = size.height
       
         // Рисуем первую линию
-        let x1 = margin + col-width + gutter / 2
+        let x1 = margin.x + col-width + gutter / 2
         place(top + left, line(start: (x1, y-start), end: (x1, y-end), stroke: line-style))
         // Рисуем вторую линию
         let x2 = x1 + col-width + gutter
@@ -110,8 +121,8 @@
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(
           corner,
-          dx: if corner.x == left { 5mm } else { -5mm },
-          dy: if corner.y == top { 4mm } else { -4mm },
+          dx: if corner.x == left { margin.x } else { -margin.x },
+          dy: if corner.y == top { 1.5mm } else { -1.5mm },
           {
             place(text(fill: black.transparentize(30%), stroke: 3pt + white.transparentize(30%), num))
             num
@@ -159,25 +170,28 @@
   )
 
   // Code
-  show raw.where(block: true): codly.new
+  show raw.where(block: true): it => code-frame(codly.new(it))
   show: codly.set_(
-    radius: 0pt, // Round corners are drawn by code-corners
+    radius: 0pt, // The border is drawn by code-frame
     leading: 0.07em,
     number-enabled: false, // Line numbers are a gutter column: it has a line on the right
     gutters: (codly.gutter-column(
       values: row => if row.kind == "code" { str(row.number) },
-      stroke: (right: code-stroke),
+      fill: (white, code-fill), // Inverse of the line
+      align: right + horizon, // Digits stay under each other: 9 and 10
       inset: (left: 1.5pt, right: 1.2pt, y: 1.07pt)
-    ),),
-    header: code-corners(true),
-    footer: code-corners(false),
+    ), codly.gutter-column( // The line after the numbers: a filled column hides its own stroke
+      values: row => none, width: 0pt, inset: 0pt, fill: none, stroke: (left: code-stroke)
+    )),
+    header: code-cap(true), // Not repeated on breaks
+    footer: code-cap(false),
     indent-guides: (width: 4, color: luma(40%).transparentize(40%), thickness: 0.3pt)
   )
   show: codly.header-set_(repeat: false, inset: 0pt, fill: none, stroke: none)
   show: codly.footer-set_(repeat: false, inset: 0pt, fill: none, stroke: none)
-  show: codly.line-set_(fill: (code-fill, white), stroke: code-stroke, inset: (x: 1pt, y: 1.07pt))
+  show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (x: 1pt, y: 1.07pt))
   // The label hangs from the top border, not bound to the first line
-  show: codly.lang-set_(default-color: black, fill: white, stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
+  show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
     radius: 1.5pt, align: right + top, outset: (x: -1.2pt, y: 0pt))
   set raw(theme: "BW.tmTheme", tab-size: 4)
   show raw: it => {
@@ -199,7 +213,7 @@
       return
     }
     show text: set text(size: font-sizes.code)
-    show raw.line: set text(tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
+    set text(tracking: -0.12pt) // Tighter letters: 2 more symbols fit in a line
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
     bold-l(it)
   }

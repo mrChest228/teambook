@@ -1048,7 +1048,8 @@ $ pi(n) approx n / ln(n) $
 === *Обратное, степень и корень по модулю*
 Обратное к $x$ по модулю $m$ есть, только если $gcd(x, m) = 1$. Корней степени $k$ из $c != 0$ по простому $p$ либо нет, либо ровно $d = gcd(k, p - 1)$. Корень есть, если $c^((p - 1) / d) eq.triple 1 thin (mod p)$. При $d = 1$ он равен $c^y$, где $k y eq.triple 1 thin (mod p - 1)$. Первообразный корень есть у любого простого.
 ```cpp
-long inv(long x) { // mod простое. Иначе: gcdex (3.3) или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
+long inv(long x) { // mod простое, иначе gcdex (3.3)
+    // или powm(x, phi(mod) - 1), только при gcd(x, mod) == 1
     return x == 1 ? 1 : mod - mod / x * inv(mod % x) % mod;
 }
 
