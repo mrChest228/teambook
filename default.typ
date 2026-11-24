@@ -10,7 +10,7 @@
 
 #import "@preview/codly:2.0.0" as codly
 // Border of code blocks, of line numbers and of the cpp label
-#let code-stroke = 0.45pt + rgb("#777777")
+#let code-stroke = 1pt + rgb("#AAAAAA")
 #let code-radius = 3pt
 
 // Border of a code block: the sides are on every part, the top and the bottom with round corners only at the

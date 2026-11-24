@@ -1,4 +1,4 @@
-~~#import "default.typ": *;#show: setup;#heading[~~*1. _Code_*~~]~~
+~~#import "default.typ": *;#show: setup;#heading[~~`      `*1. _Code_*~~]~~
 ```cpp
 // Pragmas (before libraries includes to get the highest speed up)
 #ifndef DEBUG
