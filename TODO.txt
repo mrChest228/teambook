@@ -110,12 +110,6 @@ using u64 = unsigned long long;
 struct H { size_t operator()(u64 x) const { // splitmix64, против анти-хеш тестов
     x += 0x9e3779b97f4a7c15; x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
     x = (x ^ (x >> 27)) * 0x94d049bb133111eb; return x ^ (x >> 31); } };
-Короткие хеши для unordered_map / gp_hash_table через H выше (проверить на CF):
-    pair <int, int>: H()(u64(p.first) << 32 | u32(p.second))
-    pair <long, long>: H()(p.first ^ H()(p.second))
-    double: H()(bit_cast <u64>(x + 0.0)) (+ 0.0, чтобы -0.0 и 0.0 совпали)
-    string, vector: полиномиальный хеш, либо hash <string>
-
 const int B = 512;
 struct Block { vector<u64> c; u64 lz = 0; gp_hash_table<u64, int, H> last; };
 vector<Block> bl; int n = 0;
@@ -142,6 +136,12 @@ int findLast(u64 x) {
     }
     return -1;
 }
+
+Короткие хеши для unordered_map / gp_hash_table через H выше (проверить на CF):
+    pair <int, int>: H()(u64(p.first) << 32 | u32(p.second))
+    pair <long, long>: H()(p.first ^ H()(p.second))
+    double: H()(bit_cast <u64>(x + 0.0)) (+ 0.0, чтобы -0.0 и 0.0 совпали)
+    string, vector: полиномиальный хеш, либо hash <string>
 
 Суф. мас. за O(n)
 Комментарии в кодах только на английском, но с большой или маленькой буквы? А если он начинается с variable: description? Нужно изучить стандарты комментариев и создать, следовать своим, упрощённым для CP, но очень качественным и коротким
