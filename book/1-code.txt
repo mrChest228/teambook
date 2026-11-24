@@ -1,0 +1,28 @@
+= `      `*1. _Code_*
+~~#code-file("code/cpp/template.cpp")~~
+== *1.1. Data structures*
+~~#code-file("code/cpp/data-structures.cpp")~~
+== *1.2. Потоки*
+~~#code-file("code/cpp/threads.cpp")~~
+== *1.3. Вывод в файл*
+~~#code-file("code/cpp/file-output.cpp")~~
+=== *1.3.1. printf*
+``printf(формат, ...)`` - в консоль, ``fprintf(f, формат, ...)`` - в файл. Тип не проверяется: при несовпадении с форматом выводится мусор (предупреждение даёт ``-Wall``).
+~~#code-file("code/cpp/printf.cpp")~~
+== *1.4. Builtins*
+``__builtin_clzll(x)`` - кол-во $0$ после старшей $1$ в битовом представлении. При $x = 0$ - UB.
+$floor(log_2(x))$: ``31 - __builtin_clz(x)`` / ``63 - __builtin_clzll(x)``
+``__builtin_ctzll(x)`` - кол-во $0$ перед младшей $1$ в битовом представлении. При $x = 0$ - UB. Поиск делимости на $2^k$.
+``__builtin_parityll(x)`` - чётность кол-ва $1$ в битовом представлении. Аналогично ``__builtin_popcount(x) & 1``.
+``__builtin_mul_overflow(a, b, &res)`` - умножает a на b, сохраняет результат в res. Возвращает true, если произошло переполнение, и false, если всё ок.
+== *1.5. Runtime Errors*
+*0xC0000005* - Access Violation. Причины: выход за границы массива, слишком большой массив в стеке, обращение к NULL-указателю.
+*0xC00000FD* - Stack Overflow. Причины: бесконечная/очень глубокая рекурсия, слишком большой массив в стеке.
+*0xC0000374* - Heap Corruption. Повреждение кучи (динамической памяти), программа часто падает не в момент ошибки, а позже (когда пытается удалить или выделить память). Причины: запись за границы массива, вызвал ``delete`` второй раз (или просто к мусору).
+*0xC0000094* - Integer Divide by Zero.
+*0xC000001D* - Illegal Instruction. Причины: выход из не-void функции без return. (`-Werror=return-type` в Other compiler options)
+*0xC0000417* - Invalid C Runtime Parameter. Причины: assert failed или непойманное исключение.
+== *1.6. Замер времени*
+~~#code-file("code/cpp/timing.cpp")~~
+== *1.7. Move(v)*
+В нагруженных рекурсивных функциях, возвращающих vector / set, писать ``return move(v);``. Без него контейнер копируется за $O(n)$, если возвращается не просто локальная переменная: ``return x ? a : b;``, ``return res[v];``, ``return p.f;``.
