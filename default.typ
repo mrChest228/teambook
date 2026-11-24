@@ -38,10 +38,24 @@
 }
 // The sides are the gray fill around the white block with the code. The corners are drawn twice: here over the
 // sides and in the header and the footer of codly over the lines, codly cuts them at its border
-#let code-frame(body) = block(breakable: true, width: 100%, inset: (x: code-stroke.thickness),
+// Line numbers have a fixed width, so the line after them is the left side of a block around the code: codly
+// paints the fills over the strokes of cells, a block draws its stroke over the content
+#let code-frame(it) = block(breakable: true, width: 100%, inset: (x: code-stroke.thickness),
   fill: code-stroke.paint, {
     code-cap(true)
-    block(breakable: true, width: 100%, fill: white, body)
+    block(breakable: true, width: 100%, fill: white, context {
+      let inset = (left: 1.5pt, right: 1.2pt, y: 1.07pt)
+      let width = measure("0" * str(it.lines.len()).len()).width + inset.left + inset.right
+      show: codly.set_(gutters: (codly.gutter-column(
+        // The line after the numbers is in the cell: codly paints the fills over the strokes of cells
+        values: row => if row.kind == "code" { place(top + right, dx: inset.right, dy: -inset.y,
+          block(width: 0pt, height: 100% + 2 * inset.y, stroke: (right: code-stroke))) + str(row.number) },
+        fill: (white, code-fill), // Inverse of the line
+        align: right + top, // Digits stay under each other: 9 and 10
+        width: width, inset: inset
+      ),))
+      codly.new(it)
+    })
     code-cap(false, y: bottom)
   })
 
@@ -170,19 +184,11 @@
   )
 
   // Code
-  show raw.where(block: true): it => code-frame(codly.new(it))
+  show raw.where(block: true): code-frame
   show: codly.set_(
     radius: 0pt, // The border is drawn by code-frame
     leading: 0.07em,
-    number-enabled: false, // Line numbers are a gutter column: it has a line on the right
-    gutters: (codly.gutter-column(
-      values: row => if row.kind == "code" { str(row.number) },
-      fill: (white, code-fill), // Inverse of the line
-      align: right + horizon, // Digits stay under each other: 9 and 10
-      inset: (left: 1.5pt, right: 1.2pt, y: 1.07pt)
-    ), codly.gutter-column( // The line after the numbers: a filled column hides its own stroke
-      values: row => none, width: 0pt, inset: 0pt, fill: none, stroke: (left: code-stroke)
-    )),
+    number-enabled: false, // Line numbers are a gutter column of code-frame
     header: code-cap(true), // Not repeated on breaks
     footer: code-cap(false),
     indent-guides: (width: 4, color: luma(40%).transparentize(40%), thickness: 0.3pt)
