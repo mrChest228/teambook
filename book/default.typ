@@ -3,6 +3,8 @@
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels and numbers at their start, main text, code
 #let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, num1: 12pt, num2: 10pt, num3: 9pt, text: 7pt, code: 7pt, math-block: 9pt)
+// Code blocks: the cell of 7pt with -0.12pt tracking. Typst drops tracking at every colour/weight change, so columns drifted
+#let code-size = font-sizes.code * 0.9714
 // Inline formula is this times bigger than the text around it: its small variables (x, n) are as high as small letters of Georgia
 #let math-inline-scale = 1.08
 // Background of the inline code and of every second line of the code block
@@ -78,21 +80,26 @@
 #let br = raw("\n")
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
-#let bold-l(body) = {
+#let bold-l(body, size: font-sizes.code) = {
   show "_": set text(baseline: -0.2em) // Courier New: from under the line to the bottom of o
-  // Courier New glyph fixes: dotted 0 from DejaVu Sans Mono scaled to the digit height, * centred at + and -, punctuation centred in its cell
+  // Courier New glyph fixes: dotted 0 from DejaVu Sans Mono scaled to the digit height, * centred at + and -, punctuation centred in its cell.
+  // Sizes are absolute: the raw rule sets the size of every text with show text, it would override sizes in em
   let bold() = text.weight == "bold"
+  let comment() = text.fill == rgb("#505050") // Caveat
   show "0": it => context {
-    let (size, pad) = if bold() { (0.876em, 0.0363em) } else { (0.849em, 0.0445em) }
-    h(pad) + text(font: "DejaVu Sans Mono", size: size, top-edge: 0pt, bottom-edge: 0pt, "0") + h(pad)
+    if comment() { return it }
+    let (k, pad) = if bold() { (0.876, 0.0363) } else { (0.849, 0.0445) }
+    show text: set text(font: "DejaVu Sans Mono", size: size * k, top-edge: 0pt, bottom-edge: 0pt)
+    h(pad * size) + it + h(pad * size)
   }
   show "*": it => context text(baseline: if bold() { 0.138em } else { 0.149em }, it)
-  let shifts = ( // em: ink centre to cell centre, (regular, bold)
+  let shifts = ( // em: ink centre to cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
     ",": (0.051, 0), ";": (0.0364, 0), "(": (-0.0779, -0.0764), ")": (0.0706, 0.0696),
     "[": (-0.0637, -0.0627), "]": (0.0618, 0.0627), "<": (0.0122, 0.0264), ">": (-0.0122, -0.0273),
   )
   show regex("[,;()\\[\\]<>]"): it => context {
-    let dx = shifts.at(it.text).at(if bold() { 1 } else { 0 }) * 1em
+    if comment() { return it }
+    let dx = shifts.at(it.text).at(if bold() { 1 } else { 0 }) * size
     h(dx) + it + h(-dx)
   }
   show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
@@ -241,6 +248,8 @@
   show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
     radius: 1.5pt, align: right + top, outset: (x: -1.2pt, y: 0pt))
   set raw(theme: "/BW.tmTheme", tab-size: 4)
+  // Not show text: it would override the font of the dotted 0 in bold-l
+  show raw.where(block: true): set text(font: "Courier New", size: code-size)
   show raw: it => {
     show "—": "-" // Not in code
     if it.text.trim() == "" { // Spaces and enters
@@ -254,15 +263,14 @@
     // Code
     set par(leading: 0.35em)
     set block(spacing: 5pt, below: -2.5pt) // below + height of the text line after the code = gap under the code
-    show text: set text(font: "Courier New") // All text is Courier New
     if it.lang == none { // Styled text
+      show text: set text(font: "Courier New")
       block(it.text)
       return
     }
-    // Same cell width as 7pt with -0.12pt tracking (2 more symbols in a line): Typst drops tracking at every colour/weight change, so columns drifted
-    show text: set text(size: font-sizes.code * 0.9714)
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
-    bold-l(it)
+    show raw.line: bold-l.with(size: code-size) // codly renders lines outside of the rules of the raw, so the fixes go on each line
+    it
   }
 
   body
