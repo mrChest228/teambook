@@ -122,8 +122,14 @@ string solve(const string &text, int l, int r) {
 }
 
 void convert(const fs::path &src) {
-    fs::path dest = src;
+    fs::path dest = fs::path("typ") / src.filename();
     dest.replace_extension(".typ");
+    error_code dirEc;
+    fs::create_directories(dest.parent_path(), dirEc);
+    if (dirEc) {
+        cerr << "[convert] cannot create destination directory: " << dest.parent_path() << ": " << dirEc.message() << nl;
+        return;
+    }
     // Reading
     ifstream in(src, ios::binary);
     if (!in) {
