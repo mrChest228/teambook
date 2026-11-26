@@ -79,7 +79,7 @@
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
 #let bold-l(body) = {
-  show regex("_"): it => box(baseline: -1pt, it)
+  show "_": set text(baseline: -1pt)
   show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
     let t = it.text
     let prefixed = t == "lround" or t == "llround" or t == "lrint" or t == "llrint"
@@ -219,8 +219,8 @@
     footer: code-cap(false),
     indent-guides: (width: 4, color: luma(40%).transparentize(40%), thickness: 0.3pt)
   )
-  show: codly.header-set_(repeat: true, inset: (x: 0pt, y: 0pt, bottom: 1pt), fill: none, stroke: none)
-  show: codly.footer-set_(repeat: true, inset: (x: 0pt, y: 0pt, top: 1pt), fill: none, stroke: none)
+  show: codly.header-set_(repeat: false, inset: (x: 0pt, y: 0pt, bottom: 1pt), fill: none, stroke: none)
+  show: codly.footer-set_(repeat: false, inset: (x: 0pt, y: 0pt, top: 1pt), fill: none, stroke: none)
   show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (x: 1pt, y: 1.07pt))
   // The label hangs from the top border, not bound to the first line
   show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
