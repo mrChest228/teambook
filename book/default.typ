@@ -14,14 +14,16 @@
 #let frame-stroke = 1pt + rgb("#AAAAAA")
 #let code-radius = 3pt
 
-// Repeat the top and bottom frame at column breaks.
+// Border of a code block: the sides are on every part, the top and the bottom with round corners only at the
+// real start and end of the block, so an unfinished part is open. The fills of the first and the last line go
+// on to the border
 #let code-cap(at-top, y: top, separator-x: none, gutter-fill: none, code-paint: none) = {
   let r = code-radius
   let w = frame-stroke.thickness
   let s = 0.6pt + w // Covers the square corner of the sides and of the fill
   let k = 0.5523 // Control points of a cubic curve that is a quarter of a circle
   let sy = if at-top { 1 } else { -1 }
-  let cap-dy = if at-top { 0pt } else { -w }
+  let cap-dy = if at-top { w / 2 } else { -w }
   let corner(sx) = {
     let p(x, y) = (sx * (x - w / 2), sy * y) // The middle of the side
     place(top + left, curve(fill: white,
@@ -33,16 +35,12 @@
   }
   place(y + left, box(width: 100%, height: 0pt, {
     if separator-x != none {
-      place(top + left, dy: cap-dy, rect(width: separator-x, height: w, fill: gutter-fill, stroke: none))
-      place(top + left, dx: separator-x, dy: cap-dy, rect(width: 100% - separator-x, height: w, fill: code-paint, stroke: none))
+      place(top + left, dy: cap-dy, rect(width: separator-x, height: w / 2, fill: gutter-fill, stroke: none))
+      place(top + left, dx: separator-x, dy: cap-dy, rect(width: 100% - separator-x, height: w / 2, fill: code-paint, stroke: none))
     }
     place(top + left, corner(1))
     place(top + right, box(width: 0pt, corner(-1)))
     place(top + left, dx: r - w / 2, line(length: 100% - 2 * r + w, stroke: frame-stroke))
-    if separator-x != none {
-      place(top + left, dx: separator-x, dy: cap-dy,
-        line(start: (0pt, 0pt), end: (0pt, w), stroke: code-stroke))
-    }
   }))
 }
 // The sides are the gray fill around the white block with the code. The corners are drawn twice: here over the
@@ -59,11 +57,11 @@
       // The line after the numbers is the right edge of the fill: codly paints the fills over the strokes of cells
       let sep = (1 - code-stroke.thickness / width) * 100%
       let edge(c) = gradient.linear((c, 0%), (c, sep), (code-stroke.paint, sep), (code-stroke.paint, 100%))
-      let gutter-fills = (white, code-fill)
+      let gutter-fills = (white, code-fill).map(edge)
       let row-fills = (code-fill, white)
       show: codly.set_(gutters: (codly.gutter-column(
         values: row => if row.kind == "code" { str(row.number) },
-        fill: gutter-fills.map(edge), // Inverse of the line
+        fill: gutter-fills, // Inverse of the line
         align: right + horizon, // Digits stay under each other: 9 and 10
         width: width, inset: inset
       ),),
@@ -81,7 +79,7 @@
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
 #let bold-l(body) = {
-  show "_": set text(baseline: -1pt)
+  show "_": set text(baseline: -0.2em) // Courier New: from under the line to the bottom of o
   show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
     let t = it.text
     let prefixed = t == "lround" or t == "llround" or t == "lrint" or t == "llrint"
@@ -223,7 +221,7 @@
   )
   show: codly.header-set_(repeat: false, inset: (x: 0pt, y: 0pt, bottom: 1pt), fill: none, stroke: none)
   show: codly.footer-set_(repeat: false, inset: (x: 0pt, y: 0pt, top: 1pt), fill: none, stroke: none)
-  show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (x: 1pt, y: 1.07pt))
+  show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (left: 0.5pt, right: 0pt, y: 1.07pt))
   // The label hangs from the top border, not bound to the first line
   show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
     radius: 1.5pt, align: right + top, outset: (x: -1.2pt, y: 0pt))
