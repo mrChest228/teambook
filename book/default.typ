@@ -56,12 +56,14 @@
       let inset = (left: 1.5pt, right: 1.2pt, y: 1.07pt)
       let width = measure("0" * str(it.lines.len()).len()).width + inset.left + inset.right
       let last-index = calc.rem(it.lines.len(), 2)
+      // The line after the numbers is the right edge of the fill: codly paints the fills over the strokes of cells
+      let sep = (1 - code-stroke.thickness / width) * 100%
+      let edge(c) = gradient.linear((c, 0%), (c, sep), (code-stroke.paint, sep), (code-stroke.paint, 100%))
       let gutter-fills = (white, code-fill)
       let row-fills = (code-fill, white)
       show: codly.set_(gutters: (codly.gutter-column(
         values: row => if row.kind == "code" { str(row.number) },
-        fill: (white, code-fill), // Inverse of the line
-        stroke: (right: code-stroke),
+        fill: gutter-fills.map(edge), // Inverse of the line
         align: right + horizon, // Digits stay under each other: 9 and 10
         width: width, inset: inset
       ),),
