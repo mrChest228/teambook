@@ -10,7 +10,7 @@
 `Без` `2-ичных` `подъёмов:` `$O(m "maxFlow" log(n))$`
 `#code-file("code/graphs/min-cost-flow.cpp")#br
 == *3.3.` `Макс.` `клика*#br
-Асимптотика:` `$O(3^(n/3))$`
+Асимптотика:` `$O(3^(n div 3))$`
 `#code-file("code/graphs/max-clique.cpp")#br
 == *3.4.` `Макс.` `парсоч.` `(Кун)*#br
 Асимптотика:` `$O(n m)$`
