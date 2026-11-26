@@ -98,10 +98,9 @@
     ",": (0.051, 0), ";": (0.0364, 0), "(": (-0.0779, -0.0764), ")": (0.0706, 0.0696),
     "[": (-0.0637, -0.0627), "]": (0.0618, 0.0627), "<": (0.0122, 0.0264), ">": (-0.0122, -0.0273),
   )
-  let gap = 0.05 // em: , and ; move to the space after them
   show regex("[,;()\\[\\]<>]"): it => context {
     if comment() { return it }
-    let dx = (shifts.at(it.text).at(if bold() { 1 } else { 0 }) + if it.text in ",;" { gap } else { 0 }) * size
+    let dx = shifts.at(it.text).at(if bold() { 1 } else { 0 }) * size
     h(dx) + it + h(-dx)
   }
   show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
