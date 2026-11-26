@@ -82,15 +82,16 @@
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
 #let bold-l(body, size: font-sizes.code) = {
   show "_": set text(baseline: -0.2em) // Courier New: from under the line to the bottom of o
-  // Courier New glyph fixes: dotted 0 from DejaVu Sans Mono scaled to the digit height, * centred at + and -, punctuation centred in its cell.
+  // Courier New glyph fixes: a dot in the centre of 0, * centred at + and -, punctuation centred in its cell.
   // Sizes are absolute: the raw rule sets the size of every text with show text, it would override sizes in em
   let bold() = text.weight == "bold"
   let comment() = text.fill == rgb("#505050") // Caveat
   show "0": it => context {
     if comment() { return it }
-    let (k, pad) = if bold() { (0.876, 0.0363) } else { (0.849, 0.0445) }
-    show text: set text(font: "DejaVu Sans Mono", size: size * k, top-edge: 0pt, bottom-edge: 0pt)
-    h(pad * size) + it + h(pad * size)
+    let (y, d) = if bold() { (0.3167, 0.13) } else { (0.3064, 0.1) } // em: centre of the ink of 0, diameter of the dot
+    // An empty box sits on the baseline, so the dot does not take part in the line: no box around 0 in codly
+    box(place(bottom + left, dx: (0.3 - d / 2) * size, dy: -(y - d / 2) * size,
+      circle(radius: d / 2 * size, fill: text.fill, stroke: none))) + it
   }
   show "*": it => context text(baseline: if bold() { 0.138em } else { 0.149em }, it)
   let shifts = ( // em: ink centre to cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
