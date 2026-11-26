@@ -94,13 +94,14 @@
       circle(radius: d / 2 * size, fill: text.fill, stroke: none))) + it
   }
   show "*": it => context text(baseline: if bold() { 0.138em } else { 0.149em }, it)
-  let shifts = ( // em: centre of the ink mass to the cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
-    ",": (0.0662, 0.0082), ";": (0.0378, -0.0086), "(": (-0.0644, -0.0671), ")": (0.0581, 0.0612),
-    "[": (-0.0201, -0.0232), "]": (0.0191, 0.0242), "<": (-0.0042, -0.0132), ">": (0.0052, 0.0133),
+  let shifts = ( // em: ink centre to cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
+    ",": (0.051, 0), ";": (0.0364, 0), "(": (-0.0779, -0.0764), ")": (0.0706, 0.0696),
+    "[": (-0.0637, -0.0627), "]": (0.0618, 0.0627), "<": (0.0122, 0.0264), ">": (-0.0122, -0.0273),
   )
+  let gap = 0.05 // em: , and ; move to the space after them
   show regex("[,;()\\[\\]<>]"): it => context {
     if comment() { return it }
-    let dx = shifts.at(it.text).at(if bold() { 1 } else { 0 }) * size
+    let dx = (shifts.at(it.text).at(if bold() { 1 } else { 0 }) + if it.text in ",;" { gap } else { 0 }) * size
     h(dx) + it + h(-dx)
   }
   show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
