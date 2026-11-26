@@ -1,4 +1,4 @@
-#import "../default.typ": *;#heading(depth: 1)[*8.` `#underline[Series` `and` `polynomials]*]
+#import "../book/default.typ": *;#heading(depth: 1)[*8.` `#underline[Series` `and` `polynomials]*]
 == *8.0.` `Ряды` `Маклорена*#br
 $ e^x = sum_(n = 0)^infinity x^n / n! = 1 + x + x^2 / 2!  + x^3 / 3! + ... $`
 `$ 1 / (1 + x) = sum_(n = 0)^infinity (-1)^n x^n = 1 - x + x^2 - x^3 + x^4 - ... $`

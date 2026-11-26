@@ -158,7 +158,7 @@ void convert(const fs::path &src) {
         else
             res.erase(----res.end());
     }
-    res = "#import \"../default.typ\": *;" + res;
+    res = "#import \"../book/default.typ\": *;" + res;
 
     // Writing
     ofstream out(dest, ios::binary);

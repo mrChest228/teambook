@@ -80,7 +80,7 @@
 }
 
 // Inline code: does not change the line height
-#let code-file(path) = raw(read(path).replace("\r\n", "\n").trim(at: end), lang: path.split(".").last(), block: true)
+#let code-file(path) = raw(read("/" + path).replace("\r\n", "\n").trim(at: end), lang: path.split(".").last(), block: true)
 
 #let code(str) = box(
   radius: 3pt,
@@ -171,6 +171,8 @@
   // Math
   show math.equation.where(block: true): set text(size: font-sizes.math-block)
   show math.equation.where(block: false): set text(size: math-inline-scale * 1em)
+  // Inline fractions in a line: a/b
+  show math.equation.where(block: false): set math.frac(style: "horizontal")
   // Block formulas: wider space after a comma between formulas, but not inside brackets and indices: f(i, j), c_(i, j)
   show math.equation.where(block: true): it => {
     let gap = h(10pt)
@@ -208,7 +210,7 @@
   // The label hangs from the top border, not bound to the first line
   show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
     radius: 1.5pt, align: right + top, outset: (x: -1.2pt, y: 0pt))
-  set raw(theme: "BW.tmTheme", tab-size: 4)
+  set raw(theme: "/BW.tmTheme", tab-size: 4)
   show raw: it => {
     show "—": "-" // Not in code
     if it.text.trim() == "" { // Spaces and enters

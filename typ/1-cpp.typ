@@ -1,4 +1,4 @@
-#import "../default.typ": *;#heading(depth: 1)[_`        `_*1.` `#underline[C++]*]
+#import "../book/default.typ": *;#heading(depth: 1)[_`        `_*1.` `#underline[C++]*]
 #code-file("code/cpp/template.cpp")#br
 == *1.1.` `Data` `structures*#br
 #code-file("code/cpp/data-structures.cpp")#br
@@ -18,8 +18,9 @@
 `Целые` `$floor(log_2(x))$:` `#code("__lg(x)")` `или` `#code("bit_width(x) - 1")` `(1` `нс,` `#code("log2l")` `-` `28` `нс).` `#code("powl")` `от` `long` `в` `10` `раз` `медленнее` `бинарного` `возведения,` `#code("log10l(999999999999999999)")` `=` `18.`
 `$floor(sqrt(x))$` `для` `long:` `#code("sqrtl(x)")` `(точно` `для` `всех` `long:` `64-битная` `мантисса` `#code("long double"));` `#code("sqrt")` `в` `double` `(53` `бита)` `на` `больших` `$x = k^2 - 1$` `даёт` `$k$.`
 `#code-file("code/cpp/is-square.cpp")`
-`#code("lround(x)")` `/` `#code("llround(x)")` `округляют` `к` `ближайшему` `целому` `(половины` `от` `нуля)` `в` `long` `/` `long` `long;` `#code("lrint(x)")` `/` `#code("llrint(x)")` `-` `в` `текущем` `режиме` `(по` `умолчанию` `к` `чётному)` `и` `быстрее.`
-`#code("floor")` `/` `#code("ceil")` `/` `#code("trunc")` `возвращают` `floating` `point.` `Для` `целого` `#code("ceil(a / b)")` `при` `$a >= 0, b > 0$:` `$(a + b - 1) / b$;` `_/_` `округляет` `к` `нулю.#br
+`#code("lround(x)")` `/` `#code("llround(x)")` `-` `ближайшее` `целое` `в` `long` `/` `long` `long,` `половины` `от` `нуля:` `$2.5 -> 3$,` `$-2.5 -> -3$.` `#code("lrint(x)")` `/` `#code("llrint(x)")` `-` `быстрее,` `но` `половины` `к` `чётному:` `$2.5 -> 2$,` `$3.5 -> 4$.`
+`#code("floor(x)")` `-` `вниз:` `$-2.5 -> -3$,` `#code("trunc(x)")` `-` `к` `нулю:` `$-2.5 -> -2$.` `Целое` `#code("a / b")` `-` `это` `trunc.` `Целые` `floor` `и` `ceil` `при` `любых` `знаках:`
+`#code-file("code/cpp/div.cpp")#br
 == *1.5.` `Runtime` `Errors*#br
 *0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
 `*0xC00000FD*` `-` `Stack` `Overflow.` `Причины:` `бесконечная/очень` `глубокая` `рекурсия,` `слишком` `большой` `массив` `в` `стеке.`

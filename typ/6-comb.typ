@@ -1,4 +1,4 @@
-#import "../default.typ": *;#heading(depth: 1)[*6.` `#underline[Combinatorics]*]
+#import "../book/default.typ": *;#heading(depth: 1)[*6.` `#underline[Combinatorics]*]
 == *6.0.` `Суммы` `от` `1` `до` `n*#br
 $ S_c (n) = 1^c + 2^c + 3^c + ... + n^c $`
 `#align(center)[#table(
