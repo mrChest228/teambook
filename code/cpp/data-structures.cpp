@@ -10,7 +10,7 @@ template <class T> using oset = tree <T, null_type, less <T>, rb_tree_tag, tree_
 //st.order_of_key(x);
 
 template <class T>
-omultiset <T>::iterator find(const omultiset <T> &st, int x){
+omultiset <T>::iterator find(const omultiset <T> &st, int x) {
     int num = st.order_of_key(x);
     if (num == st.size())
         return st.end();
