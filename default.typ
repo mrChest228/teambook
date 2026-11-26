@@ -63,12 +63,18 @@
 // Line break that leaves the real newline outside, so the next line can start with "="
 #let br = raw("\n")
 
-// l and ll at the end of long double functions and __builtin_*ll: bold
+// Bold l/ll in long double functions, long rounding functions and __builtin_*ll
 #let bold-l(body) = {
-  show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l)\\b"): it => {
+  show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
     let t = it.text
+    let prefixed = t == "lround" or t == "llround" or t == "lrint" or t == "llrint"
     let k = if t.starts-with("__builtin") { 2 } else { 1 }
-    [#t.slice(0, t.len() - k)#strong(t.slice(t.len() - k))]
+    if prefixed {
+      let k = if t.starts-with("ll") { 2 } else { 1 }
+      [#strong(t.slice(0, k))#t.slice(k)]
+    } else {
+      [#t.slice(0, t.len() - k)#strong(t.slice(t.len() - k))]
+    }
   }
   body
 }

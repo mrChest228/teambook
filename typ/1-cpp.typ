@@ -1,4 +1,4 @@
-#import "../default.typ": *;#heading(depth: 1)[_`      `_*1.` `#underline[Code]*]
+#import "../default.typ": *;#heading(depth: 1)[_`          `_*1.` `#underline[C++]*]
 #code-file("code/cpp/template.cpp")#br
 == *1.1.` `Data` `structures*#br
 #code-file("code/cpp/data-structures.cpp")#br
@@ -15,8 +15,11 @@
 `#code("__builtin_ctzll(x)")` `-` `кол-во` `$0$` `перед` `младшей` `$1$` `в` `битовом` `представлении.` `При` `$x = 0$` `-` `UB.` `Поиск` `делимости` `на` `$2^k$.`
 `#code("__builtin_parityll(x)")` `-` `чётность` `кол-ва` `$1$` `в` `битовом` `представлении.` `Аналогично` `#code("__builtin_popcount(x) & 1").`
 `#code("__builtin_mul_overflow(a, b, &res)")` `-` `умножает` `a` `на` `b,` `сохраняет` `результат` `в` `res.` `Возвращает` `true,` `если` `произошло` `переполнение,` `и` `false,` `если` `всё` `ок.`
-`Целые` `$floor(log_2(x))$:` `#code("__lg(x)")` `или` `#code("bit_width(x) - 1")` `(1` `нс,` `#code("log2l")` `-` `28` `нс).` `#code("powl")` `от` `long` `в` `10` `раз` `медленнее` `бинарного` `возведения,` `#code("log10l(999999999999999999)")` `=` `18.` `$floor(sqrt(x))$` `без` `ошибок` `за` `2` `нс` `(#code("sqrtl")` `-` `5` `нс):`
-`#code-file("code/cpp/isqrt.cpp")#br
+`Целые` `$floor(log_2(x))$:` `#code("__lg(x)")` `или` `#code("bit_width(x) - 1")` `(1` `нс,` `#code("log2l")` `-` `28` `нс).` `#code("powl")` `от` `long` `в` `10` `раз` `медленнее` `бинарного` `возведения,` `#code("log10l(999999999999999999)")` `=` `18.`
+`$floor(sqrt(x))$` `для` `long:` `#code("sqrtl(x)")` `(точно` `для` `всех` `long:` `64-битная` `мантисса` `#code("long double"));` `#code("sqrt")` `в` `double` `(53` `бита)` `на` `больших` `$x = k^2 - 1$` `даёт` `$k$.`
+`#code-file("code/cpp/is-square.cpp")`
+`#code("lround(x)")` `/` `#code("llround(x)")` `округляют` `к` `ближайшему` `целому` `(половины` `от` `нуля)` `в` `long` `/` `long` `long;` `#code("lrint(x)")` `/` `#code("llrint(x)")` `-` `в` `текущем` `режиме` `(по` `умолчанию` `к` `чётному)` `и` `быстрее.`
+`#code("floor")` `/` `#code("ceil")` `/` `#code("trunc")` `возвращают` `floating` `point.` `Для` `$a \ge 0, b > 0$:` `$\lceil a / b \rceil = (a + b - 1) / b$;` `_/_` `округляет` `к` `нулю.#br
 == *1.5.` `Runtime` `Errors*#br
 *0xC0000005*` `-` `Access` `Violation.` `Причины:` `выход` `за` `границы` `массива,` `слишком` `большой` `массив` `в` `стеке,` `обращение` `к` `NULL-указателю.`
 `*0xC00000FD*` `-` `Stack` `Overflow.` `Причины:` `бесконечная/очень` `глубокая` `рекурсия,` `слишком` `большой` `массив` `в` `стеке.`

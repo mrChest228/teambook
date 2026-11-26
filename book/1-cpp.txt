@@ -1,4 +1,4 @@
-= `      `*1. _Code_*
+= `          `*1. _C++_*
 ~~#code-file("code/cpp/template.cpp")~~
 == *1.1. Data structures*
 ~~#code-file("code/cpp/data-structures.cpp")~~
@@ -15,8 +15,11 @@ $floor(log_2(x))$: ``31 - __builtin_clz(x)`` / ``63 - __builtin_clzll(x)``
 ``__builtin_ctzll(x)`` - кол-во $0$ перед младшей $1$ в битовом представлении. При $x = 0$ - UB. Поиск делимости на $2^k$.
 ``__builtin_parityll(x)`` - чётность кол-ва $1$ в битовом представлении. Аналогично ``__builtin_popcount(x) & 1``.
 ``__builtin_mul_overflow(a, b, &res)`` - умножает a на b, сохраняет результат в res. Возвращает true, если произошло переполнение, и false, если всё ок.
-Целые $floor(log_2(x))$: ``__lg(x)`` или ``bit_width(x) - 1`` (1 нс, ``log2l`` - 28 нс). ``powl`` от long в 10 раз медленнее бинарного возведения, ``log10l(999999999999999999)`` = 18. $floor(sqrt(x))$ без ошибок за 2 нс (``sqrtl`` - 5 нс):
-~~#code-file("code/cpp/isqrt.cpp")~~
+Целые $floor(log_2(x))$: ``__lg(x)`` или ``bit_width(x) - 1`` (1 нс, ``log2l`` - 28 нс). ``powl`` от long в 10 раз медленнее бинарного возведения, ``log10l(999999999999999999)`` = 18.
+$floor(sqrt(x))$ для long: ``sqrtl(x)`` (точно для всех long: 64-битная мантисса ``long double``); ``sqrt`` в double (53 бита) на больших $x = k^2 - 1$ даёт $k$.
+~~#code-file("code/cpp/is-square.cpp")~~
+``lround(x)`` / ``llround(x)`` округляют к ближайшему целому (половины от нуля) в long / long long; ``lrint(x)`` / ``llrint(x)`` - в текущем режиме (по умолчанию к чётному) и быстрее.
+``floor`` / ``ceil`` / ``trunc`` возвращают floating point. Для $a \ge 0, b > 0$: $\lceil a / b \rceil = (a + b - 1) / b$; `/` округляет к нулю.
 == *1.5. Runtime Errors*
 *0xC0000005* - Access Violation. Причины: выход за границы массива, слишком большой массив в стеке, обращение к NULL-указателю.
 *0xC00000FD* - Stack Overflow. Причины: бесконечная/очень глубокая рекурсия, слишком большой массив в стеке.
