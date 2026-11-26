@@ -19,7 +19,7 @@ $floor(log_2(x))$: ``31 - __builtin_clz(x)`` / ``63 - __builtin_clzll(x)``
 $floor(sqrt(x))$ для long: ``sqrtl(x)`` (точно для всех long: 64-битная мантисса ``long double``); ``sqrt`` в double (53 бита) на больших $x = k^2 - 1$ даёт $k$.
 ~~#code-file("code/cpp/is-square.cpp")~~
 ``lround(x)`` / ``llround(x)`` округляют к ближайшему целому (половины от нуля) в long / long long; ``lrint(x)`` / ``llrint(x)`` - в текущем режиме (по умолчанию к чётному) и быстрее.
-``floor`` / ``ceil`` / ``trunc`` возвращают floating point. Для $a \ge 0, b > 0$: $\lceil a / b \rceil = (a + b - 1) / b$; `/` округляет к нулю.
+``floor`` / ``ceil`` / ``trunc`` возвращают floating point. Для целого ``ceil(a / b)`` при $a \ge 0, b > 0$: $(a + b - 1) / b$; `/` округляет к нулю.
 == *1.5. Runtime Errors*
 *0xC0000005* - Access Violation. Причины: выход за границы массива, слишком большой массив в стеке, обращение к NULL-указателю.
 *0xC00000FD* - Stack Overflow. Причины: бесконечная/очень глубокая рекурсия, слишком большой массив в стеке.
