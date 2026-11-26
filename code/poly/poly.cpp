@@ -53,7 +53,7 @@ struct Poly {
                 for (int j = 0; j < k; j++) {
                     int u = a[i + j], v = 1LL * a[i + j + k] * rt[k + j] % MOD;
                     a[i + j] = u + v < MOD ? u + v : u + v - MOD;
-                    a[i + j + k] = u < v ? u - v + MOD : u - v;
+                    a[i + j + k] = u - v + (u < v ? MOD : 0);
                 }
         reverse(a.begin() + 1, a.end()); // w^(-j) = w^(n - j)
         int invN = inv1[n];

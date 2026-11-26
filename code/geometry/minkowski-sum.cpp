@@ -26,7 +26,7 @@ void reorder(vector <point> &p) { // Переупорядочиваем, что�
     rotate(p.begin(), p.begin() + pos, p.end());
 }
 
-vector <point> minkowski(vector <point> a, vector <point> b) {
+vector <point> minkowski(vector <point> a, vector <point> b){
     reorder(a);
     reorder(b);
 

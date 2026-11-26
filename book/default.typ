@@ -221,7 +221,7 @@
   )
   show: codly.header-set_(repeat: false, inset: (x: 0pt, y: 0pt, bottom: 1pt), fill: none, stroke: none)
   show: codly.footer-set_(repeat: false, inset: (x: 0pt, y: 0pt, top: 1pt), fill: none, stroke: none)
-  show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (left: 0.3pt, right: 0pt, y: 1.07pt))
+  show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (left: 0.3pt, right: -1pt, y: 1.07pt))
   // The label hangs from the top border, not bound to the first line
   show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
     radius: 1.5pt, align: right + top, outset: (x: -1.2pt, y: 0pt))
