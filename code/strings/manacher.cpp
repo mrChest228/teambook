@@ -1,22 +1,20 @@
 vector <int> manacher(const string &s) {
     string t;
-    for (char c : s) {
+    for (char x : s) {
         if (t.size())
             t += '=';
-        t += c;
+        t += x;
     }
     int m = t.size();
     vector <int> d(m);
-    for (int i = 0, l = 0, r = -1; i < m; ++i) {
-        int k = i > r ? 0 : min(d[l + r - i], r - i);
-        int a = i - k - 1, b = i + k + 1;
-        while (a >= 0 && b < m && t[a] == t[b])
-            --a, ++b;
-        d[i] = b - i - 1;
-        if (b - 1 > r) {
-            l = a + 1;
-            r = b - 1;
-        }
+    for (int i = 1, c = 1; i < m; ++i) { // c: центр самого правого
+        int k = max(0, min(d[2 * c - i], c + d[c] - i));
+        while (k < i && i + k + 1 < m &&
+               t[i - k - 1] == t[i + k + 1])
+            ++k;
+        d[i] = k;
+        if (i + k >= c + d[c])
+            c = i;
     }
     return d;
 }
