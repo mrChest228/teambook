@@ -1,10 +1,10 @@
 struct point {
     long x, y;
-    point operator+(const point& a) const { return {x + a.x, y + a.y}; }
-    point operator-(const point& a) const { return {x - a.x, y - a.y}; }
-    long cross(const point& a) const { return x * a.y - y * a.x; }
-    long dot(const point& a) const { return x * a.x + y * a.y; }
-    long len2() const { return x * x + y * y; }
+    point operator+(const point& a) { return {x + a.x, y + a.y}; }
+    point operator-(const point& a) { return {x - a.x, y - a.y}; }
+    long cross(const point& a) { return x * a.y - y * a.x; }
+    long dot(const point& a) { return x * a.x + y * a.y; }
+    long len2() { return x * x + y * y; }
 };
 
 void normalize(vector <point> &p) { // Убираем точки на сторонах
@@ -26,7 +26,7 @@ void reorder(vector <point> &p) { // Переупорядочиваем, что�
     rotate(p.begin(), p.begin() + pos, p.end());
 }
 
-vector <point> minkowski(vector <point> a, vector <point> b){
+vector <point> minkowski(vector <point> a, vector <point> b) {
     reorder(a);
     reorder(b);
 
@@ -57,7 +57,7 @@ vector <point> minkowski(vector <point> a, vector <point> b){
     return res;
 }
 
-ld distToSegment(const point &p, const point &a, const point &b) {
+ld distToSegment(point p, point a, point b) {
     point ab = b - a, ap = p - a;
     if (ab.dot(ap) <= 0) // Ближе к A
         return sqrtl(ap.len2());

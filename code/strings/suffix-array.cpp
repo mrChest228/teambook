@@ -1,4 +1,4 @@
-void sufArr(const string &s, int *sf, int *num, int *lcp) {
+void sufArr(string &s, int *sf, int *num, int *lcp) {
     assert(s.back() == '$');
     int n = s.size();
     // static: stored like globals, not on the stack; not cleared between calls

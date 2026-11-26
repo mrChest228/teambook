@@ -85,8 +85,7 @@ void push(int v, int l, int r) {
     chAdd(L, t[v].lz, m - l + 1);
     chAdd(R, t[v].lz, r - m);
     t[v].lz = 0;
-    chMin(L, t[v].mx, m - l + 1);
-    chMax(L, t[v].mn, m - l + 1);
+    chMin(L, t[v].mx, m - l + 1); chMax(L, t[v].mn, m - l + 1);
     chMin(R, t[v].mx, r - m); chMax(R, t[v].mn, r - m);
 }
 void build(int v, int l, int r) {

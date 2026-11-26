@@ -1,14 +1,12 @@
-vector <int> manacher(const string &s) {
-    if (s.empty())
-        return {};
-    int n = s.size(), m = 2 * n - 1;
-    vector <int> d(m);
-    auto equal = [&](int i, int j) {
-        return i & 1 || s[i / 2] == s[j / 2];
-    };
-    for (int i = 0, l = 0, r = -1; i < m; ++i) {
-        int k = i > r ? 0 : min(d[l + r - i], r - i);
-        while (i - k - 1 >= 0 && i + k + 1 < m && equal(i - k - 1, i + k + 1))
+vector <int> manacher(const string &s) { // s без $, # и ^
+    string t = "$#";
+    for (char c : s)
+        t += c, t += '#';
+    t += '^';
+    vector <int> d(t.size());
+    for (int i = 1, l = 1, r = 0; i + 1 < t.size(); ++i) {
+        int k = max(0, min(d[l + r - i], r - i));
+        while (t[i - k - 1] == t[i + k + 1])
             ++k;
         d[i] = k;
         if (i + k > r) {
@@ -16,6 +14,8 @@ vector <int> manacher(const string &s) {
             r = i + k;
         }
     }
-    // Длина в s: при чётном i — 2 * (d[i] / 2) + 1, при нечётном — 2 * ((d[i] + 1) / 2).
     return d;
 }
+// d[i]: длина наибольшего палиндрома в s с центром в t[i]
+// s = "abaab", t = "$#a#b#a#a#b#^":
+// d[4] = 3 ("aba", центр b), d[7] = 4 ("baab", центр #)

@@ -2,7 +2,7 @@ const ld oo = 1e18, eps = 1e-9;
 
 struct line {
     ld k, b;
-    ld operator() (ld x) const {
+    ld operator() (ld x) {
         return k * x + b;
     }
 };
