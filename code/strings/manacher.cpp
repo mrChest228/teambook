@@ -1,20 +1,26 @@
-array <vector <int>, 2> manacher(const string &s) {
-    int n = s.size();
-    array <vector <int>, 2> d = {vector <int>(n), vector <int>(n)};
-    for (int z = 0; z < 2; ++z)
-        for (int i = 0, l = 0, r = -1; i < n; ++i) {
-            int k = i > r ? 0 : min(d[z][l + r - i + z], r - i + z);
-            int a = i - k - 1, b = i + k + 1 - z;
-            while (a >= 0 && b < n && s[a] == s[b])
-                --a, ++b;
-            d[z][i] = i - a - 1;
-            if (b - 1 > r) {
-                l = a + 1;
-                r = b - 1;
-            }
+vector <int> manacher(const string &s) {
+    string t;
+    for (char c : s) {
+        if (t.size())
+            t += '=';
+        t += c;
+    }
+    int m = t.size();
+    vector <int> d(m);
+    for (int i = 0, l = 0, r = -1; i < m; ++i) {
+        int k = i > r ? 0 : min(d[l + r - i], r - i);
+        int a = i - k - 1, b = i + k + 1;
+        while (a >= 0 && b < m && t[a] == t[b])
+            --a, ++b;
+        d[i] = b - i - 1;
+        if (b - 1 > r) {
+            l = a + 1;
+            r = b - 1;
         }
+    }
     return d;
 }
-// d[0][i] = k: s[i - k..i + k] - палиндром длины 2k + 1
-// d[1][i] = k: s[i - k..i + k - 1] - палиндром длины 2k
-// s = "abaab": d[0] = {0, 1, 0, 0, 0}, d[1] = {0, 0, 0, 2, 0}
+// t[i - d[i]..i + d[i]] - палиндром. Длина в s: d[i] + 1,
+// если t[i + d[i]] - буква, иначе d[i]
+// s = "abaab", t = "a=b=a=a=b": d[2] = 2 ("aba"),
+// d[5] = 3 ("=baab=", в s "baab")
