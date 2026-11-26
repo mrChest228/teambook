@@ -88,15 +88,15 @@
   let comment() = text.fill == rgb("#505050") // Caveat
   show "0": it => context {
     if comment() { return it }
-    let (y, d) = if bold() { (0.3167, 0.13) } else { (0.3064, 0.1) } // em: centre of the ink of 0, diameter of the dot
+    let (y, d) = if bold() { (0.3167, 0.15) } else { (0.3064, 0.12) } // em: centre of the ink of 0, diameter of the dot
     // An empty box sits on the baseline, so the dot does not take part in the line: no box around 0 in codly
     box(place(bottom + left, dx: (0.3 - d / 2) * size, dy: -(y - d / 2) * size,
       circle(radius: d / 2 * size, fill: text.fill, stroke: none))) + it
   }
   show "*": it => context text(baseline: if bold() { 0.138em } else { 0.149em }, it)
-  let shifts = ( // em: ink centre to cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
-    ",": (0.051, 0), ";": (0.0364, 0), "(": (-0.0779, -0.0764), ")": (0.0706, 0.0696),
-    "[": (-0.0637, -0.0627), "]": (0.0618, 0.0627), "<": (0.0122, 0.0264), ">": (-0.0122, -0.0273),
+  let shifts = ( // em: centre of the ink mass to the cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
+    ",": (0.0662, 0.0082), ";": (0.0378, -0.0086), "(": (-0.0644, -0.0671), ")": (0.0581, 0.0612),
+    "[": (-0.0201, -0.0232), "]": (0.0191, 0.0242), "<": (-0.0042, -0.0132), ">": (0.0052, 0.0133),
   )
   show regex("[,;()\\[\\]<>]"): it => context {
     if comment() { return it }
