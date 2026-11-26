@@ -1,0 +1,11 @@
+= *4. _Strings_*
+== *4.0. Z-функция*
+~~#code-file("code/strings/z-function.cpp")~~
+== *4.1. Префикс-функция*
+~~#code-file("code/strings/prefix-function.cpp")~~
+== *4.2. Суффиксный массив + LCP*
+``sf`` - суфф. массив, ``num[i]`` - позиция суффикса ``i`` в ``sf``, ``lcp[i]`` - lcp суффиксов ``sf[i]`` и ``sf[i + 1]``. $O(n log(n))$.
+lcp суффиксов ``i``, ``j`` за $O(1)$: разреженная таблица по ``lcp``, ответ ``min(lcp[L..R - 1])``, где ``L = min(num[i], num[j])``, ``R = max(num[i], num[j])``.
+~~#code-file("code/strings/suffix-array.cpp")~~
+== *4.3. Манакер*
+~~#code-file("code/strings/manacher.cpp")~~

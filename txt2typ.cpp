@@ -24,8 +24,6 @@ void signalHandler(int signum) {
 //         << "Run with arguments \"watch <path>\" to convert file on every change.";
 //}
 
-const fs::path src = "TeamBook.txt", dest = "TeamBook.typ";
-
 void normalize(string &str) {
     // Remove the UTF-8 BOM, if it exists (0xEF 0xBB 0xBF)
     if (str.size() >= 3 &&
@@ -33,7 +31,7 @@ void normalize(string &str) {
         static_cast<unsigned char>(str[1]) == 0xBB &&
         static_cast<unsigned char>(str[2]) == 0xBF)
         str.erase(0, 3);
-    if (str.back() != '\n')
+    if (!str.empty() && str.back() != '\n')
         str.pb('\n');
 }
 
@@ -51,6 +49,7 @@ vector <array <string, 4>> tokens = {
 };
 
 const int inlineCode = 2;   // Index of the inline code in tokens
+const int typstFun = 3;     // Index of Typst functions in tokens
 const int firstHeading = 7; // Index of the first heading in tokens
 
 // Escapes text for a Typst string literal
@@ -87,7 +86,7 @@ string solve(const string &text, int l, int r) {
                 while (k + tokens[j][1].size() <= r && text.substr(k, tokens[j][1].size()) != tokens[j][1])
                     ++k;
                 if (k + tokens[j][1].size() > r)
-                    throw "Line " + to_string(count(text.begin(), text.begin() + i, '\n') + 1) +
+                    throw to_string(count(text.begin(), text.begin() + i, '\n') + 1) +
                           ": bad count of token \"" + tokens[j][0] + "..." + tokens[j][1] + "\"";
                 string pref;
                 if (j >= firstHeading && i > l) // The "=" has to start a line in TeamBook.typ too
@@ -101,14 +100,36 @@ string solve(const string &text, int l, int r) {
                     inner = text.substr(i + tokens[j][0].size(), k - (i + tokens[j][0].size()));
                 if (j == inlineCode)
                     inner = escape(inner);
+                string open = tokens[j][2], close = tokens[j][3];
+                if (j >= firstHeading && i == 0) {
+                    open = "#heading(depth: " + to_string(10 - j) + ")[";
+                    close = "]";
+                }
+                int next = k + tokens[j][1].size();
+                if (j >= firstHeading && i == 0 && k < r && text[k] == '\n')
+                    return pref + open + inner + close + "\n" + solve(text, next, r);
+                if (j == typstFun && next < r && text[next] == '\n') {
+                    if (inner.starts_with("#show:"))
+                        return pref + open + inner + close + "\n" + solve(text, next + 1, r);
+                    if (inner.starts_with("#include "))
+                        return pref + open + inner + close + "\n#br\n" + solve(text, next + 1, r);
+                }
                 return pref +
-                       tokens[j][2] + inner + tokens[j][3] +
-                       solve(text, k + tokens[j][1].size(), r);
+                       open + inner + close +
+                       solve(text, next, r);
             }
     return normalSpaces(text.substr(l, r - l));
 }
 
-void convert() {
+void convert(const fs::path &src) {
+    fs::path dest = fs::path("typ") / src.filename();
+    dest.replace_extension(".typ");
+    error_code dirEc;
+    fs::create_directories(dest.parent_path(), dirEc);
+    if (dirEc) {
+        cerr << "[convert] cannot create destination directory: " << dest.parent_path() << ": " << dirEc.message() << nl;
+        return;
+    }
     // Reading
     ifstream in(src, ios::binary);
     if (!in) {
@@ -122,17 +143,22 @@ void convert() {
     string res;
 
     try {
-        res += solve(text, 0, text.size());
+        res = solve(text, 0, text.size());
     }
     catch (string err) {
-        cerr << "[convert] " << err << nl;
+        cerr << src.generic_string() << ":" << err << nl;
         return;
     }
     // Drop the line break made by the final newline
-    if (res.ends_with("#br\n"))
-        res.erase(res.size() - 4);
-    else
-        res.erase(----res.end());
+    if (!res.empty()) {
+        if (res.ends_with("#br\n"))
+            res.erase(res.size() - 4);
+        elif (res.ends_with('\n'))
+            res.pop_back();
+        else
+            res.erase(----res.end());
+    }
+    res = "#import \"../book/default.typ\": *;" + res;
 
     // Writing
     ofstream out(dest, ios::binary);
@@ -145,36 +171,49 @@ void convert() {
 }
 
 void watch() {
-    chrono::file_clock::time_point lastTime;
-    int isFound = -1;
     while (1) {
         this_thread::sleep_for(700ms);
-        error_code ec;
-        if (!fs::exists(src, ec)) {
-            if (ec)
-                cerr << "[watch] filesystem error checking existence: " << ec.message() << nl;
-            if (isFound != 0)
-                cout << "File " << src << " didn't found\n";
-            isFound = 0;
+        fs::path dir = "book";
+        error_code dirEc;
+        if (!fs::is_directory(dir, dirEc)) {
+            if (dirEc)
+                cerr << "[watch] filesystem error checking " << dir << ": " << dirEc.message() << nl;
+            else
+                cerr << "[watch] directory not found: " << dir << nl;
             continue;
         }
-        isFound = 1;
-        auto curTime = fs::last_write_time(src, ec);
-        if (ec) {
-            cerr << "[watch] error reading timestamp: " << ec.message() << nl;
+        static map <fs::path, fs::file_time_type> lastTime;
+        fs::directory_iterator it(dir, dirEc), end;
+        if (dirEc) {
+            cerr << "[watch] error reading " << dir << ": " << dirEc.message() << nl;
             continue;
         }
-        if (curTime != lastTime) {
-            cout << "Changes have been detected\n";
-            lastTime = curTime;
-            auto startTime = chrono::high_resolution_clock::now();
-
-            convert();
-
-            auto endTime = chrono::high_resolution_clock::now();
-            double dur = (chrono::duration<double, milli>(endTime - startTime)).count();
-
-            cout << "Time: " << dur << "ms.\n";
+        while (it != end) {
+            fs::path src = it->path();
+            if (src.extension() == ".txt") {
+                error_code timeEc;
+                auto curTime = fs::last_write_time(src, timeEc);
+                if (timeEc)
+                    cerr << "[watch] error reading timestamp for " << src << ": " << timeEc.message() << nl;
+                else {
+                    auto seen = lastTime.find(src);
+                    if (seen == lastTime.end() || seen->second != curTime) {
+                        lastTime[src] = curTime;
+                        cout << "Changes have been detected in " << src.generic_string() << nl;
+                        auto start = chrono::steady_clock::now();
+                        convert(src);
+                        auto elapsed = chrono::duration_cast<chrono::milliseconds>(
+                            chrono::steady_clock::now() - start
+                        ).count();
+                        cout << "Time: " << elapsed << "ms." << nl;
+                    }
+                }
+            }
+            it.increment(dirEc);
+            if (dirEc) {
+                cerr << "[watch] error reading " << dir << ": " << dirEc.message() << nl;
+                break;
+            }
         }
     }
 }

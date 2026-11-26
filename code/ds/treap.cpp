@@ -8,7 +8,7 @@ struct Node {
 Node *root;
 
 int size(Node *node) { return node ? node -> sz : 0; }
-int calc(Node *node) {
+void calc(Node *node) {
     node -> sz = 1 + size(node -> L) + size(node -> R);
     //...
 }
