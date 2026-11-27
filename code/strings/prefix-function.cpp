@@ -1,4 +1,4 @@
-vector <int> prefFun(const string &s) {
+vector <int> pref(string &s) {
     int n = s.size();
     vector <int> p(n);
     for (int i = 1; i < n; i++) {

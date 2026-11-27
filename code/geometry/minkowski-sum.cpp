@@ -1,9 +1,9 @@
 struct point {
     long x, y;
-    point operator+(const point& a) { return {x + a.x, y + a.y}; }
-    point operator-(const point& a) { return {x - a.x, y - a.y}; }
-    long cross(const point& a) { return x * a.y - y * a.x; }
-    long dot(const point& a) { return x * a.x + y * a.y; }
+    point operator+(point a) { return {x + a.x, y + a.y}; }
+    point operator-(point a) { return {x - a.x, y - a.y}; }
+    long cross(point a) { return x * a.y - y * a.x; }
+    long dot(point a) { return x * a.x + y * a.y; }
     long len2() { return x * x + y * y; }
 };
 

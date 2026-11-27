@@ -12,9 +12,47 @@
 
 #import "@preview/codly:2.0.0" as codly
 // Border of line numbers and the cpp label
-#let code-stroke = 0.45pt + rgb("#777777")
+#let code-stroke = 0.7pt + rgb("#777777")
 #let frame-stroke = 1pt + rgb("#AAAAAA")
 #let code-radius = 3pt
+
+// Bold l/ll in long double functions, long rounding functions and __builtin_*ll
+#let bold-l(body, size: font-sizes.code) = {
+  show "_": set text(baseline: -0.2em) // Courier New: from under the line to the bottom of o
+  // Courier New glyph fixes: a dot in the centre of 0, * centred at + and -, punctuation centred in its cell.
+  // Sizes are absolute: the raw rule sets the size of every text with show text, it would override sizes in em
+  let bold() = text.weight == "bold"
+  let comment() = text.fill == rgb("#505050") // Caveat
+  show "0": it => context {
+    if comment() { return it }
+    let (y, d) = if bold() { (0.3167, 0.15) } else { (0.3064, 0.12) } // em: centre of the ink of 0, diameter of the dot
+    // An empty box sits on the baseline, so the dot does not take part in the line: no box around 0 in codly
+    box(place(bottom + left, dx: (0.3 - d / 2) * size, dy: -(y - d / 2) * size,
+      circle(radius: d / 2 * size, fill: text.fill, stroke: none))) + it
+  }
+  show "*": it => context text(baseline: if bold() { 0.138em } else { 0.149em }, it)
+  let shifts = ( // em: ink centre to cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
+    ",": (0.051, 0), ";": (0.0364, 0), "(": (-0.0779, -0.0764), ")": (0.0706, 0.0696),
+    "[": (-0.0637, -0.0627), "]": (0.0618, 0.0627), "<": (0.0122, 0.0264), ">": (-0.0122, -0.0273),
+  )
+  show regex("[,;()\\[\\]<>]"): it => context {
+    if comment() { return it }
+    let dx = shifts.at(it.text).at(if bold() { 1 } else { 0 }) * size
+    h(dx) + it + h(-dx)
+  }
+  show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
+    let t = it.text
+    let prefixed = t == "lround" or t == "llround" or t == "lrint" or t == "llrint"
+    let k = if t.starts-with("__builtin") { 2 } else { 1 }
+    if prefixed {
+      let k = if t.starts-with("ll") { 2 } else { 1 }
+      [#strong(t.slice(0, k))#t.slice(k)]
+    } else {
+      [#t.slice(0, t.len() - k)#strong(t.slice(t.len() - k))]
+    }
+  }
+  body
+}
 
 // Border of a code block: the sides are on every part, the top and the bottom with round corners only at the
 // real start and end of the block, so an unfinished part is open. The fills of the first and the last line go
@@ -62,7 +100,7 @@
       let gutter-fills = (white, code-fill).map(edge)
       let row-fills = (code-fill, white)
       show: codly.set_(gutters: (codly.gutter-column(
-        values: row => if row.kind == "code" { str(row.number) },
+        values: row => if row.kind == "code" { bold-l(str(row.number), size: code-size) },
         fill: gutter-fills, // Inverse of the line
         align: right + horizon, // Digits stay under each other: 9 and 10
         width: width, inset: inset
@@ -79,43 +117,6 @@
 // Line break that leaves the real newline outside, so the next line can start with "="
 #let br = raw("\n")
 
-// Bold l/ll in long double functions, long rounding functions and __builtin_*ll
-#let bold-l(body, size: font-sizes.code) = {
-  show "_": set text(baseline: -0.2em) // Courier New: from under the line to the bottom of o
-  // Courier New glyph fixes: a dot in the centre of 0, * centred at + and -, punctuation centred in its cell.
-  // Sizes are absolute: the raw rule sets the size of every text with show text, it would override sizes in em
-  let bold() = text.weight == "bold"
-  let comment() = text.fill == rgb("#505050") // Caveat
-  show "0": it => context {
-    if comment() { return it }
-    let (y, d) = if bold() { (0.3167, 0.15) } else { (0.3064, 0.12) } // em: centre of the ink of 0, diameter of the dot
-    // An empty box sits on the baseline, so the dot does not take part in the line: no box around 0 in codly
-    box(place(bottom + left, dx: (0.3 - d / 2) * size, dy: -(y - d / 2) * size,
-      circle(radius: d / 2 * size, fill: text.fill, stroke: none))) + it
-  }
-  show "*": it => context text(baseline: if bold() { 0.138em } else { 0.149em }, it)
-  let shifts = ( // em: ink centre to cell centre, (regular, bold). Other ASCII symbols are centred in Courier New
-    ",": (0.051, 0), ";": (0.0364, 0), "(": (-0.0779, -0.0764), ")": (0.0706, 0.0696),
-    "[": (-0.0637, -0.0627), "]": (0.0618, 0.0627), "<": (0.0122, 0.0264), ">": (-0.0122, -0.0273),
-  )
-  show regex("[,;()\\[\\]<>]"): it => context {
-    if comment() { return it }
-    let dx = shifts.at(it.text).at(if bold() { 1 } else { 0 }) * size
-    h(dx) + it + h(-dx)
-  }
-  show regex("\\b(__builtin_\\w+ll|(sqrt|cbrt|fabs|pow|exp|log|log2|log10|sin|cos|tan|asin|acos|atan|atan2|hypot|floor|ceil|round|fmod)l|ll?(round|rint))\\b"): it => {
-    let t = it.text
-    let prefixed = t == "lround" or t == "llround" or t == "lrint" or t == "llrint"
-    let k = if t.starts-with("__builtin") { 2 } else { 1 }
-    if prefixed {
-      let k = if t.starts-with("ll") { 2 } else { 1 }
-      [#strong(t.slice(0, k))#t.slice(k)]
-    } else {
-      [#t.slice(0, t.len() - k)#strong(t.slice(t.len() - k))]
-    }
-  }
-  body
-}
 
 // Inline code: does not change the line height
 #let code-file(path) = raw(read("/" + path).replace("\r\n", "\n").trim(at: end), lang: path.split(".").last(), block: true)
@@ -125,7 +126,10 @@
   inset: (x: 2pt),
   outset: (y: 1.8pt),
   fill: code-fill,
-  text(font: "Courier New", size: font-sizes.code, bold-l(str))
+  {
+    show "—": "-" // undo the dash rule of the text
+    text(font: "Courier New", size: font-sizes.code, bold-l(str))
+  }
 )
 
 // Long table cut into `parts` tables standing in a row, each one repeats the header
@@ -141,6 +145,9 @@
     ))
   ))
 }
+
+// Page number as it is drawn in the corners
+#let page-num(body) = text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline", body)
 
 #let setup(body) = {
   set page(
@@ -176,8 +183,7 @@
     // Page number in all 4 corners, so it is seen when most of the page is covered.
     // It overlaps the text a bit, so it has a white outline.
     foreground: context {
-      set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
-      let num = counter(page).display()
+      let num = page-num(counter(page).display())
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(
           corner,
@@ -199,8 +205,13 @@
   )
   set par(leading: 2.5pt)
   // A hyphen that is a separate word is a dash
-  show regex("^-$"): "—"
-  show heading: it => block(above: 2.5pt, sticky: true, {
+  show regex("(^|\\s)-(\\s|$)"): m => m.text.replace("-", "—")
+  show heading: it => block(above: 2.5pt, sticky: true, context {
+    // At the top of the first column the page number covers the start of the heading: shift it
+    let p = here().position()
+    if p.x < margin.x + 1pt and p.y < margin.y + 5pt {
+      h(measure(page-num(counter(page).display())).width + 2pt)
+    }
     // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
     show regex("^\\d+(\\.\\d+)*\\."): n => strong(delta: -300, text(font: "Old Standard TT", style: "italic",
       size: font-sizes.at("num" + str(it.depth)), slashed-zero: false, fill: rgb("#4d4d4d"), n))
@@ -253,13 +264,8 @@
   show raw.where(block: true): set text(font: "Courier New", size: code-size)
   show raw: it => {
     show "—": "-" // Not in code
-    if it.text.trim() == "" { // Spaces and enters
-      text(
-        font: "Times New Roman",
-        size: font-sizes.text,
-        it
-      )
-      return
+    if it.text.trim() == "" { // Repeated spaces and enters: the font and the size of the text around
+      return it.text.split("\n").join(linebreak())
     }
     // Code
     set par(leading: 0.35em)
