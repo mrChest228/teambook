@@ -1,11 +1,11 @@
-#import "../book/default.typ": *;#heading(depth: 1)[*9. #underline[Geometry]*]
+#import "../book/default.typ": *;#heading(depth: 1)[*9. #underline[Geometry];*]
 == *9.0. Сортировка векторов по углу*#br
-#code-file("code/geometry/angular-sort.cpp")#br
+#code-file("code/geometry/angular-sort.cpp");#br
 == *9.1. CHT*#br
-#code-file("code/geometry/cht.cpp")#br
+#code-file("code/geometry/cht.cpp");#br
 == *9.2. Сумма Минковского*#br
-#code("minkowski") находит сумму выпуклых многоугольников (обход по часовой стрелке; точка и отрезок тоже подходят). Точки на сторонах убирает #code("normalize"), сонаправленные стороны разных многоугольников складываются. #code("dist") находит расстояние между ними: один умножаем на $-1$ (обход при этом не меняется) и ищем расстояние от $(0, 0)$ до суммы.`
-`#code-file("code/geometry/minkowski-sum.cpp")#br
+#code("minkowski"); находит сумму выпуклых многоугольников (обход по часовой стрелке; точка и отрезок тоже подходят). Точки на сторонах убирает #code("normalize");, сонаправленные стороны разных многоугольников складываются. #code("dist"); находит расстояние между ними: один умножаем на $-1$ (обход при этом не меняется) и ищем расстояние от $(0, 0)$ до суммы.`
+`#code-file("code/geometry/minkowski-sum.cpp");#br
 == *9.3. Ближайшая пара точек*#br
 Идём по точкам слева направо и храним в set по $y$ те, что левее не больше чем на тек. ответ $d$. Для новой точки смотрим только точки с $y$ в пределах $d$: их $O(1)$. Итого $O(n log(n))$.`
-`#code-file("code/geometry/closest-pair.cpp")``
+`#code-file("code/geometry/closest-pair.cpp");``
