@@ -2,7 +2,7 @@
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels and numbers at their start, main text, code
-#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, num1: 12pt, num2: 10pt, num3: 9pt, text: 7pt, code: 7pt, math-block: 9pt)
+#let font-sizes = (h1: 17pt, h2: 13pt, h3: 9.5pt, num1: 12pt, num2: 10pt, num3: 7.5pt, text: 7pt, code: 7pt, math-block: 9pt)
 // Code blocks: the cell of 7pt with -0.12pt tracking. Typst drops tracking at every colour/weight change, so columns drifted
 #let code-size = font-sizes.code * 0.9714
 // Inline formula is this times bigger than the text around it: its small variables (x, n) are as high as small letters of Georgia
@@ -18,6 +18,11 @@
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
 #let comment-gap = 2pt
+// $...$ in a comment is a Typst formula drawn with the comment font
+#let comment-math(s) = {
+  show math.equation: set text(font: ("Caveat", "New Computer Modern Math"), size: 9.5pt)
+  math.equation(math.upright(eval(s, mode: "math")))
+}
 // The // comment of a line of code: from the first // outside of string and char literals to the end
 #let comment-of(line) = {
   let (quote, esc, prev, at) = (none, false, none, 0)
@@ -69,6 +74,7 @@
   // code-file ends lines with a comment with a space, so the gap is also after the last word
   show text.where(fill: rgb("#505050")): it => {
     show " ": h(comment-gap) + text(font: "Caveat", size: 9.5pt, fill: black, spacing: 100% - comment-gap, " ")
+    show regex("\\$[^$]+\\$"): m => comment-math(m.text.slice(1, -1))
     it
   }
   body
@@ -168,7 +174,7 @@
 }
 
 // Page number as it is drawn in the corners
-#let page-num(body) = text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline", body)
+#let page-num(body) = text(font: "Times New Roman", size: 11pt, top-edge: "cap-height", bottom-edge: "baseline", body)
 
 #let setup(body) = {
   set page(
