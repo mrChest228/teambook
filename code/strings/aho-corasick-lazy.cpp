@@ -1,8 +1,8 @@
 int to[N][K], go[N][K], suf[N], par[N], pc[N], sz = 1;
 
 void init() {
-    memset(go, -1, sizeof(go));
-    memset(suf, -1, sizeof(suf));
+    fill(&go[0][0], &go[0][0] + N * K, -1);
+    fill(suf, suf + N, -1);
 }
 int add(string &s) {
     int v = 0;

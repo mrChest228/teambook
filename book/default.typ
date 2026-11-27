@@ -12,7 +12,7 @@
 
 #import "@preview/codly:2.0.0" as codly
 // Border of line numbers and the cpp label
-#let code-stroke = 0.45pt + rgb("#777777")
+#let code-stroke = 0.7pt + rgb("#777777")
 #let frame-stroke = 1pt + rgb("#AAAAAA")
 #let code-radius = 3pt
 
