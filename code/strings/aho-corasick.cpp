@@ -1,6 +1,6 @@
 vector <int> q;
 map <char, int> to[N];
-int suf[N], cnt[N], sz = 1;
+int sf[N], cnt[N], sz = 1;
 
 int add(string &s) {
     int v = 0;
@@ -13,7 +13,7 @@ int add(string &s) {
 }
 int go(int v, char c) {
     while (v && !to[v].count(c))
-        v = suf[v];
+        v = sf[v];
     return to[v].count(c) ? to[v][c] : 0;
 }
 void build() {
@@ -21,7 +21,7 @@ void build() {
     for (int i = 0; i < q.size(); ++i) {
         int v = q[i];
         for (auto [c, u] : to[v]) {
-            suf[u] = v ? go(suf[v], c) : 0;
+            sf[u] = v ? go(sf[v], c) : 0;
             q.pb(u);
         }
     }
@@ -37,7 +37,7 @@ vector <int> occ(vector <string> &s, string &t) {
         ++cnt[v];
     }
     for (int i = q.size() - 1; i > 0; --i)
-        cnt[suf[q[i]]] += cnt[q[i]];
+        cnt[sf[q[i]]] += cnt[q[i]];
     for (int v : end)
         res.pb(cnt[v]);
     return res;

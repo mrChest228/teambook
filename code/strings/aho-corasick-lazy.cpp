@@ -1,7 +1,7 @@
-int to[N][K], go[N][K], suf[N], par[N], pc[N], cnt[N], sz = 1;
+int to[N][K], g[N][K], suf[N], par[N], pc[N], cnt[N], sz = 1;
 
 void init() {
-    fill(&go[0][0], &go[0][0] + N * K, -1);
+    fill(&g[0][0], &g[0][0] + N * K, -1);
     fill(suf, suf + N, -1);
 }
 int add(string &s) {
@@ -17,16 +17,16 @@ int add(string &s) {
     }
     return v;
 }
-int getGo(int v, int c);
-int getSuf(int v) {
+int go(int v, int c);
+int sf(int v) {
     if (suf[v] == -1)
-        suf[v] = par[v] ? getGo(getSuf(par[v]), pc[v]) : 0;
+        suf[v] = par[v] ? go(sf(par[v]), pc[v]) : 0;
     return suf[v];
 }
-int getGo(int v, int c) {
-    if (go[v][c] == -1)
-        go[v][c] = to[v][c] ? to[v][c] : (v ? getGo(getSuf(v), c) : 0);
-    return go[v][c];
+int go(int v, int c) {
+    if (g[v][c] == -1)
+        g[v][c] = to[v][c] ? to[v][c] : (v ? go(sf(v), c) : 0);
+    return g[v][c];
 }
 vector <int> occ(vector <string> &s, string &t) {
     vector <int> end, res;
@@ -39,11 +39,11 @@ vector <int> occ(vector <string> &s, string &t) {
                 q.pb(to[q[i]][c]);
     int v = 0;
     for (char c : t) {
-        v = getGo(v, c - 'a');
+        v = go(v, c - 'a');
         ++cnt[v];
     }
     for (int i = q.size() - 1; i > 0; --i)
-        cnt[getSuf(q[i])] += cnt[q[i]];
+        cnt[sf(q[i])] += cnt[q[i]];
     for (int v : end)
         res.pb(cnt[v]);
     return res;
