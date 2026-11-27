@@ -2,7 +2,7 @@
 #let gutter = 3.5mm
 #let cols-cnt = 3
 // Font sizes: headings of 3 levels and numbers at their start, main text, code
-#let font-sizes = (h1: 17pt, h2: 13pt, h3: 11pt, num1: 12pt, num2: 10pt, num3: 9pt, text: 7pt, code: 7pt, math-block: 9pt)
+#let font-sizes = (h1: 17pt, h2: 13pt, h3: 9.5pt, num1: 12pt, num2: 10pt, num3: 7.5pt, text: 7pt, code: 7pt, math-block: 9pt)
 // Code blocks: the cell of 7pt with -0.12pt tracking. Typst drops tracking at every colour/weight change, so columns drifted
 #let code-size = font-sizes.code * 0.9714
 // Inline formula is this times bigger than the text around it: its small variables (x, n) are as high as small letters of Georgia
@@ -12,11 +12,29 @@
 
 #import "@preview/codly:2.0.0" as codly
 // Border of line numbers and the cpp label
-#let code-stroke = 0.7pt + rgb("#777777")
+#let code-stroke = 0.8pt + rgb("#777777")
 #let frame-stroke = 1pt + rgb("#AAAAAA")
 #let code-radius = 3pt
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
+#let comment-gap = 2pt
+// $...$ in a comment is a Typst formula drawn with the comment font
+#let comment-math(s) = {
+  show math.equation: set text(font: ("Caveat", "New Computer Modern Math"), size: 9.5pt)
+  math.equation(math.upright(eval(s, mode: "math")))
+}
+// The // comment of a line of code: from the first // outside of string and char literals to the end
+#let comment-of(line) = {
+  let (quote, esc, prev, at) = (none, false, none, 0)
+  for c in line.clusters() {
+    if quote != none {
+      if esc { esc = false } else if c == "\\" { esc = true } else if c == quote { quote = none }
+    } else if c == "\"" or c == "'" { quote = c } else if c == "/" and prev == "/" { return line.slice(at - 1) }
+    prev = c
+    at += c.len()
+  }
+  none
+}
 #let bold-l(body, size: font-sizes.code) = {
   show "_": set text(baseline: -0.2em) // Courier New: from under the line to the bottom of o
   // Courier New glyph fixes: a dot in the centre of 0, * centred at + and -, punctuation centred in its cell.
@@ -50,6 +68,14 @@
     } else {
       [#t.slice(0, t.len() - k)#strong(t.slice(t.len() - k))]
     }
+  }
+  // Caveat letters stick out to the right of their width: every comment word ends comment-gap before the edge.
+  // In the middle the space is narrower by the gap, at a line break the space vanishes and the gap stays
+  // code-file ends lines with a comment with a space, so the gap is also after the last word
+  show text.where(fill: rgb("#505050")): it => {
+    show " ": h(comment-gap) + text(font: "Caveat", size: 9.5pt, fill: black, spacing: 100% - comment-gap, " ")
+    show regex("\\$[^$]+\\$"): m => comment-math(m.text.slice(1, -1))
+    it
   }
   body
 }
@@ -119,7 +145,8 @@
 
 
 // Inline code: does not change the line height
-#let code-file(path) = raw(read("/" + path).replace("\r\n", "\n").trim(at: end), lang: path.split(".").last(), block: true)
+#let code-file(path) = raw(read("/" + path).replace("\r\n", "\n").trim(at: end).split("\n")
+  .map(l => if comment-of(l) == none { l } else { l + " " }).join("\n"), lang: path.split(".").last(), block: true)
 
 #let code(str) = box(
   radius: 3pt,
@@ -147,7 +174,7 @@
 }
 
 // Page number as it is drawn in the corners
-#let page-num(body) = text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline", body)
+#let page-num(body) = text(font: "Times New Roman", size: 11pt, top-edge: "cap-height", bottom-edge: "baseline", body)
 
 #let setup(body) = {
   set page(
@@ -209,7 +236,7 @@
   show heading: it => block(above: 2.5pt, sticky: true, context {
     // At the top of the first column the page number covers the start of the heading: shift it
     let p = here().position()
-    if p.x < margin.x + 1pt and p.y < margin.y + 5pt {
+    if p.x < margin.x + 1pt and (p.y < margin.y + 5pt or p.y > page.height - margin.y - 12pt) {
       h(measure(page-num(counter(page).display())).width + 2pt)
     }
     // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
@@ -280,5 +307,6 @@
     it
   }
 
+  counter(page).update(0)
   body
 }

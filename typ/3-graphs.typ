@@ -1,20 +1,20 @@
-#import "../book/default.typ": *;#heading(depth: 1)[*3. #underline[Graphs]*]
+#import "../book/default.typ": *;#heading(depth: 1)[*3. #underline[Graphs];*]
 == *3.0. 2-SAT*#br
-#code-file("code/graphs/two-sat.cpp")#br
+#code-file("code/graphs/two-sat.cpp");#br
 == *3.1. Макс. поток (Диница)*#br
 С 2-ичными подъёмами потока: $O(n m log("maxCap"))$`
 `Без 2-ичных подъёмов: $O(n m^2)$`
-`#code-file("code/graphs/dinic.cpp")#br
+`#code-file("code/graphs/dinic.cpp");#br
 == *3.2. Макс. поток Мин. Стоимости*#br
 С 2-ичными подъёмами потока: $O(m^2 log(n) log("maxCap"))$`
 `Без 2-ичных подъёмов: $O(m "maxFlow" log(n))$`
-`#code-file("code/graphs/min-cost-flow.cpp")#br
+`#code-file("code/graphs/min-cost-flow.cpp");#br
 == *3.3. Макс. клика*#br
 Асимптотика: $O(3^(n div 3))$`
-`#code-file("code/graphs/max-clique.cpp")#br
+`#code-file("code/graphs/max-clique.cpp");#br
 == *3.4. Макс. парсоч. (Кун)*#br
 Асимптотика: $O(n m)$`
-`#code-file("code/graphs/kuhn.cpp")#br
+`#code-file("code/graphs/kuhn.cpp");#br
 == *3.5. Хеширование дерева*#br
 Корневой дерево можно захешировать такой функцией:`
 `$ h_v = 42+sum_(u) log(h_u) $`

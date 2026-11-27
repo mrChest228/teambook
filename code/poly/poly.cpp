@@ -7,10 +7,10 @@ void shrink(vector <int> &v) { // Убираем нули в конце
 
 template <int MOD, int G> // G - первообразный корень (обычно 3)
 struct Poly {
-    vector <int> inv1;
-    vector <int> rt; // rt[k + j] = w^j, где w^(2k) = 1: корни для блока длины 2k лежат подряд
+    int inv1[N + 1];
+    int rt[N]; // rt[k + j] = w^j, где w^(2k) = 1: корни для блока длины 2k лежат подряд
     int inv(int x) {
-        if (x < inv1.size())
+        if (x <= N)
             return inv1[x];
         return MOD - 1LL * MOD / x * inv(MOD % x) % MOD;
     }
@@ -22,11 +22,9 @@ struct Poly {
         return ans;
     }
     Poly() {
-        inv1.resize(N + 1);
         inv1[1] = 1;
         for (int i = 2; i <= N; ++i)
             inv1[i] = MOD - 1LL * MOD / i * inv1[MOD % i] % MOD;
-        rt.resize(N);
         for (int k = 1; k < N; k <<= 1) {
             int w = powm(G, (MOD - 1) / (k * 2));
             rt[k] = 1;

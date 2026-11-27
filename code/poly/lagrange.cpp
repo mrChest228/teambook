@@ -1,10 +1,14 @@
 // Коэффициенты многочлена степени < n по n точкам, O(n^2)
 // 0 <= p[i].f, p[i].s < mod, p[i].f разные. inv из 5.2
 // В ld: без % mod, inv(d) -> 1 / d, mod - x -> -x
+const int N = 5e3 + 9; // n < N
+long m[N], q[N];
+
 vector <long> lagrange(vector <pair <long, long>> &p) {
     int n = p.size();
-    vector <long> m(n + 1), q(n + 1), res(n);
-    m[0] = 1; // m = (X - p[0].f)...(X - p[n - 1].f)
+    vector <long> res(n);
+    fill(m, m + n + 1, 0);
+    m[0] = 1, q[n] = 0; // m = (X - p[0].f)...(X - p[n - 1].f)
     for (int i = 0; i < n; ++i) {
         long x = p[i].f;
         for (int j = i; j >= 0; --j) {

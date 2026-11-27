@@ -1,4 +1,4 @@
-= `        `*1. _C++_*
+= *1. _C++_*
 ~~#code-file("code/cpp/template.cpp")~~
 == *1.1. Data structures*
 ~~#code-file("code/cpp/data-structures.cpp")~~
