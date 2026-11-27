@@ -3,7 +3,7 @@ int r;
 
 bool add(ulong x) {
     for (int i = 63; i >= 0; --i)
-        if (x >> i & ulong(1)) {
+        if (x >> i & 1) {
             if (b[i])
                 x ^= b[i];
             else {
@@ -27,12 +27,12 @@ ulong kth(ulong k) {
     for (int i = 63; i >= 0; --i)
         if (c[i])
             for (int j = i + 1; j < 64; ++j)
-                if (c[j] >> i & ulong(1))
+                if (c[j] >> i & 1)
                     c[j] ^= c[i];
     ulong ans = 0;
     for (int i = 0, bit = 0; i < 64; ++i)
         if (c[i]) {
-            if (k >> bit & ulong(1))
+            if (k >> bit & 1)
                 ans ^= c[i];
             ++bit;
         }
