@@ -108,7 +108,7 @@ struct Poly {
     // ln(A). a[0] == 1
     vector <int> ln(vector <int> &a) {
         assert(a[0] == 1);
-        vector <int> da = deriv(a), ia = inv(a), res = mult(da, ia); // A' * (1/A)
+        vector <int> res = mult(deriv(a), inv(a)); // A' * (1/A)
         res.resize(a.size() - 1);
         return integ(res);
     }

@@ -1,9 +1,9 @@
 struct point {
     long x, y;
-    point operator+(point &a) { return {x + a.x, y + a.y}; }
-    point operator-(point &a) { return {x - a.x, y - a.y}; }
-    long cross(point &a) { return x * a.y - y * a.x; }
-    long dot(point &a) { return x * a.x + y * a.y; }
+    point operator+(point a) { return {x + a.x, y + a.y}; }
+    point operator-(point a) { return {x - a.x, y - a.y}; }
+    long cross(point a) { return x * a.y - y * a.x; }
+    long dot(point a) { return x * a.x + y * a.y; }
     long len2() { return x * x + y * y; }
 };
 
@@ -12,11 +12,9 @@ void normalize(vector <point> &p) { // Убираем точки на сторо
     if (n < 3) // Точка или отрезок
         return;
     vector <point> res;
-    for (int i = 0; i < n; i++) {
-        point a = p[i] - p[(i + n - 1) % n], b = p[(i + 1) % n] - p[i];
-        if (a.cross(b) != 0)
+    for (int i = 0; i < n; i++)
+        if ((p[i] - p[(i + n - 1) % n]).cross(p[(i + 1) % n] - p[i]) != 0)
             res.pb(p[i]);
-    }
     p = res;
 }
 
@@ -38,22 +36,19 @@ vector <point> minkowski(vector <point> a, vector <point> b) {
     int i = 0, j = 0;
     while (i < a.size() || j < b.size()) {
         if (i == a.size()) {
-            point edge = b[(j + 1) % b.size()] - b[j];
-            res.pb(res.back() + edge);
+            res.pb(res.back() + b[(j + 1) % b.size()] - b[j]);
             ++j;
             continue;
         }
         if (j == b.size()) {
-            point edge = a[(i + 1) % a.size()] - a[i];
-            res.pb(res.back() + edge);
+            res.pb(res.back() + a[(i + 1) % a.size()] - a[i]);
             ++i;
             continue;
         }
         point edgeA = a[(i + 1) % a.size()] - a[i], edgeB = b[(j + 1) % b.size()] - b[j];
         long cp = edgeA.cross(edgeB);
 
-        point edge = cp < 0 ? edgeA : (cp > 0 ? edgeB : edgeA + edgeB);
-        res.pb(res.back() + edge);
+        res.pb(res.back() + (cp < 0 ? edgeA : (cp > 0 ? edgeB : edgeA + edgeB)));
 
         if (cp <= 0) ++i;
         if (cp >= 0) ++j;
