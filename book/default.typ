@@ -126,7 +126,10 @@
   inset: (x: 2pt),
   outset: (y: 1.8pt),
   fill: code-fill,
-  text(font: "Courier New", size: font-sizes.code, bold-l(str))
+  {
+    show "—": "-" // undo the dash rule of the text
+    text(font: "Courier New", size: font-sizes.code, bold-l(str))
+  }
 )
 
 // Long table cut into `parts` tables standing in a row, each one repeats the header
