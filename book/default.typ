@@ -230,7 +230,7 @@
   show heading: it => block(above: 2.5pt, sticky: true, context {
     // At the top of the first column the page number covers the start of the heading: shift it
     let p = here().position()
-    if p.x < margin.x + 1pt and p.y < margin.y + 5pt {
+    if p.x < margin.x + 1pt and (p.y < margin.y + 5pt or p.y > page.height - margin.y - 12pt) {
       h(measure(page-num(counter(page).display())).width + 2pt)
     }
     // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
