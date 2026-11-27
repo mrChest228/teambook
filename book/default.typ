@@ -17,6 +17,19 @@
 #let code-radius = 3pt
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
+#let comment-gap = 2pt
+// The // comment of a line of code: from the first // outside of string and char literals to the end
+#let comment-of(line) = {
+  let (quote, esc, prev, at) = (none, false, none, 0)
+  for c in line.clusters() {
+    if quote != none {
+      if esc { esc = false } else if c == "\\" { esc = true } else if c == quote { quote = none }
+    } else if c == "\"" or c == "'" { quote = c } else if c == "/" and prev == "/" { return line.slice(at - 1) }
+    prev = c
+    at += c.len()
+  }
+  none
+}
 #let bold-l(body, size: font-sizes.code) = {
   show "_": set text(baseline: -0.2em) // Courier New: from under the line to the bottom of o
   // Courier New glyph fixes: a dot in the centre of 0, * centred at + and -, punctuation centred in its cell.
@@ -50,6 +63,13 @@
     } else {
       [#t.slice(0, t.len() - k)#strong(t.slice(t.len() - k))]
     }
+  }
+  // Caveat letters stick out to the right of their width: every comment word ends comment-gap before the edge.
+  // In the middle the space is narrower by the gap, at a line break the space vanishes and the gap stays
+  // code-file ends lines with a comment with a space, so the gap is also after the last word
+  show text.where(fill: rgb("#505050")): it => {
+    show " ": h(comment-gap) + text(font: "Caveat", size: 9.5pt, fill: black, spacing: 100% - comment-gap, " ")
+    it
   }
   body
 }
@@ -119,7 +139,8 @@
 
 
 // Inline code: does not change the line height
-#let code-file(path) = raw(read("/" + path).replace("\r\n", "\n").trim(at: end), lang: path.split(".").last(), block: true)
+#let code-file(path) = raw(read("/" + path).replace("\r\n", "\n").trim(at: end).split("\n")
+  .map(l => if comment-of(l) == none { l } else { l + " " }).join("\n"), lang: path.split(".").last(), block: true)
 
 #let code(str) = box(
   radius: 3pt,
