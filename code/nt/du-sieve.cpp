@@ -1,68 +1,40 @@
+const int MOD = 1e9 + 7, S = 5e6 + 9, B = 1e5 + 9; // S ~ n^(2 / 3), B > n / S
+int bigMu[B], bigPhi[B]; // суммы в точках n / d > S, индекс d
+signed lp[S], sumMu[S], sumPhi[S]; // sumMu[x] = mu(1) + ... + mu(x) по модулю, sumPhi так же
 vector <int> primes;
-const int S = 5e6 + 9;
-vector <int> prefMu, prefPhi;
-unordered_map <int, int> memoM, memoPhi;
 
-void init() {
-    primes.clear();
-    vector <int> lp(S), mu(S), phi(S);
-    prefMu.assign(S, 0);
-    prefPhi.assign(S, 0);
-    mu[1] = phi[1] = 1;
+void init() { // линейное решето: сначала в массивах сами mu(i) и phi(i), затем префиксные суммы
+    iota(lp, lp + S, 0);
+    sumMu[1] = sumPhi[1] = 1;
     for (int i = 2; i < S; ++i) {
-        if (!lp[i]) {
-            lp[i] = i;
+        if (lp[i] == i)
             primes.pb(i);
-            mu[i] = -1;
-            phi[i] = i - 1;
-        }
-        for (int p : primes) {
-            if (p > lp[i] || i * p >= S)
-                break;
-            lp[i * p] = p;
-            if (p == lp[i]) {
-                mu[i * p] = 0;
-                phi[i * p] = phi[i] * p;
-                break;
-            }
-            mu[i * p] = -mu[i];
-            phi[i * p] = phi[i] * (p - 1);
-        }
+        for (int j = 0; j < primes.size() && primes[j] <= lp[i] && i * primes[j] < S; ++j)
+            lp[i * primes[j]] = primes[j];
+        int p = lp[i], t = i / p;
+        sumMu[i] = t % p ? -sumMu[t] : 0;
+        sumPhi[i] = t % p ? sumPhi[t] * (p - 1) : sumPhi[t] * p;
     }
-    for (int i = 1; i < S; ++i) {
-        prefMu[i] = prefMu[i - 1] + mu[i];
-        prefPhi[i] = prefPhi[i - 1] + phi[i];
+    for (int i = 2; i < S; ++i) {
+        sumMu[i] = (sumMu[i] + sumMu[i - 1] + MOD) % MOD;
+        sumPhi[i] = (sumPhi[i] + sumPhi[i - 1]) % MOD;
     }
-    memoM.clear();
-    memoPhi.clear();
 }
-
-int M(int n) {
-    if (n <= 0)
-        return 0;
+// Суммы mu и phi по 1 <= i <= n по модулю, нужен init(). Точки x = n / d идут по возрастанию,
+// поэтому все нужные меньшие точки x / l = n / (d l) уже посчитаны
+pair <int, int> sumMuPhi(int n) {
     if (n < S)
-        return prefMu[n];
-    if (memoM.count(n))
-        return memoM[n];
-    int ans = 1;
-    for (int l = 2, r; l <= n; l = r + 1) {
-        r = n / (n / l);
-        ans -= (r - l + 1) * M(n / l);
+        return {sumMu[n], sumPhi[n]};
+    for (int d = n / S; d > 0; --d) {
+        int x = n / d, mu = 1, phi = x % MOD * ((x + 1) % MOD) % MOD * ((MOD + 1) / 2) % MOD;
+        for (int l = 2, r; l <= x; l = r + 1) {
+            r = x / (x / l);
+            int cnt = (r - l + 1) % MOD, big = d * l <= n / S;
+            mu = (mu + (MOD - cnt) * (big ? bigMu[d * l] : sumMu[x / l])) % MOD;
+            phi = (phi + (MOD - cnt) * (big ? bigPhi[d * l] : sumPhi[x / l])) % MOD;
+        }
+        bigMu[d] = mu;
+        bigPhi[d] = phi;
     }
-    return memoM[n] = ans;
-}
-
-int Phi(int n) { // точная сумма помещается в long при n <= ~5e9
-    if (n <= 0)
-        return 0;
-    if (n < S)
-        return prefPhi[n];
-    if (memoPhi.count(n))
-        return memoPhi[n];
-    __int128 ans = __int128(n) * (n + 1) / 2;
-    for (int l = 2, r; l <= n; l = r + 1) {
-        r = n / (n / l);
-        ans -= __int128(r - l + 1) * Phi(n / l);
-    }
-    return memoPhi[n] = int(ans);
+    return {bigMu[1], bigPhi[1]};
 }
