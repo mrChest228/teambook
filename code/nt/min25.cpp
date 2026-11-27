@@ -3,7 +3,7 @@ const int MOD = 1e9 + 7, K = 2;
 int c[K] = {MOD - 1, 1}; // f(p) = c[0] + c[1] p + ... + c[K - 1] p^(K - 1), здесь phi: p - 1
 vector <int> w, primes, sp[K], g[K]; // g[k][id(x)] - сумма p^k по простым p <= x, sp[k][j] - по первым j простым
 
-int f(int p, int e, int pe) { // f(p^e), pe = p^e, здесь phi
+int f(int p, int e, int pe) { // f(p^e) по модулю MOD, pe = p^e, здесь phi
     return (pe - pe / p) % MOD;
 }
 int sumPow(int x, int k) { // сумма i^k по 2 <= i <= x, k <= 2
