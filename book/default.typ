@@ -14,6 +14,7 @@
 // Border of line numbers and the cpp label
 #let code-stroke = 0.8pt + rgb("#777777")
 #let frame-stroke = 1pt + rgb("#AAAAAA")
+#let badge-shift = (x: -1.2pt, y: 1.9pt) // Label of the language from the top right corner of the code
 #let code-radius = 3pt
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
@@ -131,7 +132,7 @@
         align: right + horizon, // Digits stay under each other: 9 and 10
         width: width, inset: inset
       ),),
-        header: code-cap(true, separator-x: width, gutter-fill: gutter-fills.at(1), code-paint: row-fills.at(1)),
+        header: place(top + right, [#metadata(none)<code-corner>]) + code-cap(true, separator-x: width, gutter-fill: gutter-fills.at(1), code-paint: row-fills.at(1)),
         footer: code-cap(false, y: bottom, separator-x: width,
           gutter-fill: gutter-fills.at(last-index), code-paint: row-fills.at(last-index)),
       )
@@ -278,14 +279,12 @@
     number-enabled: false, // Line numbers are a gutter column of code-frame
     header: code-cap(true), // Not repeated on breaks
     footer: code-cap(false),
+    lang-position: none, // Drawn by the lines
     indent-guides: (width: 4, color: luma(40%).transparentize(40%), thickness: 0.3pt)
   )
   show: codly.header-set_(repeat: false, inset: (x: 0pt, y: 0pt, bottom: 1pt), fill: none, stroke: none)
   show: codly.footer-set_(repeat: false, inset: (x: 0pt, y: 0pt, top: 1pt), fill: none, stroke: none)
   show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (left: 0.3pt, right: -1pt, y: 1.07pt))
-  // The label hangs from the top border, not bound to the first line
-  show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
-    radius: 1.5pt, align: right + top, outset: (x: -1.2pt, y: 0pt))
   set raw(theme: "/BW.tmTheme", tab-size: 4)
   // Not show text: it would override the font of the dotted 0 in bold-l
   show raw.where(block: true): set text(font: "Courier New", size: code-size)
@@ -303,7 +302,29 @@
       return
     }
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
-    show raw.line: bold-l.with(size: code-size) // codly renders lines outside of the rules of the raw, so the fixes go on each line
+    // codly renders lines outside of the rules of the raw, so the fixes go on each line
+    // The label of the language hangs from the top right corner of the block (mark in code-cap). codly draws its
+    // label before the lines, under the comments, so the last line that can touch it draws it instead:
+    // line 2 if it is in the column of the corner, else line 1
+    show raw.line: l => {
+      if l.number <= 2 {
+        let mark = if l.number == 1 { <code-line-1> } else { <code-line-2> }
+        let badge = box(fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt), radius: 1.5pt,
+          text(font: "Courier New", size: code-size, fill: black, weight: "regular", it.lang))
+        // Empty box: on the baseline, not a part of the line
+        box(context {
+          let at = here().position()
+          let pos(marks, i) = if marks.len() > 0 { marks.at(i).location().position() }
+          let corner = pos(query(selector(<code-corner>).before(here())), -1)
+          if corner == none { return } // Measured by codly
+          let same(p) = p.page == corner.page and p.x < corner.x and p.y >= corner.y
+          let second = if l.count > 1 { pos(query(selector(<code-line-2>).after(here(), inclusive: true)), 0) }
+          if (l.number == 2) != (second != none and same(second)) { return }
+          place(top + left, dx: corner.x - at.x - measure(badge).width + badge-shift.x, dy: corner.y - at.y + badge-shift.y, badge)
+        } + [#metadata(none)#mark])
+      }
+      bold-l(l, size: code-size)
+    }
     it
   }
 
