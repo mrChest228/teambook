@@ -1,11 +1,10 @@
 const int MX = 2e5 + 9, H = __lg(MX - 1) + 1;
 int mid[H]; // mid[i] - нулей на уровне i
-vector <int> b[H]; // b[i][j] - единиц среди первых j на уровне i
+int b[H][MX]; // b[i][j] - единиц среди первых j на уровне i
 
 void build(vector <int> a) {
     for (int i = 0; i < H; ++i) {
         int bit = H - 1 - i;
-        b[i].assign(a.size() + 1, 0);
         for (int j = 0; j < a.size(); ++j)
             b[i][j + 1] = b[i][j] + (a[j] >> bit & 1);
         mid[i] = a.size() - b[i][a.size()];
