@@ -1,4 +1,4 @@
-vector <int> manacher(const string &s) {
+vector <int> manacher(string &s) {
     string t;
     for (char x : s) {
         if (t.size())
@@ -8,7 +8,7 @@ vector <int> manacher(const string &s) {
     int m = t.size();
     vector <int> d(m);
     for (int i = 1, mx = 1; i < m; ++i) { // mx: центр самого правого
-        int k = max(0, min(d[2 * mx - i], mx + d[mx] - i));
+        int k = max(int(0), min(d[2 * mx - i], mx + d[mx] - i));
         while (k < i && i + k + 1 < m &&
                t[i - k - 1] == t[i + k + 1])
             ++k;
