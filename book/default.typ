@@ -280,5 +280,6 @@
     it
   }
 
+  counter(page).update(0)
   body
 }
