@@ -5,7 +5,10 @@
 #code-file("code/strings/prefix-function.cpp")#br
 == *4.2.` `Манакер*#br
 #code-file("code/strings/manacher.cpp")#br
-== *4.3.` `Суффиксный` `массив` `+` `LCP*#br
+== *4.3.` `Ахо–Корасик*#br
+a) $O(N log(K))$ по времени и $O(N)$ памяти; b) $O(N K)$ по времени и памяти.`
+`#code-file("code/strings/aho-corasick.cpp")#br
+== *4.4.` `Суффиксный` `массив` `+` `LCP*#br
 #code("sf")` `-` `суфф.` `массив,` `#code("num[i]")` `-` `позиция` `суффикса` `#code("i")` `в` `#code("sf"),` `#code("lcp[i]")` `-` `lcp` `суффиксов` `#code("sf[i]")` `и` `#code("sf[i + 1]").` `$O(n log(n))$.`
 `lcp` `суффиксов` `#code("i"),` `#code("j")` `за` `$O(1)$:` `разреженная` `таблица` `по` `#code("lcp"),` `ответ` `#code("min(lcp[L..R - 1])"),` `где` `#code("L = min(num[i], num[j])"),` `#code("R = max(num[i], num[j])").`
 `#code-file("code/strings/suffix-array.cpp")``
