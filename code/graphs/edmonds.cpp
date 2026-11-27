@@ -76,13 +76,10 @@ int edmonds(int n) {
                 continue;
             ++ans;
             while (v != -1) {
-                int pv = p[v];
-                int next = pv == -1 ? -1 : match[pv];
-                if (pv != -1) {
-                    match[v] = pv;
-                    match[pv] = v;
-                }
-                v = next;
+                int pv = p[v], nv = match[pv];
+                match[v] = pv;
+                match[pv] = v;
+                v = nv;
             }
         }
     return ans;

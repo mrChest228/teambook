@@ -1,4 +1,4 @@
-const int MOD = 998244353;
+const int MOD = 998'244'353;
 
 void fwht(vector <int> &a, bool inverse) {
     int n = a.size();
