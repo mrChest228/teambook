@@ -6,7 +6,7 @@ int id(int x) {
     return x <= sq ? int(w.size()) - x : n / x - 1;
 }
 
-// f(p^k), pk = p^k; заменить для другой функции
+// f(p^k), pk = p^k; для другой f заменить и f(p) = p - 1 в g1 - g0 и pref
 int f(int p, int pk) {
     return (pk - pk / p) % MOD;
 }
@@ -20,8 +20,7 @@ int calc(int x, int j) {
     for (int i = j; i < primes.size() && primes[i] <= x / primes[i]; ++i) {
         int p = primes[i];
         for (int pk = p; pk <= x / p; pk *= p) {
-            int q = pk * p;
-            ans = (ans + f(p, pk) * calc(x / pk, i + 1) + q - pk) % MOD;
+            ans = (ans + f(p, pk) * calc(x / pk, i + 1) + f(p, pk * p)) % MOD;
         }
     }
     return ans;
