@@ -89,8 +89,11 @@ void primeSum() {
         for (int d = 1; d <= m; ++d)
             res[d] = (res[d] + c[k] * big[d]) % MOD;
     }
-    for (int i = 2; i <= y; ++i)
-        pr[i] = (pr[i - 1] + (lp[i] == i) * fv[i]) % MOD;
+    for (int i = 2; i <= y; ++i) {
+        pr[i] = pr[i - 1];
+        for (int k = 0; k < K && lp[i] == i; ++k)
+            pr[i] = (pr[i] + c[k] * pw(i, k)) % MOD;
+    }
 }
 int min25(int N) { // сумма f(i) по 1 <= i <= N
     if (N < 2)
