@@ -1,6 +1,6 @@
-const int MX = 2e5 + 9, H = __lg(MX - 1) + 1;
+const int N = 2e5 + 9, MX = 2e5 + 9, H = __lg(MX - 1) + 1; // длина < N, значения < MX
 int mid[H]; // mid[i] - нулей на уровне i
-int b[H][MX]; // b[i][j] - единиц среди первых j на уровне i
+int b[H][N]; // b[i][j] - единиц среди первых j на уровне i
 
 void build(vector <int> a) {
     for (int i = 0; i < H; ++i) {
