@@ -1,4 +1,4 @@
-int to[N][K], go[N][K], suf[N], par[N], pc[N], sz = 1;
+int to[N][K], go[N][K], suf[N], par[N], pc[N], cnt[N], sz = 1;
 
 void init() {
     fill(&go[0][0], &go[0][0] + N * K, -1);
@@ -27,4 +27,24 @@ int getGo(int v, int c) {
     if (go[v][c] == -1)
         go[v][c] = to[v][c] ? to[v][c] : (v ? getGo(getSuf(v), c) : 0);
     return go[v][c];
+}
+vector <int> occ(vector <string> &s, string &t) {
+    vector <int> end, res;
+    for (string &x : s)
+        end.pb(add(x));
+    vector <int> q = {0};
+    for (int i = 0; i < q.size(); ++i)
+        for (int c = 0; c < K; ++c)
+            if (to[q[i]][c])
+                q.pb(to[q[i]][c]);
+    int v = 0;
+    for (char c : t) {
+        v = getGo(v, c - 'a');
+        ++cnt[v];
+    }
+    for (int i = q.size() - 1; i > 0; --i)
+        cnt[getSuf(q[i])] += cnt[q[i]];
+    for (int v : end)
+        res.pb(cnt[v]);
+    return res;
 }
