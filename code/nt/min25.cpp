@@ -68,6 +68,8 @@ void init(int N) { // точки и линейное решето до y ~ n^(2 
 void primeSum() {
     fill(res, res + m + 1, 0);
     for (int k = 0; k < K; ++k) {
+        if (!c[k])
+            continue;
         fw[1] = pr[1] = 0; // сначала в сумме все i^k, i >= 2
         for (int i = 2; i <= y; ++i) {
             fw[i] = pw(i, k);
