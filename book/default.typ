@@ -146,6 +146,9 @@
   ))
 }
 
+// Page number as it is drawn in the corners
+#let page-num(body) = text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline", body)
+
 #let setup(body) = {
   set page(
     paper: "a4",
@@ -180,8 +183,7 @@
     // Page number in all 4 corners, so it is seen when most of the page is covered.
     // It overlaps the text a bit, so it has a white outline.
     foreground: context {
-      set text(font: "Times New Roman", size: font-sizes.h3, top-edge: "cap-height", bottom-edge: "baseline")
-      let num = counter(page).display()
+      let num = page-num(counter(page).display())
       for corner in (top + left, top + right, bottom + left, bottom + right) {
         place(
           corner,
@@ -204,7 +206,12 @@
   set par(leading: 2.5pt)
   // A hyphen that is a separate word is a dash
   show regex("(^|\\s)-(\\s|$)"): m => m.text.replace("-", "—")
-  show heading: it => block(above: 2.5pt, sticky: true, {
+  show heading: it => block(above: 2.5pt, sticky: true, context {
+    // At the top of the first column the page number covers the start of the heading: shift it
+    let p = here().position()
+    if p.x < margin.x + 1pt and p.y < margin.y + 5pt {
+      h(measure(page-num(counter(page).display())).width + 2pt)
+    }
     // The number at the start: smaller thin italic, a bit lighter than black. The font is in fonts/
     show regex("^\\d+(\\.\\d+)*\\."): n => strong(delta: -300, text(font: "Old Standard TT", style: "italic",
       size: font-sizes.at("num" + str(it.depth)), slashed-zero: false, fill: rgb("#4d4d4d"), n))
