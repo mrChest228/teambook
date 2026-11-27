@@ -86,9 +86,7 @@ string solve(const string &text, int l, int r) {
     for (int i = l; i < r; ++i)
         for (int j = 0; j < tokens.size(); ++j)
             if (i + tokens[j][0].size() <= r && text.substr(i, tokens[j][0].size()) == tokens[j][0] &&
-                (j < firstHeading || i == 0 || text[i - 1] == '\n') &&
-                (j != underline || i == l || !isalnum(static_cast<unsigned char>(text[i - 1])) ||
-                 i + 1 == r || !isalnum(static_cast<unsigned char>(text[i + 1])))) { // Headings start a line
+                (j < firstHeading || i == 0 || text[i - 1] == '\n')) { // Headings start a line
                 int k = i + tokens[j][0].size();
                 while (k + tokens[j][1].size() <= r && text.substr(k, tokens[j][1].size()) != tokens[j][1])
                     ++k;
@@ -113,7 +111,8 @@ string solve(const string &text, int l, int r) {
                     close = "]";
                 }
                 int next = k + tokens[j][1].size();
-                if (j == inlineCode || j == underline || j == typstFun)
+                if (j == inlineCode || j == underline ||
+                    (j == typstFun && !inner.starts_with("#include ")))
                     close += ";";
                 if (j >= firstHeading && i == 0 && k < r && text[k] == '\n')
                     return pref + open + inner + close + "\n" + solve(text, next, r);

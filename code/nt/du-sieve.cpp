@@ -5,8 +5,7 @@ unordered_map <int, int> memoM, memoPhi;
 
 void init() {
     primes.clear();
-    vector <int> lp(S);
-    vector <int> mu(S), phi(S);
+    vector <int> lp(S), mu(S), phi(S);
     prefMu.assign(S, 0);
     prefPhi.assign(S, 0);
     mu[1] = phi[1] = 1;
@@ -36,8 +35,6 @@ void init() {
     }
     memoM.clear();
     memoPhi.clear();
-    memoM.reserve(100'000);
-    memoPhi.reserve(100'000);
 }
 
 int M(int n) {
@@ -45,9 +42,8 @@ int M(int n) {
         return 0;
     if (n < S)
         return prefMu[n];
-    auto it = memoM.find(n);
-    if (it != memoM.end())
-        return it->second;
+    if (memoM.count(n))
+        return memoM[n];
     int ans = 1;
     for (int l = 2, r; l <= n; l = r + 1) {
         r = n / (n / l);
@@ -61,13 +57,12 @@ int Phi(int n) { // точная сумма помещается в long при 
         return 0;
     if (n < S)
         return prefPhi[n];
-    auto it = memoPhi.find(n);
-    if (it != memoPhi.end())
-        return it->second;
-    __int128 ans = (__int128)n * (n + 1) / 2;
+    if (memoPhi.count(n))
+        return memoPhi[n];
+    __int128 ans = __int128(n) * (n + 1) / 2;
     for (int l = 2, r; l <= n; l = r + 1) {
         r = n / (n / l);
-        ans -= (__int128)(r - l + 1) * Phi(n / l);
+        ans -= __int128(r - l + 1) * Phi(n / l);
     }
-    return memoPhi[n] = (int)ans;
+    return memoPhi[n] = int(ans);
 }

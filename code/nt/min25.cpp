@@ -6,11 +6,12 @@ int id(int x) {
     return x <= sq ? int(w.size()) - x : n / x - 1;
 }
 
-int phiPrimePower(int p, int pk) {
+// f(p^k), pk = p^k; заменить для другой функции
+int f(int p, int pk) {
     return (pk - pk / p) % MOD;
 }
 
-int min25Rec(int x, int j) {
+int calc(int x, int j) {
     if (x < 2 || (j < primes.size() && primes[j] > x))
         return 0;
     int ans = (g1[id(x)] - g0[id(x)] - pref[j]) % MOD;
@@ -20,7 +21,7 @@ int min25Rec(int x, int j) {
         int p = primes[i];
         for (int pk = p; pk <= x / p; pk *= p) {
             int q = pk * p;
-            ans = (ans + phiPrimePower(p, pk) * min25Rec(x / pk, i + 1) + q - pk) % MOD;
+            ans = (ans + f(p, pk) * calc(x / pk, i + 1) + q - pk) % MOD;
         }
     }
     return ans;
@@ -77,5 +78,5 @@ int min25(int N) {
     pref.pb(0);
     for (int p : primes)
         pref.pb((pref.back() + p - 1) % MOD);
-    return (1 + min25Rec(n, 0)) % MOD;
+    return (1 + calc(n, 0)) % MOD;
 }
