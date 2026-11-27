@@ -31,7 +31,7 @@ int kth(int l, int r, int k) { // k-е по возрастанию на [l, r), 
     }
     return ans;
 }
-int cnt(int l, int r, int x) { // кол-во < x на [l, r)
+int cnt(int l, int r, int x) { // кол-во < x на [l, r), x >= 0
     if (x >> H)
         return r - l;
     int ans = 0;
