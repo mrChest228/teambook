@@ -1,4 +1,4 @@
-#import "../book/default.typ": *;#heading(depth: 1)[_`        `_*1. #underline[C++];*]
+#import "../book/default.typ": *;#heading(depth: 1)[*1. #underline[C++];*]
 #code-file("code/cpp/template.cpp");#br
 == *1.1. Data structures*#br
 #code-file("code/cpp/data-structures.cpp");#br
