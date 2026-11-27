@@ -62,5 +62,5 @@ int min25(int N) { // сумма f(i) по 1 <= i <= N
             sp[k].pb((sp[k].back() + pk) % MOD);
         }
     }
-    return (1 + calc(n, 0)) % MOD;
+    return (calc(n, 0) + (n > 0)) % MOD;
 }
