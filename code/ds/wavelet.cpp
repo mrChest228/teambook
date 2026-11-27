@@ -1,4 +1,4 @@
-const int MX = 200'000, H = __lg(MX - 1) + 1; // значения в [0, MX)
+const int MX = 2e5 + 9, H = __lg(MX - 1) + 1; // значения в [0, MX)
 int mid[H]; // mid[i] - нулей на уровне i
 vector <int> b[H]; // b[i][j] - единиц среди первых j на уровне i
 
