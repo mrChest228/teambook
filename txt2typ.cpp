@@ -63,15 +63,19 @@ string escape(const string &str) {
     return ans;
 }
 
+// A single space stays a space of the text, repeated spaces and enters go into raw, so they are not merged
 string normalSpaces(const string str) {
     string ans;
-    for (char c : str) {
-        if ((c == ' ' || c == '\n') != (ans.size() && (ans.back() == ' ' || ans.back() == '\n')))
-            ans.pb('`');
-        ans.pb(c);
+    for (int i = 0, j = 0; i < str.size(); i = j) {
+        while (j < str.size() && (str[j] == ' ' || str[j] == '\n'))
+            ++j;
+        if (j == i)
+            ans.pb(str[j++]);
+        elif (j - i == 1 && str[i] == ' ')
+            ans.pb(' ');
+        else
+            ans += '`' + str.substr(i, j - i) + '`';
     }
-    if (ans.size() && (ans.back() == ' ' || ans.back() == '\n'))
-        ans.pb('`');
     return ans;
 }
 
