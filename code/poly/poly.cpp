@@ -74,7 +74,7 @@ struct Poly {
         return a;
     }
 
-    vector <int> deriv(const vector <int> &a) { // A'(x)
+    vector <int> deriv(vector <int> &a) { // A'(x)
         if (!a.size())
             return {};
         vector <int> res(a.size() - 1);
@@ -82,14 +82,14 @@ struct Poly {
             res[i] = 1LL * a[i + 1] * (i + 1) % MOD;
         return res;
     }
-    vector <int> integ(const vector <int> &a) {
+    vector <int> integ(vector <int> &a) {
         vector <int> res(a.size() + 1);
         for (int i = 1; i <= a.size(); ++i)
             res[i] = 1LL * a[i - 1] * inv(i) % MOD;
         return res;
     }
     // 1 / A. a[0] != 0
-    vector <int> inv(const vector <int> &a) {
+    vector <int> inv(vector <int> &a) {
         vector <int> b = { inv(a[0]) };
         for (int m = 2;; m <<= 1) {
             vector <int> sub(a.begin(), a.begin() + min(int(a.size()), m));
@@ -106,14 +106,14 @@ struct Poly {
         return b;
     }
     // ln(A). a[0] == 1
-    vector <int> ln(const vector <int> &a) {
+    vector <int> ln(vector <int> &a) {
         assert(a[0] == 1);
         vector <int> res = mult(deriv(a), inv(a)); // A' * (1/A)
         res.resize(a.size() - 1);
         return integ(res);
     }
     // exp(A). A[0] == 0
-    vector <int> exp(const vector <int> &a) {
+    vector <int> exp(vector <int> &a) {
         assert(a[0] == 0);
         vector <int> b = {1};
         for (int m = 2;; m <<= 1) {
@@ -134,7 +134,7 @@ struct Poly {
         int sz = a.size(), deg = sz - 1, n = 1, cnt0 = 0;
         while (deg > 0 && a[deg] == 0)
             --deg;
-        if (k <= (sz - 1) / max(deg, 1)) { // A^k помещается целиком: возводим в степень каждое значение
+        if (k <= (sz - 1) / max(deg, int(1))) { // A^k помещается целиком: возводим в степень каждое значение
             while (n < sz)
                 n <<= 1;
             a.resize(n);
@@ -189,7 +189,7 @@ struct Poly {
         return res;
     }
     // A = Q * B + R. В Q a.size() - b.size() + 1 коэффициентов, в R - b.size() - 1. b.back() != 0
-    pair <vector <int>, vector <int>> divMod(const vector <int> &a, const vector <int> &b) {
+    pair <vector <int>, vector <int>> divMod(vector <int> &a, vector <int> &b) {
         assert(b.back() != 0);
         int n = a.size(), m = b.size();
         if (n < m)
