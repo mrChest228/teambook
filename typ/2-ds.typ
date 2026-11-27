@@ -10,4 +10,7 @@
 == *2.4. Дерево Ли Чао*#br
 #code-file("code/ds/li-chao.cpp")#br
 == *2.5. Euler Tour Tree*#br
-#code-file("code/ds/euler-tour-tree.cpp")``
+#code-file("code/ds/euler-tour-tree.cpp")#br
+== *2.6. Wavelet tree*#br
+На $[l, r)$ за $O(log(sigma))$: $k$-я порядковая статистика, кол-во чисел $< x$. Память $O(n log(sigma))$, значения заранее сжать в $[0, sigma)$.`
+`#code-file("code/ds/wavelet.cpp")``
