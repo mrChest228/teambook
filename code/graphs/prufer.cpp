@@ -40,7 +40,6 @@ vector <pair <int, int>> unprufer(vector <int> &code) {
         ++ptr;
     int leaf = ptr;
     vector <pair <int, int>> e;
-    e.reserve(n - 1);
     for (int v : code) {
         e.pb({leaf, v});
         --deg[leaf];
@@ -53,14 +52,6 @@ vector <pair <int, int>> unprufer(vector <int> &code) {
             leaf = ptr;
         }
     }
-    int x = -1, y = -1;
-    for (int v = 0; v < n; ++v)
-        if (deg[v] == 1) {
-            if (x == -1)
-                x = v;
-            else
-                y = v;
-        }
-    e.pb({x, y});
+    e.pb({leaf, n - 1});
     return e;
 }
