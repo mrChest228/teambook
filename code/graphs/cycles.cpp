@@ -17,61 +17,55 @@ int cycles(int n, vector <pair <int, int>> &e) {
                 order.pb(u);
             }
     }
-    vector <int> tree(m), extra;
-    for (int v = 1; v < n; ++v)
-        tree[pe[v]] = 1;
+    vector <int> extra;
     for (int i = 0; i < m; ++i)
-        if (!tree[i])
+        if (pe[e[i].f] != i && pe[e[i].s] != i)
             extra.pb(i);
 
     int k = extra.size(), ans = 0;
-    vector <int> mask(k);
-    while (true) {
-        int bit = 0;
-        while (bit < k && mask[bit])
-            mask[bit++] = 0;
-        if (bit == k)
-            break;
-        mask[bit] = 1;
+    for (int mask = 1; mask < 1 << k; ++mask) {
         vector <int> parity(n);
-        vector <vector <int>> sub(n);
+        vector <vector <int>> adj(n);
+        auto add = [&](int x, int y) {
+            adj[x].pb(y);
+            adj[y].pb(x);
+        };
         for (int j = 0; j < k; ++j)
-            if (mask[j]) {
+            if (mask >> j & 1) {
                 int id = extra[j], x = e[id].f, y = e[id].s;
                 parity[x] ^= 1;
                 parity[y] ^= 1;
-                sub[x].pb(y);
-                sub[y].pb(x);
+                add(x, y);
             }
         for (int i = order.size() - 1; i > 0; --i) {
             int v = order[i];
             if (parity[v]) {
                 int p = par[v];
-                sub[v].pb(p);
-                sub[p].pb(v);
+                add(v, p);
                 parity[p] ^= 1;
             }
         }
-        int start = -1, touched = 0;
+        int s = -1, cntV = 0;
         bool ok = true;
         for (int v = 0; v < n; ++v)
-            if (sub[v].size()) {
-                start = v;
-                ++touched;
-                if (sub[v].size() != 2)
+            if (adj[v].size()) {
+                s = v;
+                ++cntV;
+                if (adj[v].size() != 2)
                     ok = false;
             }
-        if (!ok || start == -1)
-            continue;
-        vector <int> seen(n), q = {start};
-        seen[start] = 1;
-        for (int i = 0; i < q.size(); ++i)
-            for (int u : sub[q[i]])
-                if (!seen[u]) {
-                    seen[u] = 1;
-                    q.pb(u);
-                }
-        ans += q.size() == touched;
+        int len = 0;
+        if (ok && s != -1) {
+            int p = s, v = adj[s][0];
+            len = 1;
+            while (v != s) {
+                int u = adj[v][0] == p ? adj[v][1] : adj[v][0];
+                p = v;
+                v = u;
+                ++len;
+            }
+        }
+        ans += ok && s != -1 && len == cntV;
     }
     return ans;
 }

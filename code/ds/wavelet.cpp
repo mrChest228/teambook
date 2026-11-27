@@ -1,64 +1,50 @@
-vector <vector <int>> pref;
-vector <int> mid;
-int sigma, h;
+int h, mid[20];
+vector <int> b[20]; // b[i][j] - единиц среди первых j на уровне i
 
-void build(vector <int> &a, int s) {
-    sigma = s;
-    h = 0;
-    while ((1L << h) < sigma)
-        ++h;
-    pref.assign(h, vector <int>(a.size() + 1));
-    mid.resize(h);
-    vector <int> cur = a, nxt(a.size());
-    for (int level = 0; level < h; ++level) {
-        int bit = h - level - 1;
-        for (int i = 0; i < a.size(); ++i)
-            pref[level][i + 1] = pref[level][i] + (cur[i] >> bit & 1);
-        mid[level] = a.size() - pref[level][a.size()];
-        int zero = 0, one = mid[level];
-        for (int x : cur)
-            if (x >> bit & 1)
-                nxt[one++] = x;
-            else
-                nxt[zero++] = x;
-        swap(cur, nxt);
+void build(vector <int> a, int sigma) { // значения в [0, sigma)
+    h = __lg(max(sigma - 1, int(1))) + 1;
+    for (int i = 0; i < h; ++i) {
+        int bit = h - 1 - i;
+        b[i].assign(a.size() + 1, 0);
+        for (int j = 0; j < a.size(); ++j)
+            b[i][j + 1] = b[i][j] + (a[j] >> bit & 1);
+        mid[i] = a.size() - b[i][a.size()];
+        stable_partition(a.begin(), a.end(), [&](int x) { return !(x >> bit & 1); });
     }
 }
 int kth(int l, int r, int k) {
-    int x = 0;
-    for (int level = 0; level < h; ++level) {
-        int onesL = pref[level][l], onesR = pref[level][r];
-        int zeros = r - l - (onesR - onesL);
+    int ans = 0;
+    for (int i = 0; i < h; ++i) {
+        int L = b[i][l], R = b[i][r];
+        int zeros = r - l - R + L;
         if (k < zeros) {
-            l -= onesL;
-            r -= onesR;
+            l -= L;
+            r -= R;
         }
         else {
             k -= zeros;
-            x |= 1L << (h - level - 1);
-            l = mid[level] + onesL;
-            r = mid[level] + onesR;
+            ans |= 1 << (h - 1 - i);
+            l = mid[i] + L;
+            r = mid[i] + R;
         }
     }
-    return x;
+    return ans;
 }
 int cnt(int l, int r, int x) {
-    if (x <= 0)
-        return 0;
-    if (x >= sigma)
+    if (x >> h)
         return r - l;
     int ans = 0;
-    for (int level = 0; level < h; ++level) {
-        int onesL = pref[level][l], onesR = pref[level][r];
-        int zeros = r - l - (onesR - onesL);
-        if (x >> (h - level - 1) & 1) {
+    for (int i = 0; i < h; ++i) {
+        int L = b[i][l], R = b[i][r];
+        int zeros = r - l - R + L;
+        if (x >> (h - 1 - i) & 1) {
             ans += zeros;
-            l = mid[level] + onesL;
-            r = mid[level] + onesR;
+            l = mid[i] + L;
+            r = mid[i] + R;
         }
         else {
-            l -= onesL;
-            r -= onesR;
+            l -= L;
+            r -= R;
         }
     }
     return ans;
