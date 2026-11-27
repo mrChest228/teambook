@@ -50,3 +50,11 @@ int cnt(int l, int r, int x) { // кол-во < x на [l, r), x >= 0
     }
     return ans;
 }
+int near(int l, int r, int x) { // ближайшее к x на [l, r), при равенстве меньшее, -1 если пусто
+    int c = cnt(l, r, x), ans = -1; // kth(c) - наименьшее >= x, kth(c - 1) - наибольшее < x
+    if (c < r - l)
+        ans = kth(l, r, c);
+    if (c && (ans < 0 || x - kth(l, r, c - 1) <= ans - x))
+        ans = kth(l, r, c - 1);
+    return ans;
+}
