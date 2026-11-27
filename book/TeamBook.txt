@@ -1,4 +1,5 @@
 ~~#show: setup~~
+~~#toc()~~
 ~~#include "1-cpp.typ"~~
 ~~#include "2-ds.typ"~~
 ~~#include "3-graphs.typ"~~

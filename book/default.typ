@@ -177,6 +177,42 @@
 // Page number as it is drawn in the corners
 #let page-num(body) = text(font: "Times New Roman", size: 11pt, top-edge: "cap-height", bottom-edge: "baseline", body)
 
+// Text of a heading without its styles and line breaks, formulas stay
+#let plain(it) = {
+  if type(it) == str { it }
+  else if it.func() == text { it.text }
+  else if it.func() == raw { it.text.trim() }
+  else if it.func() == math.equation { it }
+  else if it.has("children") { it.children.map(plain).join() }
+  else if it.has("body") { plain(it.body) }
+  else if it.func() == [ ].func() { " " }
+}
+// Table of contents: headings of levels 1 and 2 in two columns, page and column (a, b, c) of each
+#let toc() = context {
+  let width = page.width - 2 * margin.x
+  let col-width = (width - (cols-cnt - 1) * gutter) / cols-cnt
+  let entry(el) = {
+    let pos = el.location().position()
+    let col = calc.min(cols-cnt - 1, calc.max(0, calc.floor((pos.x - margin.x + 1pt) / (col-width + gutter))))
+    let where = str(counter(page).at(el.location()).first()) + "abcdefgh".at(col)
+    let body = if el.level == 1 { text(weight: "bold", plain(el.body)) } else { h(4pt) + plain(el.body) }
+    link(el.location(), body + " " + box(width: 1fr, text(fill: rgb("#999999"), repeat(gap: 1.5pt)[.])) + " " + where)
+  }
+  let num = measure(page-num(counter(page).display())).width + 2pt
+  let all = query(heading.where(level: 1).or(heading.where(level: 2))).map(entry)
+  let half = calc.ceil(all.len() / 2)
+  block(above: 0pt, below: 4pt, {
+    set text(size: 6.5pt)
+    set par(leading: 1.9pt, spacing: 1.9pt, hanging-indent: 8pt)
+    h(num) + text(size: font-sizes.h3, weight: "bold")[Оглавление]
+    h(1fr) + text(fill: rgb("#4d4d4d"))[4b - страница 4, вторая колонка]
+    v(1.5pt)
+    grid(columns: (1fr, 1fr), column-gutter: 6pt,
+      all.slice(0, half).join(parbreak()), all.slice(half).join(parbreak()))
+    v(2pt)
+    line(length: 100%, stroke: 0.5pt + rgb("#888888"))
+  })
+}
 #let setup(body) = {
   set page(
     paper: "a4",
