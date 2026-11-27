@@ -234,7 +234,8 @@
   set par(leading: 2.5pt)
   // A hyphen that is a separate word is a dash
   show regex("(^|\\s)-(\\s|$)"): m => m.text.replace("-", "—")
-  show heading: it => block(above: 2.5pt, sticky: true, context {
+  // Level 3: the gap above is the same as under it
+  show heading: it => block(above: if it.depth == 3 { 4pt } else { 2.5pt }, sticky: true, context {
     // At the top of the first column the page number covers the start of the heading: shift it
     let p = here().position()
     if p.x < margin.x + 1pt and (p.y < margin.y + 5pt or p.y > page.height - margin.y - 12pt) {
