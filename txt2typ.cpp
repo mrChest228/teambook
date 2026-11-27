@@ -50,7 +50,7 @@ vector <array <string, 4>> tokens = {
 
 const int inlineCode = 2;   // Index of the inline code in tokens
 const int typstFun = 3;     // Index of Typst functions in tokens
-const int underline = 4;
+const int underline = 4;    // Index of the underline in tokens
 const int firstHeading = 7; // Index of the first heading in tokens
 
 // Escapes text for a Typst string literal
@@ -112,7 +112,7 @@ string solve(const string &text, int l, int r) {
                 }
                 int next = k + tokens[j][1].size();
                 bool expression = j == inlineCode || j == underline ||
-                    (j == typstFun && !inner.empty() &&
+                    (j == typstFun && inner.size() &&
                      (inner.back() == ')' || inner.back() == ']'));
                 if (next < r && text[next] == ';' && expression) {
                     close += "\\;";
