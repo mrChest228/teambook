@@ -1,3 +1,4 @@
+#undef int // Все числа < $2^31$
 struct node {
     int L = 0, R = 0, mn = 1e9;
 };
