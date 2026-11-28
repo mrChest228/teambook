@@ -205,7 +205,7 @@
     set text(size: 6.5pt)
     set par(leading: 1.9pt, spacing: 1.9pt, hanging-indent: 8pt)
     h(num) + text(size: font-sizes.h3, weight: "bold")[Оглавление]
-    h(1fr) + text(fill: rgb("#4d4d4d"))[4b - страница 4, вторая колонка]
+    h(1fr) + text(fill: rgb("#4d4d4d"))[a, b, c - номера столбцов]
     v(1.5pt)
     grid(columns: (1fr, 1fr), column-gutter: 6pt,
       all.slice(0, half).join(parbreak()), all.slice(half).join(parbreak()))
