@@ -174,6 +174,14 @@
   ))
 }
 
+// First piece of text inside content
+#let first-str(it) = {
+  if type(it) == str { it }
+  else if it.func() == text { it.text }
+  else if it.has("children") { it.children.map(first-str).find(x => x != "") }
+  else if it.has("body") { first-str(it.body) }
+  else { "" }
+}
 // Page number as it is drawn in the corners
 #let page-num(body) = text(font: "Times New Roman", size: 11pt, top-edge: "cap-height", bottom-edge: "baseline", body)
 
@@ -196,7 +204,12 @@
     let col = calc.min(cols-cnt - 1, calc.max(0, calc.floor((pos.x - margin.x + 1pt) / (col-width + gutter))))
     let where = str(counter(page).at(el.location()).first()) + "abcdefgh".at(col)
     let body = if el.level == 1 { text(weight: "bold", plain(el.body)) } else { h(4pt) + plain(el.body) }
-    link(el.location(), body + " " + box(width: 1fr, text(fill: rgb("#999999"), repeat(gap: 1.5pt)[.])) + " " + where)
+    // Wrapped lines start under the text of the heading, not under its number
+    let num = first-str(el.body).match(regex("^[0-9.]+ "))
+    let indent = if num == none { 8pt } else {
+      measure(if el.level == 1 { text(weight: "bold", num.text) } else { h(4pt) + num.text }).width
+    }
+    par(hanging-indent: indent, link(el.location(), body + " " + box(width: 1fr, text(fill: rgb("#999999"), repeat(gap: 1.5pt)[.])) + sym.wj + box(h(2pt) + where)))
   }
   let num = measure(page-num(counter(page).display())).width + 2pt
   let all = query(heading.where(level: 1).or(heading.where(level: 2))).map(entry)
@@ -208,7 +221,7 @@
     h(1fr) + text(fill: rgb("#4d4d4d"))[a, b, c - номера столбцов]
     v(1.5pt)
     grid(columns: (1fr, 1fr), column-gutter: 6pt,
-      all.slice(0, half).join(parbreak()), all.slice(half).join(parbreak()))
+      all.slice(0, half).join(), all.slice(half).join())
     v(2pt)
     line(length: 100%, stroke: 0.5pt + rgb("#888888"))
   })
