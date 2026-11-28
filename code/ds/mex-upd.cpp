@@ -27,7 +27,7 @@ int upd(int v, int l, int r, int x, int val) {
 // Вершины Фенвика, покрывающие j: пересчитать в них значение x
 void fix(int x, int j) {
     for (int i = j; i > 0; i -= i & -i) {
-        auto it = ps[x].lower_bound(i); // Конец первого пропуска с R + 1 >= i
+        auto it = ps[x].lower_bound(i); // Первый пропуск с R + 1 >= i
         int L = *it < i + (i & -i) ? *prev(it) + 1 : 1e9;
         rt[i] = upd(rt[i], 0, n, x, L);
     }
