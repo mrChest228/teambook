@@ -15,7 +15,7 @@ void build(int n) {
     ulong cur = 0;
     for (int i = 0; i < n; ++i) {
         cur <<= 1;
-        while (cur && a[i - __builtin_ctzll(cur)] > a[i])
+        while (cur && cmp(i, i - __builtin_ctzll(cur)))
             cur &= cur - 1;
         msk[i] = cur |= 1;
     }

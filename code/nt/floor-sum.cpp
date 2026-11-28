@@ -1,4 +1,4 @@
-// $sum_(i = 0)^(n - 1) floor((a i + b) / m)$, m > 0, a и b любого знака, n * m и ответ влезают в long. O(log(m))
+// $sum_(i = 0)^(n - 1) floor((a i + b) / m)$, m > 0, a и b любого знака, $n^2$, n * m и ответ влезают в long. O(log(m))
 int floorSum(int n, int m, int a, int b) {
     int ans = 0;
     while (true) {
