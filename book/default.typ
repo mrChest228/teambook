@@ -14,6 +14,7 @@
 // Border of line numbers and the cpp label
 #let code-stroke = 0.8pt + rgb("#777777")
 #let frame-stroke = 1pt + rgb("#AAAAAA")
+#let badge-shift = (x: -1.2pt, y: 1.9pt) // Label of the language from the top right corner of the code
 #let code-radius = 3pt
 
 // Bold l/ll in long double functions, long rounding functions and __builtin_*ll
@@ -131,7 +132,7 @@
         align: right + horizon, // Digits stay under each other: 9 and 10
         width: width, inset: inset
       ),),
-        header: code-cap(true, separator-x: width, gutter-fill: gutter-fills.at(1), code-paint: row-fills.at(1)),
+        header: place(top + right, [#metadata(none)<code-corner>]) + code-cap(true, separator-x: width, gutter-fill: gutter-fills.at(1), code-paint: row-fills.at(1)),
         footer: code-cap(false, y: bottom, separator-x: width,
           gutter-fill: gutter-fills.at(last-index), code-paint: row-fills.at(last-index)),
       )
@@ -173,9 +174,58 @@
   ))
 }
 
+// First piece of text inside content
+#let first-str(it) = {
+  if type(it) == str { it }
+  else if it.func() == text { it.text }
+  else if it.has("children") { it.children.map(first-str).find(x => x != "") }
+  else if it.has("body") { first-str(it.body) }
+  else { "" }
+}
 // Page number as it is drawn in the corners
 #let page-num(body) = text(font: "Times New Roman", size: 11pt, top-edge: "cap-height", bottom-edge: "baseline", body)
 
+// Text of a heading without its styles and line breaks, formulas stay
+#let plain(it) = {
+  if type(it) == str { it }
+  else if it.func() == text { it.text }
+  else if it.func() == raw { it.text.trim() }
+  else if it.func() == math.equation { it }
+  else if it.has("children") { it.children.map(plain).join() }
+  else if it.has("body") { plain(it.body) }
+  else if it.func() == [ ].func() { " " }
+}
+// Table of contents: headings of levels 1 and 2 in two columns, page and column (a, b, c) of each
+#let toc() = context {
+  let width = page.width - 2 * margin.x
+  let col-width = (width - (cols-cnt - 1) * gutter) / cols-cnt
+  let entry(el) = {
+    let pos = el.location().position()
+    let col = calc.min(cols-cnt - 1, calc.max(0, calc.floor((pos.x - margin.x + 1pt) / (col-width + gutter))))
+    let where = str(counter(page).at(el.location()).first()) + "abcdefgh".at(col)
+    let body = if el.level == 1 { text(weight: "bold", plain(el.body)) } else { h(4pt) + plain(el.body) }
+    // Wrapped lines start under the text of the heading, not under its number
+    let num = first-str(el.body).match(regex("^[0-9.]+ "))
+    let indent = if num == none { 8pt } else {
+      measure(if el.level == 1 { text(weight: "bold", num.text) } else { h(4pt) + num.text }).width
+    }
+    par(hanging-indent: indent, link(el.location(), body + " " + box(width: 1fr, text(fill: rgb("#999999"), repeat(gap: 1.5pt)[.])) + sym.wj + box(h(2pt) + where)))
+  }
+  let num = measure(page-num(counter(page).display())).width + 2pt
+  let all = query(heading.where(level: 1).or(heading.where(level: 2))).map(entry)
+  let half = calc.ceil(all.len() / 2)
+  block(above: 0pt, below: 4pt, {
+    set text(size: 6.5pt)
+    set par(leading: 1.9pt, spacing: 1.9pt, hanging-indent: 8pt)
+    h(num) + text(size: font-sizes.h3, weight: "bold")[Оглавление]
+    h(1fr) + text(fill: rgb("#4d4d4d"))[a, b, c - номера столбцов]
+    v(1.5pt)
+    grid(columns: (1fr, 1fr), column-gutter: 6pt,
+      all.slice(0, half).join(), all.slice(half).join())
+    v(2pt)
+    line(length: 100%, stroke: 0.5pt + rgb("#888888"))
+  })
+}
 #let setup(body) = {
   set page(
     paper: "a4",
@@ -233,7 +283,8 @@
   set par(leading: 2.5pt)
   // A hyphen that is a separate word is a dash
   show regex("(^|\\s)-(\\s|$)"): m => m.text.replace("-", "—")
-  show heading: it => block(above: 2.5pt, sticky: true, context {
+  // Level 3: the gap above is the same as under it
+  show heading: it => block(above: if it.depth == 3 { 4pt } else { 2.5pt }, sticky: true, context {
     // At the top of the first column the page number covers the start of the heading: shift it
     let p = here().position()
     if p.x < margin.x + 1pt and (p.y < margin.y + 5pt or p.y > page.height - margin.y - 12pt) {
@@ -278,14 +329,12 @@
     number-enabled: false, // Line numbers are a gutter column of code-frame
     header: code-cap(true), // Not repeated on breaks
     footer: code-cap(false),
+    lang-position: none, // Drawn by the lines
     indent-guides: (width: 4, color: luma(40%).transparentize(40%), thickness: 0.3pt)
   )
   show: codly.header-set_(repeat: false, inset: (x: 0pt, y: 0pt, bottom: 1pt), fill: none, stroke: none)
   show: codly.footer-set_(repeat: false, inset: (x: 0pt, y: 0pt, top: 1pt), fill: none, stroke: none)
   show: codly.line-set_(fill: (code-fill, white), stroke: none, inset: (left: 0.3pt, right: -1pt, y: 1.07pt))
-  // The label hangs from the top border, not bound to the first line
-  show: codly.lang-set_(default-color: black, fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt),
-    radius: 1.5pt, align: right + top, outset: (x: -1.2pt, y: 0pt))
   set raw(theme: "/BW.tmTheme", tab-size: 4)
   // Not show text: it would override the font of the dotted 0 in bold-l
   show raw.where(block: true): set text(font: "Courier New", size: code-size)
@@ -303,7 +352,29 @@
       return
     }
     show text.where(fill: rgb("#505050")): set text(font: "Caveat", size: 9.5pt) // Comments, the font is in fonts/
-    show raw.line: bold-l.with(size: code-size) // codly renders lines outside of the rules of the raw, so the fixes go on each line
+    // codly renders lines outside of the rules of the raw, so the fixes go on each line
+    // The label of the language hangs from the top right corner of the block (mark in code-cap). codly draws its
+    // label before the lines, under the comments, so the last line that can touch it draws it instead:
+    // line 2 if it is in the column of the corner, else line 1
+    show raw.line: l => {
+      if l.number <= 2 {
+        let mark = if l.number == 1 { <code-line-1> } else { <code-line-2> }
+        let badge = box(fill: white.transparentize(30%), stroke: code-stroke, inset: (x: 1.5pt, y: 1.2pt), radius: 1.5pt,
+          text(font: "Courier New", size: code-size, fill: black, weight: "regular", it.lang))
+        // Empty box: on the baseline, not a part of the line
+        box(context {
+          let at = here().position()
+          let pos(marks, i) = if marks.len() > 0 { marks.at(i).location().position() }
+          let corner = pos(query(selector(<code-corner>).before(here())), -1)
+          if corner == none { return } // Measured by codly
+          let same(p) = p.page == corner.page and p.x < corner.x and p.y >= corner.y
+          let second = if l.count > 1 { pos(query(selector(<code-line-2>).after(here(), inclusive: true)), 0) }
+          if (l.number == 2) != (second != none and same(second)) { return }
+          place(top + left, dx: corner.x - at.x - measure(badge).width + badge-shift.x, dy: corner.y - at.y + badge-shift.y, badge)
+        } + [#metadata(none)#mark])
+      }
+      bold-l(l, size: code-size)
+    }
     it
   }
 

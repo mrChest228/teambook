@@ -1,4 +1,4 @@
-int f[N];
+int t[N]; // Индексы с 1
 
 int sum(int r) {
     int res = 0;

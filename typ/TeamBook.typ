@@ -1,5 +1,6 @@
 #import "../book/default.typ": *;#show: setup;
-#include "1-cpp.typ"
+#toc();`
+`#include "1-cpp.typ"
 #br
 #include "2-ds.typ"
 #br
