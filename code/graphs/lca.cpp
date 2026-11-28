@@ -1,29 +1,19 @@
-const int N = 2e5 + 9, L = 19; // $2^L > 2 N$
-int tin[N], dep[N], k;
-int sp[L][2 * N]; // Эйлеров обход: вершина с мин. глубиной на отрезке длины $2^l$
+int tin[N], ver[N], k; // $"ver"_("tin"_v) = v$
 vector <int> g[N];
 
+// a - массив для rmq: tin предка вершины с этим tin
 void dfs(int v, int p) {
-    tin[v] = k;
-    sp[0][k++] = v;
+    ver[k] = v;
+    a[k] = p == -1 ? -1 : tin[p];
+    tin[v] = k++;
     for (int u : g[v])
-        if (u != p) {
-            dep[u] = dep[v] + 1;
+        if (u != p)
             dfs(u, v);
-            sp[0][k++] = v;
-        }
 }
-int higher(int a, int b) {
-    return dep[a] < dep[b] ? a : b;
-}
-// После k = 0, dep[root] = 0, dfs(root, -1). O(n * log(n))
-void build() {
-    for (int l = 1; 1 << l <= k; ++l)
-        for (int i = 0; i + (1 << l) <= k; ++i)
-            sp[l][i] = higher(sp[l - 1][i], sp[l - 1][i + (1 << l - 1)]);
-}
-// O(1)
-int lca(int a, int b) {
-    int l = min(tin[a], tin[b]), r = max(tin[a], tin[b]) + 1, t = __lg(r - l);
-    return higher(sp[t][l], sp[t][r - (1 << t)]);
+// После k = 0, dfs(root, -1), build(n)
+int lca(int x, int y) {
+    if (x == y)
+        return x;
+    int l = min(tin[x], tin[y]), r = max(tin[x], tin[y]);
+    return ver[a[rmq(l + 1, r)]];
 }
