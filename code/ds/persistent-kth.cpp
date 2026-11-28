@@ -1,28 +1,31 @@
-const int N = 2e5 + 9, T = N * 20, MX = N; // $T > N (log_2("MX") + 2)$, значения в [0, MX)
-int lc[T], rc[T], sm[T], root[N], cnt = 1; // Вершина 0 - пустое дерево
+struct node {
+    int L = 0, R = 0, sm = 0;
+};
 
-// Новая версия: v с +1 в позиции p. O(log(MX))
-int add(int v, int p, int l = 0, int r = MX) {
-    int u = cnt++;
-    lc[u] = lc[v], rc[u] = rc[v], sm[u] = sm[v] + 1;
-    if (r - l > 1) {
-        int m = (l + r) / 2;
-        if (p < m)
-            lc[u] = add(lc[v], p, l, m);
-        else
-            rc[u] = add(rc[v], p, m, r);
-    }
-    return u;
+vector <node> t;
+vector <int> roots;
+// Новая версия: v с +1 в точке p
+int add(int v, int l, int r, int p) {
+    t.pb(t[v]);
+    v = t.size() - 1;
+    ++t[v].sm;
+    if (l == r)
+        return v;
+    int md = (l + r) / 2;
+    if (p <= md)
+        t[v].L = add(t[v].L, l, md, p);
+    else
+        t[v].R = add(t[v].R, md + 1, r, p);
+    return v;
 }
-// k-е с 0 значение в мультимножестве a + b - c - d: спуск по 4 версиям. O(log(MX))
-int kth(int a, int b, int c, int d, int k) {
-    int l = 0, r = MX;
-    while (r - l > 1) {
-        int m = (l + r) / 2, s = sm[lc[a]] + sm[lc[b]] - sm[lc[c]] - sm[lc[d]];
-        if (k < s)
-            a = lc[a], b = lc[b], c = lc[c], d = lc[d], r = m;
-        else
-            a = rc[a], b = rc[b], c = rc[c], d = rc[d], l = m, k -= s;
-    }
-    return l;
+// k-е с 0 значение в мультимножестве a + b - c - d: спуск по 4 версиям
+int kth(int a, int b, int c, int d, int l, int r, int k) {
+    if (l == r)
+        return l;
+    int md = (l + r) / 2;
+    int s = t[t[a].L].sm + t[t[b].L].sm - t[t[c].L].sm - t[t[d].L].sm;
+    if (k < s)
+        return kth(t[a].L, t[b].L, t[c].L, t[d].L, l, md, k);
+    else
+        return kth(t[a].R, t[b].R, t[c].R, t[d].R, md + 1, r, k - s);
 }
